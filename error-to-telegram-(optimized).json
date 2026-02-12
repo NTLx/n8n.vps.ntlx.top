@@ -1,0 +1,287 @@
+{
+  "updatedAt": "2026-02-12T08:00:08.087Z",
+  "createdAt": "2026-02-12T08:00:08.087Z",
+  "id": "3LE3BnPfHSuIZCVR",
+  "name": "Error to Telegram (Optimized)",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "name": "Error Trigger",
+      "id": "aba1f1f6-bc98-4a9f-856f-7a99d7477455"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ====== 配置 ======\nconst TELEGRAM_CHAT_ID = '135590865';\nconst RATE_LIMIT_SECONDS = 300;\nconst SILENT_HOURS_START = 23;\nconst SILENT_HOURS_END = 8;\nconst MIN_ERROR_LEVEL = 'error';\n\n// ====== 获取错误数据 ======\nconst errorData = $input.item.json;\nconst workflowName = errorData.workflow?.name || 'Unknown';\nconst errorLevel = errorData.execution?.error?.level || 'info';\nconst errorMsg = errorData.execution?.error?.message || 'No message';\nconst executionId = errorData.execution?.id;\nconst executionUrl = errorData.execution?.url;\nconst lastNodeExecuted = errorData.execution?.lastNodeExecuted;\nconst errorName = errorData.execution?.error?.name;\nconst mode = errorData.execution?.mode;\n\n// ====== 错误级别过滤 ======\nconst errorLevels = ['info', 'warning', 'error', 'critical'];\nconst currentLevelIndex = errorLevels.indexOf(errorLevel.toLowerCase());\nconst minLevelIndex = errorLevels.indexOf(MIN_ERROR_LEVEL.toLowerCase());\n\nif (currentLevelIndex < minLevelIndex) {\n  return [{ json: { shouldSend: false, reason: `Level '${errorLevel}' below threshold` } }];\n}\n\n// ====== 静默时段检查 ======\nconst now = new Date();\nconst hour = now.getUTCHours();\nconst isSilentHour = hour >= SILENT_HOURS_START || hour < SILENT_HOURS_END;\n\n// ====== 频率限制 ======\nconst staticData = $getWorkflowStaticData('global');\nconst rateLimitKey = `lastNotification_${workflowName}`;\nconst lastNotification = staticData[rateLimitKey] ? new Date(staticData[rateLimitKey]) : null;\nconst nowTime = now.getTime();\n\nlet shouldSend = true;\nlet reason = '';\n\nif (lastNotification) {\n  const secondsSinceLast = (nowTime - lastNotification.getTime()) / 1000;\n  if (secondsSinceLast < RATE_LIMIT_SECONDS) {\n    shouldSend = false;\n    reason = `Rate limited: ${Math.round(RATE_LIMIT_SECONDS - secondsSinceLast)}s remaining`;\n  }\n}\n\n// ====== 构建消息 ======\nconst silentNote = isSilentHour ? '🌙 [静默时段]' : '';\n\nconst message = `# n8n 流程报错 ${silentNote}\n- From: n8n.vps.ntlx.top\n- Workflow: ${workflowName}\n\n## 执行信息\n- Mode: ${mode}\n- Level: ${errorLevel}\n- Node: ${lastNodeExecuted}\n- Error: ${errorName}\n- Message: ${errorMsg}\n\n## 链接\n- Execution ID: ${executionId}\n- URL: ${executionUrl}`;\n\n// ====== 返回结果 ======\nif (shouldSend) {\n  staticData[rateLimitKey] = nowTime;\n  return [{ json: { shouldSend: true, message: message, chatId: TELEGRAM_CHAT_ID, workflowName: workflowName, silent: isSilentHour } }];\n} else {\n  return [{ json: { shouldSend: false, reason: reason, workflowName: workflowName } }];\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        0
+      ],
+      "name": "Filter & Rate Limit",
+      "id": "ac55e3fa-cb94-4f26-b1a4-f4b09477d6d6"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.shouldSend }}",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        440,
+        0
+      ],
+      "name": "Should Send?",
+      "id": "c285f1cb-5645-428a-af2e-27c7d7bacc9e"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chatId }}",
+        "text": "={{ $json.message }}",
+        "additionalFields": {
+          "disable_notification": "={{ $json.silent }}"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        660,
+        -60
+      ],
+      "name": "Send Notification",
+      "credentials": {
+        "telegramApi": {
+          "id": "tVb8Nv4w2KsUp66k",
+          "name": "lx3325360"
+        }
+      },
+      "id": "4dd1c3b6-9137-4ec5-bd32-360c6004fecc"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $input.item.json;\nconsole.log(`[Filtered] ${data.workflowName}: ${data.reason}`);\nreturn [];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        660,
+        120
+      ],
+      "name": "Log Filtered",
+      "id": "873e8ba5-c31b-477e-945b-01d3eb3af1a8"
+    }
+  ],
+  "connections": {
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "Filter & Rate Limit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter & Rate Limit": {
+      "main": [
+        [
+          {
+            "node": "Should Send?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Should Send?": {
+      "main": [
+        [
+          {
+            "node": "Send Notification",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Log Filtered",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": null,
+  "versionId": "709443b3-03ab-429d-a970-7cf41702a800",
+  "activeVersionId": "709443b3-03ab-429d-a970-7cf41702a800",
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2026-02-12T08:00:08.087Z",
+      "createdAt": "2026-02-12T08:00:08.087Z",
+      "role": "workflow:owner",
+      "workflowId": "3LE3BnPfHSuIZCVR",
+      "projectId": "cNMj0K6AdJmi0OAZ"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2026-02-12T08:00:08.182Z",
+    "createdAt": "2026-02-12T08:00:08.182Z",
+    "versionId": "709443b3-03ab-429d-a970-7cf41702a800",
+    "workflowId": "3LE3BnPfHSuIZCVR",
+    "nodes": [
+      {
+        "parameters": {},
+        "type": "n8n-nodes-base.errorTrigger",
+        "typeVersion": 1,
+        "position": [
+          0,
+          0
+        ],
+        "name": "Error Trigger",
+        "id": "aba1f1f6-bc98-4a9f-856f-7a99d7477455"
+      },
+      {
+        "parameters": {
+          "jsCode": "// ====== 配置 ======\nconst TELEGRAM_CHAT_ID = '135590865';\nconst RATE_LIMIT_SECONDS = 300;\nconst SILENT_HOURS_START = 23;\nconst SILENT_HOURS_END = 8;\nconst MIN_ERROR_LEVEL = 'error';\n\n// ====== 获取错误数据 ======\nconst errorData = $input.item.json;\nconst workflowName = errorData.workflow?.name || 'Unknown';\nconst errorLevel = errorData.execution?.error?.level || 'info';\nconst errorMsg = errorData.execution?.error?.message || 'No message';\nconst executionId = errorData.execution?.id;\nconst executionUrl = errorData.execution?.url;\nconst lastNodeExecuted = errorData.execution?.lastNodeExecuted;\nconst errorName = errorData.execution?.error?.name;\nconst mode = errorData.execution?.mode;\n\n// ====== 错误级别过滤 ======\nconst errorLevels = ['info', 'warning', 'error', 'critical'];\nconst currentLevelIndex = errorLevels.indexOf(errorLevel.toLowerCase());\nconst minLevelIndex = errorLevels.indexOf(MIN_ERROR_LEVEL.toLowerCase());\n\nif (currentLevelIndex < minLevelIndex) {\n  return [{ json: { shouldSend: false, reason: `Level '${errorLevel}' below threshold` } }];\n}\n\n// ====== 静默时段检查 ======\nconst now = new Date();\nconst hour = now.getUTCHours();\nconst isSilentHour = hour >= SILENT_HOURS_START || hour < SILENT_HOURS_END;\n\n// ====== 频率限制 ======\nconst staticData = $getWorkflowStaticData('global');\nconst rateLimitKey = `lastNotification_${workflowName}`;\nconst lastNotification = staticData[rateLimitKey] ? new Date(staticData[rateLimitKey]) : null;\nconst nowTime = now.getTime();\n\nlet shouldSend = true;\nlet reason = '';\n\nif (lastNotification) {\n  const secondsSinceLast = (nowTime - lastNotification.getTime()) / 1000;\n  if (secondsSinceLast < RATE_LIMIT_SECONDS) {\n    shouldSend = false;\n    reason = `Rate limited: ${Math.round(RATE_LIMIT_SECONDS - secondsSinceLast)}s remaining`;\n  }\n}\n\n// ====== 构建消息 ======\nconst silentNote = isSilentHour ? '🌙 [静默时段]' : '';\n\nconst message = `# n8n 流程报错 ${silentNote}\n- From: n8n.vps.ntlx.top\n- Workflow: ${workflowName}\n\n## 执行信息\n- Mode: ${mode}\n- Level: ${errorLevel}\n- Node: ${lastNodeExecuted}\n- Error: ${errorName}\n- Message: ${errorMsg}\n\n## 链接\n- Execution ID: ${executionId}\n- URL: ${executionUrl}`;\n\n// ====== 返回结果 ======\nif (shouldSend) {\n  staticData[rateLimitKey] = nowTime;\n  return [{ json: { shouldSend: true, message: message, chatId: TELEGRAM_CHAT_ID, workflowName: workflowName, silent: isSilentHour } }];\n} else {\n  return [{ json: { shouldSend: false, reason: reason, workflowName: workflowName } }];\n}"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          220,
+          0
+        ],
+        "name": "Filter & Rate Limit",
+        "id": "ac55e3fa-cb94-4f26-b1a4-f4b09477d6d6"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "boolean": [
+              {
+                "value1": "={{ $json.shouldSend }}",
+                "value2": true
+              }
+            ]
+          }
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 1,
+        "position": [
+          440,
+          0
+        ],
+        "name": "Should Send?",
+        "id": "c285f1cb-5645-428a-af2e-27c7d7bacc9e"
+      },
+      {
+        "parameters": {
+          "chatId": "={{ $json.chatId }}",
+          "text": "={{ $json.message }}",
+          "additionalFields": {
+            "disable_notification": "={{ $json.silent }}"
+          }
+        },
+        "type": "n8n-nodes-base.telegram",
+        "typeVersion": 1.2,
+        "position": [
+          660,
+          -60
+        ],
+        "name": "Send Notification",
+        "credentials": {
+          "telegramApi": {
+            "id": "tVb8Nv4w2KsUp66k",
+            "name": "lx3325360"
+          }
+        },
+        "id": "4dd1c3b6-9137-4ec5-bd32-360c6004fecc"
+      },
+      {
+        "parameters": {
+          "jsCode": "const data = $input.item.json;\nconsole.log(`[Filtered] ${data.workflowName}: ${data.reason}`);\nreturn [];"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          660,
+          120
+        ],
+        "name": "Log Filtered",
+        "id": "873e8ba5-c31b-477e-945b-01d3eb3af1a8"
+      }
+    ],
+    "connections": {
+      "Error Trigger": {
+        "main": [
+          [
+            {
+              "node": "Filter & Rate Limit",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Filter & Rate Limit": {
+        "main": [
+          [
+            {
+              "node": "Should Send?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Should Send?": {
+        "main": [
+          [
+            {
+              "node": "Send Notification",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Log Filtered",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Administrator NTLx",
+    "name": null,
+    "description": null,
+    "autosaved": false
+  },
+  "tags": []
+}
