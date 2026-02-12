@@ -1,0 +1,83 @@
+{
+  "updatedAt": "2026-02-11T07:17:39.822Z",
+  "createdAt": "2026-02-11T07:09:11.118Z",
+  "id": "qvqgsnq3abzHUseIh7U0f",
+  "name": "Error to Telegram",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "943e4d17-4c42-4b4e-975f-1d6007afb0d9",
+      "name": "Error Trigger"
+    },
+    {
+      "parameters": {
+        "chatId": "135590865",
+        "text": "=# n8n流程报错\n- From：n8n.vps.ntlx.top\n- Workflow Name:  {{ $json.workflow.name }}\n## Execution\n- Mode: {{ $json.execution.mode }}\n- Level: {{ $json.execution.error.level }}\n- Functionality: {{ $json.execution.error.functionality }}\n- Name: {{ $json.execution.error.name }}\n- Last Node Executed: {{ $json.execution.lastNodeExecuted }}\n- Message: {{ $json.execution.error.message }}\n- ID: {{ $json.execution.id }}\n- URL: {{ $json.execution.url }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        208,
+        0
+      ],
+      "id": "6ee5a666-3dcd-47b5-9540-a2cf772d6cc2",
+      "name": "Send a text message",
+      "webhookId": "6a0e07ce-cf18-44ba-b5be-036361e32f87",
+      "credentials": {
+        "telegramApi": {
+          "id": "tVb8Nv4w2KsUp66k",
+          "name": "lx3325360"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner",
+    "timeSavedPerExecution": 5
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "cf06b2bf-e8e0-4b38-8e98-d99b2d3159b3",
+  "activeVersionId": null,
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2026-02-11T07:09:11.118Z",
+      "createdAt": "2026-02-11T07:09:11.118Z",
+      "role": "workflow:owner",
+      "workflowId": "qvqgsnq3abzHUseIh7U0f",
+      "projectId": "cNMj0K6AdJmi0OAZ"
+    }
+  ],
+  "activeVersion": null,
+  "tags": []
+}
