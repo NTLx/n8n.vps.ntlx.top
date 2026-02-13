@@ -1,0 +1,453 @@
+{
+  "updatedAt": "2026-02-13T05:16:33.143Z",
+  "createdAt": "2026-02-13T02:34:23.915Z",
+  "id": "2PfYPC9DpC8XdniY",
+  "name": "Auto-Backup n8n Workflows to GitHub (Optimized)",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 9
+            }
+          ]
+        }
+      },
+      "id": "7a44fa89-80fe-4fb4-ac9b-56db83760371",
+      "name": "Daily Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        112,
+        448
+      ]
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "file",
+        "operation": "list",
+        "owner": {
+          "__rl": true,
+          "mode": "name",
+          "value": "NTLx"
+        },
+        "repository": {
+          "__rl": true,
+          "value": "n8n.vps.ntlx.top",
+          "mode": "list",
+          "cachedResultName": "n8n.vps.ntlx.top",
+          "cachedResultUrl": "https://github.com/NTLx/n8n.vps.ntlx.top"
+        },
+        "filePath": "/"
+      },
+      "id": "18400406-3aa9-41c8-ae03-0c1365d5ec5e",
+      "name": "Fetch GitHub Files",
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1,
+      "position": [
+        352,
+        592
+      ],
+      "webhookId": "f1723ad8-8126-40f5-be0d-58c0958eba5e",
+      "credentials": {
+        "githubOAuth2Api": {
+          "id": "stt7O3UtIsjdKCqg",
+          "name": "NTLx"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "filters": {},
+        "requestOptions": {}
+      },
+      "id": "c3a3b921-16a9-4ebf-a8d2-8e4da2a2c1c0",
+      "name": "Fetch Local Workflows",
+      "type": "n8n-nodes-base.n8n",
+      "typeVersion": 1,
+      "position": [
+        352,
+        384
+      ],
+      "credentials": {
+        "n8nApi": {
+          "id": "ZWhmVjb2nWJVoRkD",
+          "name": "self"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "id": "2859291e-a991-4950-9603-465130e13453",
+      "name": "Wait for Data",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 2,
+      "position": [
+        560,
+        480
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. Get input data\n// We use $items() to reliably reference data from previous nodes after the Merge node.\nconst localWorkflows = $items(\"Fetch Local Workflows\");\nconst remoteFiles = $items(\"Fetch GitHub Files\");\n\n// 2. Define helper to format filenames\n// Replaces spaces with dashes, converts to lowercase, and adds .json extension\nconst getFileName = (name) => name.replace(/\\s+/g, '-').toLowerCase() + '.json';\n\nconst results = [];\nconst localMap = {};\n\n// 3. Build a Map of local workflows for easy lookup\nlocalWorkflows.forEach(item => {\n    const fileName = getFileName(item.json.name);\n    localMap[fileName] = item.json;\n});\n\n// 4. Build a Set of remote files (existing in GitHub)\nconst remoteFileSet = new Set();\nremoteFiles.forEach(item => {\n    // Ensure we only track .json files to avoid touching READMEs or other configs\n    if (item.json.name && item.json.type === 'file' && item.json.name.endsWith('.json')) {\n        remoteFileSet.add(item.json.name);\n    }\n});\n\n// 5. Compare: Determine 'Create' or 'Update' actions\nfor (const [fileName, workflowData] of Object.entries(localMap)) {\n    const content = JSON.stringify(workflowData, null, 2);\n    \n    if (remoteFileSet.has(fileName)) {\n        // File exists -> Update\n        results.push({\n            json: {\n                action: 'update',\n                fileName: fileName,\n                content: content,\n                workflowName: workflowData.name\n            }\n        });\n    } else {\n        // File does not exist -> Create\n        results.push({\n            json: {\n                action: 'create',\n                fileName: fileName,\n                content: content,\n                workflowName: workflowData.name\n            }\n        });\n    }\n}\n\n// 6. Compare: Determine 'Delete' actions\n// If it exists in GitHub but not in local map, it means the workflow was deleted or renamed locally.\nremoteFileSet.forEach(remoteName => {\n    if (!localMap[remoteName]) {\n        results.push({\n            json: {\n                action: 'delete',\n                fileName: remoteName\n            }\n        });\n    }\n});\n\nreturn results;"
+      },
+      "id": "be4a7802-157e-4cf2-80a6-f3d11aa7f318",
+      "name": "Calculate Sync Actions",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        784,
+        480
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.action }}",
+              "value2": "create"
+            }
+          ]
+        }
+      },
+      "id": "ad477cfb-8ee5-4433-b3f3-94fd860033d6",
+      "name": "Filter: Create",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        1024,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.action }}",
+              "value2": "update"
+            }
+          ]
+        }
+      },
+      "id": "a41140ed-8d54-485b-b196-8504eed136ff",
+      "name": "Filter: Update",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        1024,
+        512
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.action }}",
+              "value2": "delete"
+            }
+          ]
+        }
+      },
+      "id": "d096615f-5c6d-41db-81a8-2f2951c58e5d",
+      "name": "Filter: Delete",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        1024,
+        688
+      ]
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "file",
+        "owner": {
+          "__rl": true,
+          "value": "NTLx",
+          "mode": "name"
+        },
+        "repository": {
+          "__rl": true,
+          "value": "n8n.vps.ntlx.top",
+          "mode": "list",
+          "cachedResultName": "n8n.vps.ntlx.top",
+          "cachedResultUrl": "https://github.com/NTLx/n8n.vps.ntlx.top"
+        },
+        "filePath": "={{ $json.fileName }}",
+        "fileContent": "={{ $json.content }}",
+        "commitMessage": "=Create workflow: {{ $json.workflowName }}"
+      },
+      "id": "223abb2e-1d0a-4b87-bcfe-f98f26bde11c",
+      "name": "Push: Create File",
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1,
+      "position": [
+        1264,
+        320
+      ],
+      "webhookId": "17308e77-fe36-48d4-9d71-58d91aa50227",
+      "credentials": {
+        "githubOAuth2Api": {
+          "id": "stt7O3UtIsjdKCqg",
+          "name": "NTLx"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "file",
+        "operation": "edit",
+        "owner": {
+          "__rl": true,
+          "value": "NTLx",
+          "mode": "name"
+        },
+        "repository": {
+          "__rl": true,
+          "value": "n8n.vps.ntlx.top",
+          "mode": "list",
+          "cachedResultName": "n8n.vps.ntlx.top",
+          "cachedResultUrl": "https://github.com/NTLx/n8n.vps.ntlx.top"
+        },
+        "filePath": "={{ $json.fileName }}",
+        "fileContent": "={{ $json.content }}",
+        "commitMessage": "=Update workflow: {{ $json.workflowName }}"
+      },
+      "id": "2ef2ef1c-4093-470c-a549-cbbc45c093f4",
+      "name": "Push: Update File",
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1,
+      "position": [
+        1264,
+        512
+      ],
+      "webhookId": "72445b08-c8a2-4205-a892-a45242caa89c",
+      "credentials": {
+        "githubOAuth2Api": {
+          "id": "stt7O3UtIsjdKCqg",
+          "name": "NTLx"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "file",
+        "operation": "delete",
+        "owner": {
+          "__rl": true,
+          "value": "NTLx",
+          "mode": "name"
+        },
+        "repository": {
+          "__rl": true,
+          "value": "n8n.vps.ntlx.top",
+          "mode": "list",
+          "cachedResultName": "n8n.vps.ntlx.top",
+          "cachedResultUrl": "https://github.com/NTLx/n8n.vps.ntlx.top"
+        },
+        "filePath": "={{ $json.fileName }}",
+        "commitMessage": "=Delete workflow: {{ $json.fileName }}"
+      },
+      "id": "06710739-d176-4507-b146-30680bf9d860",
+      "name": "Push: Delete File",
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1,
+      "position": [
+        1264,
+        688
+      ],
+      "webhookId": "611eb685-18ce-43c3-874e-b6cd548ac685",
+      "credentials": {
+        "githubOAuth2Api": {
+          "id": "stt7O3UtIsjdKCqg",
+          "name": "NTLx"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Auto-Backup n8n Workflows to GitHub\n\nSyncs all your n8n workflows to a GitHub repository. Handles create, update, and delete operations automatically.\n\n### How it works\n1. Daily Trigger starts the workflow at 9:00 UTC\n2. Fetch Local Workflows gets all workflows from your n8n instance\n3. Fetch GitHub Files lists current files in your repo\n4. Calculate Sync Actions compares both lists and determines what to do\n5. Filter nodes route each workflow to the correct operation\n6. Push nodes execute GitHub actions (create/update/delete)\n\n### Setup checklist\n- [ ] Add n8n API credential to `Fetch Local Workflows`\n- [ ] Add GitHub OAuth2 credential to all GitHub nodes\n- [ ] Set your GitHub username in repository settings\n- [ ] Set your repository name in all GitHub nodes\n- [ ] Ensure GitHub PAT has `repo` scope (private repos) or `public_repo` (public repos)",
+        "height": 480,
+        "width": 620
+      },
+      "id": "f641f045-7bd9-45d8-bad6-1dce0d5c24df",
+      "name": "Note Overview",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -272,
+        -160
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Setup Details\n\n### Credentials Required\n- **n8n API**: Used by `Fetch Local Workflows` to read your workflows\n- **GitHub OAuth2**: Used by all GitHub nodes to read/write files\n\n### Configuration Steps\n- [ ] Open `Fetch Local Workflows` → Select n8n API credential\n- [ ] Open `Fetch GitHub Files` → Select GitHub OAuth2 credential\n- [ ] Open all 3 Push nodes → Select GitHub OAuth2 credential\n- [ ] In `Fetch GitHub Files` → Set owner to your GitHub username\n- [ ] In `Fetch GitHub Files` → Set repository to your repo name\n- [ ] Repeat for all 3 Push nodes: Update owner and repository fields\n\n### GitHub Token Scopes\n- Private repos: `repo` scope required\n- Public repos: `public_repo` scope sufficient",
+        "height": 468,
+        "width": 496,
+        "color": 2
+      },
+      "id": "daf4e575-cd03-455f-8199-181fc0e85656",
+      "name": "Note Setup",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        448,
+        -160
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Sync Logic\n\nThe `Calculate Sync Actions` node compares local workflows with GitHub files:\n\n- **Create**: Workflow exists locally but not in GitHub → Push: Create File\n- **Update**: Workflow exists in both but content differs → Push: Update File\n- **Delete**: Workflow in GitHub but not locally → Push: Delete File\n\nThis ensures your GitHub repo always matches your n8n instance.",
+        "height": 288,
+        "width": 300,
+        "color": 3
+      },
+      "id": "19293bab-682e-45c9-9ea3-bd702407eccb",
+      "name": "Note Logic",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1040,
+        -160
+      ]
+    }
+  ],
+  "connections": {
+    "Daily Trigger": {
+      "main": [
+        [
+          {
+            "node": "Fetch GitHub Files",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Fetch Local Workflows",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch GitHub Files": {
+      "main": [
+        [
+          {
+            "node": "Wait for Data",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Fetch Local Workflows": {
+      "main": [
+        [
+          {
+            "node": "Wait for Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait for Data": {
+      "main": [
+        [
+          {
+            "node": "Calculate Sync Actions",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculate Sync Actions": {
+      "main": [
+        [
+          {
+            "node": "Filter: Create",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Filter: Update",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Filter: Delete",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter: Create": {
+      "main": [
+        [
+          {
+            "node": "Push: Create File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter: Update": {
+      "main": [
+        [
+          {
+            "node": "Push: Update File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter: Delete": {
+      "main": [
+        [
+          {
+            "node": "Push: Delete File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "none",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {},
+  "versionId": "45a37f34-5983-43f0-ab57-52fa9366cbf2",
+  "activeVersionId": null,
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2026-02-13T02:34:23.915Z",
+      "createdAt": "2026-02-13T02:34:23.915Z",
+      "role": "workflow:owner",
+      "workflowId": "2PfYPC9DpC8XdniY",
+      "projectId": "cNMj0K6AdJmi0OAZ"
+    }
+  ],
+  "activeVersion": null,
+  "tags": []
+}
