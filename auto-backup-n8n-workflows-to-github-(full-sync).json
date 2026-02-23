@@ -439,7 +439,11 @@
     "callerPolicy": "workflowsFromSameOwner",
     "timeSavedPerExecution": 30
   },
-  "staticData": null,
+  "staticData": {
+    "node:Daily Trigger": {
+      "recurrenceRules": []
+    }
+  },
   "meta": {
     "templateCredsSetupCompleted": true
   },
