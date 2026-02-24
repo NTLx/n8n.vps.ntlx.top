@@ -1,10 +1,10 @@
 {
-  "updatedAt": "2026-02-11T07:17:39.822Z",
+  "updatedAt": "2026-02-23T06:50:59.983Z",
   "createdAt": "2026-02-11T07:09:11.118Z",
   "id": "qvqgsnq3abzHUseIh7U0f",
   "name": "Error to Telegram",
   "active": false,
-  "isArchived": false,
+  "isArchived": true,
   "nodes": [
     {
       "parameters": {},
@@ -66,7 +66,7 @@
     "templateCredsSetupCompleted": true
   },
   "pinData": {},
-  "versionId": "cf06b2bf-e8e0-4b38-8e98-d99b2d3159b3",
+  "versionId": "e57d36bc-cbb0-4404-a7cb-e2b343199329",
   "activeVersionId": null,
   "triggerCount": 0,
   "shared": [
