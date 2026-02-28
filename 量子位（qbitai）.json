@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-02-23T08:43:09.949Z",
+  "updatedAt": "2026-02-28T00:48:12.879Z",
   "createdAt": "2026-02-23T08:02:48.758Z",
   "id": "mwlYBgu0iB01qIJF",
   "name": "量子位（QbitAI）",
@@ -46,9 +46,9 @@
       "parameters": {
         "model": {
           "__rl": true,
-          "value": "qwen3-coder-plus",
+          "value": "deepseek-v3.2",
           "mode": "list",
-          "cachedResultName": "qwen3-coder-plus"
+          "cachedResultName": "deepseek-v3.2"
         },
         "builtInTools": {},
         "options": {
@@ -96,7 +96,7 @@
     },
     {
       "parameters": {
-        "url": "={{ $json.link }}",
+        "url": "=https://r.jina.ai/{{ $json.link }}",
         "options": {}
       },
       "type": "n8n-nodes-base.httpRequest",
@@ -195,12 +195,12 @@
   },
   "staticData": {
     "node:RSS Feed Trigger": {
-      "lastItemDate": "2026-02-25T15:58:43.000Z"
+      "lastItemDate": "2026-02-27T09:17:38.000Z"
     }
   },
   "meta": null,
   "pinData": {},
-  "versionId": "0f552b9f-4ebd-4aff-be76-9b5b5fdf6477",
+  "versionId": "677e58af-9b22-4f39-bb01-c836e126f41a",
   "activeVersionId": "0f552b9f-4ebd-4aff-be76-9b5b5fdf6477",
   "triggerCount": 1,
   "shared": [
