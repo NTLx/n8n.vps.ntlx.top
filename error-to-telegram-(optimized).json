@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-02-12T15:59:42.865Z",
+  "updatedAt": "2026-02-28T08:37:00.187Z",
   "createdAt": "2026-02-12T08:00:08.087Z",
   "id": "3LE3BnPfHSuIZCVR",
   "name": "Error to Telegram (Optimized)",
@@ -11,8 +11,8 @@
       "type": "n8n-nodes-base.errorTrigger",
       "typeVersion": 1,
       "position": [
-        0,
-        0
+        224,
+        304
       ],
       "name": "Error Trigger",
       "id": "aba1f1f6-bc98-4a9f-856f-7a99d7477455"
@@ -24,7 +24,7 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        220,
+        224,
         0
       ],
       "name": "Filter & Rate Limit",
@@ -44,7 +44,7 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 1,
       "position": [
-        440,
+        448,
         0
       ],
       "name": "Should Send?",
@@ -61,17 +61,18 @@
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
-        660,
-        -60
+        672,
+        -64
       ],
       "name": "Send Notification",
+      "id": "4dd1c3b6-9137-4ec5-bd32-360c6004fecc",
+      "webhookId": "c6d07374-17c4-48b7-bfa0-a20768198d8e",
       "credentials": {
         "telegramApi": {
           "id": "tVb8Nv4w2KsUp66k",
           "name": "lx3325360"
         }
-      },
-      "id": "4dd1c3b6-9137-4ec5-bd32-360c6004fecc"
+      }
     },
     {
       "parameters": {
@@ -80,11 +81,169 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        660,
-        120
+        672,
+        128
       ],
       "name": "Log Filtered",
       "id": "873e8ba5-c31b-477e-945b-01d3eb3af1a8"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json }}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=# Role\n你是一个资深的 n8n 自动化工作流运维专家。你的任务是接收 n8n Error Trigger 传来的 JSON 格式报错信息，提取关键数据，并将其总结、翻译、排版为一条高度可读的 Discord 消息。\n\n# Objectives\n1. **快速定位**：让用户在 3 秒内知道是哪个工作流、哪个节点挂了。\n2. **通俗易懂**：将技术性的报错（如 HTTP 429, NodeApiError）翻译/总结为普通人能听懂的大白话。\n3. **提供行动指南**：基于报错内容，给出具体的、可落地的解决建议。\n4. **适配 Discord**：充分利用 Discord 的 Markdown 语法（加粗、代码块、引用、Emoji）优化阅读体验。\n\n# Workflow & Guidelines\n当你收到一段 JSON 报错信息时，请严格按照以下步骤处理：\n1. **提取关键信息**：\n   - 工作流名称 (`workflow.name`)\n   - 失败节点 (`execution.lastNodeExecuted` 或 `error.node.name`)\n   - 错误状态码 (`error.httpCode`)\n   - 错误描述 (`error.message`, `error.description`, `error.messages`)\n   - 执行日志链接 (`execution.url`)\n2. **翻译与总结**：将核心的英文报错翻译为流畅的中文，并合并冗余信息（例如：将 \"The service is receiving too many requests from you\" 和 \"您已受到速率限制\" 总结为 \"API 请求过于频繁，触发了目标服务的速率限制 (Rate Limit)\"）。\n3. **智能诊断**：根据报错类型推测原因并给出建议（例如遇到 429，建议增加节点等待时间/排队处理；遇到 401 建议检查 Token 等）。\n\n# Output Format (Discord Markdown Template)\n请严格使用以下格式输出消息（不要输出 JSON，直接输出这段 Discord 文本）：\n\n🚨 **[工作流名称] 运行失败**\n> **出错节点**：`[出错的节点名称]`\n> **发生时间**：[将时间戳转化为 YYYY-MM-DD HH:mm 格式]\n\n⚠️ **错误详情**\n* **状态码**：`[HTTP Code]` | `[Error Name]`\n* **问题描述**：[用通俗易懂的中文总结报错原因]\n* **原始信息**：\n```json\n[提取核心的 error message 或 stack 前两行，保持简短]"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        432,
+        304
+      ],
+      "id": "68ad7c71-467e-42c0-9262-d21e9b6c3235",
+      "name": "Basic LLM Chain",
+      "retryOnFail": true,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "smart-regular",
+          "mode": "list",
+          "cachedResultName": "smart-regular"
+        },
+        "responsesApiEnabled": false,
+        "options": {
+          "temperature": 0
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        496,
+        496
+      ],
+      "id": "537f0570-a71e-4208-8da2-dadfadf72b9a",
+      "name": "OpenAI Chat Model",
+      "retryOnFail": true,
+      "waitBetweenTries": 2000,
+      "credentials": {
+        "openAiApi": {
+          "id": "BtNUoaYPZrKSsCA2",
+          "name": "NewAPI-VPS"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "inputText": "={{ $json.text }}",
+        "categories": {
+          "categories": [
+            {
+              "category": "True",
+              "description": "表明需要将报错信息发给用户"
+            },
+            {
+              "category": "False",
+              "description": "表明不需要将报错信息发给用户"
+            }
+          ]
+        },
+        "options": {
+          "systemPromptTemplate": "=# Role\n你是一个智能的 n8n 工作流错误分发路由（Error Triage Agent）。你的任务是分析 n8n 运行失败后产生的 JSON 报错数据，并判断该错误是否需要立即发送通知让人工介入处理。\n\n# Classification Categories\n你必须将错误分类为以下两个结果之一：\n- **True**：需要通知用户（需要人工干预、修复或关注的严重错误）。\n- **False**：不需要通知用户（可以忽略的瞬时错误、系统可自愈的波动、或低级别的警告）。\n\n# Evaluation Rules\n请仔细阅读 JSON 中的 `error.httpCode`, `error.message`, `error.name` 和 `error.level`，并按照以下规则进行评估：\n\n## 判为 True (需要通知) 的情况：\n1. **身份验证与权限失败**：如 HTTP 401 (Unauthorized), 403 (Forbidden)。说明 Token 过期或 API Key 失效，必须人工更新。\n2. **工作流逻辑/配置错误**：如 HTTP 400 (Bad Request)，缺少必要参数，变量解析失败，语法错误（SyntaxError, TypeError, ReferenceError）。\n3. **资源不存在**：如 HTTP 404 (Not Found)，说明目标端点或数据源结构已更改。\n4. **配额耗尽/严重限流**：如 HTTP 429 (Too Many Requests)，且明确提示账户额度耗尽，或严重阻断了核心业务，需要人工调整节点触发频率（如增加 Wait 节点）。\n\n## 判为 False (忽略通知) 的情况：\n1. **轻微警告 (Warning)**：如果 JSON 中 `\"level\": \"warning\"`，且不是致命中断，通常不影响大局。\n2. **瞬时网络抖动**：如 HTTP 502 (Bad Gateway), 503 (Service Unavailable), 504 (Gateway Timeout), ECONNRESET, socket hang up。这类错误通常在 n8n 节点的自动重试 (Auto-retry) 机制下会自行解决。\n3. **极短的速率限制**：如 HTTP 429 且提示 `retry_after` 只有几秒或零点几秒（例如 0.3 秒），这属于正常的 API 节流，不需要人类恐慌。\n\n# Task\n请分析传入的 JSON 数据。基于上述规则，思考这属于哪种情况。\n最后，**仅输出类别名称（True 或 False），不要输出任何其他多余的解释文字或标点符号。**"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.textClassifier",
+      "typeVersion": 1.1,
+      "position": [
+        928,
+        -64
+      ],
+      "id": "13925e0f-8337-4738-a2f4-e4f58cb1865a",
+      "name": "Text Classifier"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "smart-regular",
+          "mode": "list",
+          "cachedResultName": "smart-regular"
+        },
+        "responsesApiEnabled": false,
+        "options": {
+          "temperature": 0
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        1008,
+        128
+      ],
+      "id": "b8645e6b-4a32-45df-9515-d51db6d1a3c5",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "BtNUoaYPZrKSsCA2",
+          "name": "NewAPI-VPS"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1264,
+        16
+      ],
+      "id": "768bfb50-be08-4187-94bc-40f1c7640daa",
+      "name": "No Operation, do nothing"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "message",
+        "guildId": {
+          "__rl": true,
+          "value": "1223272555885105264",
+          "mode": "id"
+        },
+        "channelId": {
+          "__rl": true,
+          "value": "1224990958718812170",
+          "mode": "list",
+          "cachedResultName": "service-status",
+          "cachedResultUrl": "https://discord.com/channels/1223272555885105264/1224990958718812170"
+        },
+        "content": "={{ $json.text }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.discord",
+      "typeVersion": 2,
+      "position": [
+        784,
+        304
+      ],
+      "id": "79e60af0-8edc-4a75-93bb-a02315ef2213",
+      "name": "Send a message",
+      "webhookId": "32359dd1-65c8-496a-ab0b-d53b85eb58c2",
+      "retryOnFail": true,
+      "waitBetweenTries": 3000,
+      "credentials": {
+        "discordOAuth2Api": {
+          "id": "ep3LAXJ2M9XUjEj1",
+          "name": "NTLx"
+        }
+      }
     }
   ],
   "connections": {
@@ -92,7 +251,7 @@
       "main": [
         [
           {
-            "node": "Filter & Rate Limit",
+            "node": "Basic LLM Chain",
             "type": "main",
             "index": 0
           }
@@ -127,6 +286,51 @@
           }
         ]
       ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Text Classifier",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Text Classifier": {
+      "main": [
+        [],
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "settings": {
@@ -135,17 +339,19 @@
     "availableInMCP": false,
     "timeSavedMode": "fixed",
     "saveDataErrorExecution": "all",
-    "saveDataSuccessExecution": "none",
+    "saveDataSuccessExecution": "all",
     "saveExecutionProgress": false,
     "saveManualExecutions": false,
     "binaryMode": "separate",
     "timeSavedPerExecution": 5
   },
   "staticData": null,
-  "meta": null,
-  "pinData": null,
-  "versionId": "709443b3-03ab-429d-a970-7cf41702a800",
-  "activeVersionId": "709443b3-03ab-429d-a970-7cf41702a800",
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "cf7a0158-3026-416e-b4a4-55f1ff7cb31c",
+  "activeVersionId": "cf7a0158-3026-416e-b4a4-55f1ff7cb31c",
   "triggerCount": 0,
   "shared": [
     {
@@ -157,9 +363,9 @@
     }
   ],
   "activeVersion": {
-    "updatedAt": "2026-02-12T08:00:08.182Z",
-    "createdAt": "2026-02-12T08:00:08.182Z",
-    "versionId": "709443b3-03ab-429d-a970-7cf41702a800",
+    "updatedAt": "2026-02-28T08:37:03.161Z",
+    "createdAt": "2026-02-28T08:37:00.192Z",
+    "versionId": "cf7a0158-3026-416e-b4a4-55f1ff7cb31c",
     "workflowId": "3LE3BnPfHSuIZCVR",
     "nodes": [
       {
@@ -167,8 +373,8 @@
         "type": "n8n-nodes-base.errorTrigger",
         "typeVersion": 1,
         "position": [
-          0,
-          0
+          224,
+          304
         ],
         "name": "Error Trigger",
         "id": "aba1f1f6-bc98-4a9f-856f-7a99d7477455"
@@ -180,7 +386,7 @@
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
         "position": [
-          220,
+          224,
           0
         ],
         "name": "Filter & Rate Limit",
@@ -200,7 +406,7 @@
         "type": "n8n-nodes-base.if",
         "typeVersion": 1,
         "position": [
-          440,
+          448,
           0
         ],
         "name": "Should Send?",
@@ -217,17 +423,18 @@
         "type": "n8n-nodes-base.telegram",
         "typeVersion": 1.2,
         "position": [
-          660,
-          -60
+          672,
+          -64
         ],
         "name": "Send Notification",
+        "id": "4dd1c3b6-9137-4ec5-bd32-360c6004fecc",
+        "webhookId": "c6d07374-17c4-48b7-bfa0-a20768198d8e",
         "credentials": {
           "telegramApi": {
             "id": "tVb8Nv4w2KsUp66k",
             "name": "lx3325360"
           }
-        },
-        "id": "4dd1c3b6-9137-4ec5-bd32-360c6004fecc"
+        }
       },
       {
         "parameters": {
@@ -236,11 +443,169 @@
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
         "position": [
-          660,
-          120
+          672,
+          128
         ],
         "name": "Log Filtered",
         "id": "873e8ba5-c31b-477e-945b-01d3eb3af1a8"
+      },
+      {
+        "parameters": {
+          "promptType": "define",
+          "text": "={{ $json }}",
+          "messages": {
+            "messageValues": [
+              {
+                "message": "=# Role\n你是一个资深的 n8n 自动化工作流运维专家。你的任务是接收 n8n Error Trigger 传来的 JSON 格式报错信息，提取关键数据，并将其总结、翻译、排版为一条高度可读的 Discord 消息。\n\n# Objectives\n1. **快速定位**：让用户在 3 秒内知道是哪个工作流、哪个节点挂了。\n2. **通俗易懂**：将技术性的报错（如 HTTP 429, NodeApiError）翻译/总结为普通人能听懂的大白话。\n3. **提供行动指南**：基于报错内容，给出具体的、可落地的解决建议。\n4. **适配 Discord**：充分利用 Discord 的 Markdown 语法（加粗、代码块、引用、Emoji）优化阅读体验。\n\n# Workflow & Guidelines\n当你收到一段 JSON 报错信息时，请严格按照以下步骤处理：\n1. **提取关键信息**：\n   - 工作流名称 (`workflow.name`)\n   - 失败节点 (`execution.lastNodeExecuted` 或 `error.node.name`)\n   - 错误状态码 (`error.httpCode`)\n   - 错误描述 (`error.message`, `error.description`, `error.messages`)\n   - 执行日志链接 (`execution.url`)\n2. **翻译与总结**：将核心的英文报错翻译为流畅的中文，并合并冗余信息（例如：将 \"The service is receiving too many requests from you\" 和 \"您已受到速率限制\" 总结为 \"API 请求过于频繁，触发了目标服务的速率限制 (Rate Limit)\"）。\n3. **智能诊断**：根据报错类型推测原因并给出建议（例如遇到 429，建议增加节点等待时间/排队处理；遇到 401 建议检查 Token 等）。\n\n# Output Format (Discord Markdown Template)\n请严格使用以下格式输出消息（不要输出 JSON，直接输出这段 Discord 文本）：\n\n🚨 **[工作流名称] 运行失败**\n> **出错节点**：`[出错的节点名称]`\n> **发生时间**：[将时间戳转化为 YYYY-MM-DD HH:mm 格式]\n\n⚠️ **错误详情**\n* **状态码**：`[HTTP Code]` | `[Error Name]`\n* **问题描述**：[用通俗易懂的中文总结报错原因]\n* **原始信息**：\n```json\n[提取核心的 error message 或 stack 前两行，保持简短]"
+              }
+            ]
+          },
+          "batching": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.chainLlm",
+        "typeVersion": 1.9,
+        "position": [
+          432,
+          304
+        ],
+        "id": "68ad7c71-467e-42c0-9262-d21e9b6c3235",
+        "name": "Basic LLM Chain",
+        "retryOnFail": true,
+        "waitBetweenTries": 2000
+      },
+      {
+        "parameters": {
+          "model": {
+            "__rl": true,
+            "value": "smart-regular",
+            "mode": "list",
+            "cachedResultName": "smart-regular"
+          },
+          "responsesApiEnabled": false,
+          "options": {
+            "temperature": 0
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+        "typeVersion": 1.3,
+        "position": [
+          496,
+          496
+        ],
+        "id": "537f0570-a71e-4208-8da2-dadfadf72b9a",
+        "name": "OpenAI Chat Model",
+        "retryOnFail": true,
+        "waitBetweenTries": 2000,
+        "credentials": {
+          "openAiApi": {
+            "id": "BtNUoaYPZrKSsCA2",
+            "name": "NewAPI-VPS"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "inputText": "={{ $json.text }}",
+          "categories": {
+            "categories": [
+              {
+                "category": "True",
+                "description": "表明需要将报错信息发给用户"
+              },
+              {
+                "category": "False",
+                "description": "表明不需要将报错信息发给用户"
+              }
+            ]
+          },
+          "options": {
+            "systemPromptTemplate": "=# Role\n你是一个智能的 n8n 工作流错误分发路由（Error Triage Agent）。你的任务是分析 n8n 运行失败后产生的 JSON 报错数据，并判断该错误是否需要立即发送通知让人工介入处理。\n\n# Classification Categories\n你必须将错误分类为以下两个结果之一：\n- **True**：需要通知用户（需要人工干预、修复或关注的严重错误）。\n- **False**：不需要通知用户（可以忽略的瞬时错误、系统可自愈的波动、或低级别的警告）。\n\n# Evaluation Rules\n请仔细阅读 JSON 中的 `error.httpCode`, `error.message`, `error.name` 和 `error.level`，并按照以下规则进行评估：\n\n## 判为 True (需要通知) 的情况：\n1. **身份验证与权限失败**：如 HTTP 401 (Unauthorized), 403 (Forbidden)。说明 Token 过期或 API Key 失效，必须人工更新。\n2. **工作流逻辑/配置错误**：如 HTTP 400 (Bad Request)，缺少必要参数，变量解析失败，语法错误（SyntaxError, TypeError, ReferenceError）。\n3. **资源不存在**：如 HTTP 404 (Not Found)，说明目标端点或数据源结构已更改。\n4. **配额耗尽/严重限流**：如 HTTP 429 (Too Many Requests)，且明确提示账户额度耗尽，或严重阻断了核心业务，需要人工调整节点触发频率（如增加 Wait 节点）。\n\n## 判为 False (忽略通知) 的情况：\n1. **轻微警告 (Warning)**：如果 JSON 中 `\"level\": \"warning\"`，且不是致命中断，通常不影响大局。\n2. **瞬时网络抖动**：如 HTTP 502 (Bad Gateway), 503 (Service Unavailable), 504 (Gateway Timeout), ECONNRESET, socket hang up。这类错误通常在 n8n 节点的自动重试 (Auto-retry) 机制下会自行解决。\n3. **极短的速率限制**：如 HTTP 429 且提示 `retry_after` 只有几秒或零点几秒（例如 0.3 秒），这属于正常的 API 节流，不需要人类恐慌。\n\n# Task\n请分析传入的 JSON 数据。基于上述规则，思考这属于哪种情况。\n最后，**仅输出类别名称（True 或 False），不要输出任何其他多余的解释文字或标点符号。**"
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.textClassifier",
+        "typeVersion": 1.1,
+        "position": [
+          928,
+          -64
+        ],
+        "id": "13925e0f-8337-4738-a2f4-e4f58cb1865a",
+        "name": "Text Classifier"
+      },
+      {
+        "parameters": {
+          "model": {
+            "__rl": true,
+            "value": "smart-regular",
+            "mode": "list",
+            "cachedResultName": "smart-regular"
+          },
+          "responsesApiEnabled": false,
+          "options": {
+            "temperature": 0
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+        "typeVersion": 1.3,
+        "position": [
+          1008,
+          128
+        ],
+        "id": "b8645e6b-4a32-45df-9515-d51db6d1a3c5",
+        "name": "OpenAI Chat Model1",
+        "credentials": {
+          "openAiApi": {
+            "id": "BtNUoaYPZrKSsCA2",
+            "name": "NewAPI-VPS"
+          }
+        }
+      },
+      {
+        "parameters": {},
+        "type": "n8n-nodes-base.noOp",
+        "typeVersion": 1,
+        "position": [
+          1264,
+          16
+        ],
+        "id": "768bfb50-be08-4187-94bc-40f1c7640daa",
+        "name": "No Operation, do nothing"
+      },
+      {
+        "parameters": {
+          "authentication": "oAuth2",
+          "resource": "message",
+          "guildId": {
+            "__rl": true,
+            "value": "1223272555885105264",
+            "mode": "id"
+          },
+          "channelId": {
+            "__rl": true,
+            "value": "1224990958718812170",
+            "mode": "list",
+            "cachedResultName": "service-status",
+            "cachedResultUrl": "https://discord.com/channels/1223272555885105264/1224990958718812170"
+          },
+          "content": "={{ $json.text }}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.discord",
+        "typeVersion": 2,
+        "position": [
+          784,
+          304
+        ],
+        "id": "79e60af0-8edc-4a75-93bb-a02315ef2213",
+        "name": "Send a message",
+        "webhookId": "32359dd1-65c8-496a-ab0b-d53b85eb58c2",
+        "retryOnFail": true,
+        "waitBetweenTries": 3000,
+        "credentials": {
+          "discordOAuth2Api": {
+            "id": "ep3LAXJ2M9XUjEj1",
+            "name": "NTLx"
+          }
+        }
       }
     ],
     "connections": {
@@ -248,7 +613,7 @@
         "main": [
           [
             {
-              "node": "Filter & Rate Limit",
+              "node": "Basic LLM Chain",
               "type": "main",
               "index": 0
             }
@@ -283,12 +648,57 @@
             }
           ]
         ]
+      },
+      "OpenAI Chat Model": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "Basic LLM Chain",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Basic LLM Chain": {
+        "main": [
+          [
+            {
+              "node": "Send a message",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "OpenAI Chat Model1": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "Text Classifier",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Text Classifier": {
+        "main": [
+          [],
+          [
+            {
+              "node": "No Operation, do nothing",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
       }
     },
     "authors": "Administrator NTLx",
-    "name": null,
-    "description": null,
-    "autosaved": false
+    "name": "Version cf7a0158",
+    "description": "",
+    "autosaved": true
   },
   "tags": []
 }
