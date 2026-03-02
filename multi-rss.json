@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-02-28T08:44:57.310Z",
+  "updatedAt": "2026-03-01T14:18:21.908Z",
   "createdAt": "2026-02-28T07:42:26.118Z",
   "id": "8E2fWpTJgVyuIxFe",
   "name": "Multi RSS",
@@ -464,9 +464,9 @@
       "parameters": {
         "model": {
           "__rl": true,
-          "value": "smart-regular",
+          "value": "qwen3.5-plus",
           "mode": "list",
-          "cachedResultName": "smart-regular"
+          "cachedResultName": "qwen3.5-plus"
         },
         "responsesApiEnabled": false,
         "options": {
@@ -485,8 +485,8 @@
       "waitBetweenTries": 2000,
       "credentials": {
         "openAiApi": {
-          "id": "BtNUoaYPZrKSsCA2",
-          "name": "NewAPI-VPS"
+          "id": "gyuAIYPDLYyRYJh7",
+          "name": "NewAPI-OE"
         }
       }
     },
@@ -771,13 +771,13 @@
       "lastItemDate": "2026-02-28T12:59:13.000Z"
     },
     "node:少数派": {
-      "lastItemDate": "2026-02-28T05:47:35.000Z"
+      "lastItemDate": "2026-03-01T23:04:42.000Z"
     },
     "node:爱范儿": {
-      "lastItemDate": "2026-02-28T16:54:02.000Z"
+      "lastItemDate": "2026-03-01T00:35:30.000Z"
     },
     "node:宝玉的分享": {
-      "lastItemDate": "2026-02-27T00:00:00.000Z"
+      "lastItemDate": "2026-02-28T00:00:00.000Z"
     },
     "node:The GitHub Blog": {
       "lastItemDate": "2026-02-27T16:00:00.000Z"
@@ -792,10 +792,10 @@
       "lastItemDate": "2026-02-28T16:30:26.000Z"
     },
     "node:Simon Willison's Weblog": {
-      "lastItemDate": "2026-02-28T23:09:39.000Z"
+      "lastItemDate": "2026-03-01T11:21:45.000Z"
     },
     "node:LangChain Blog": {
-      "lastItemDate": "2026-02-26T04:28:00.000Z"
+      "lastItemDate": "2026-03-01T22:58:56.000Z"
     },
     "node:paulgraham.com": {},
     "node:Vercel News": {
@@ -813,8 +813,8 @@
   },
   "meta": null,
   "pinData": {},
-  "versionId": "b09a16da-f1fe-4a37-907a-ac1828e70503",
-  "activeVersionId": "b09a16da-f1fe-4a37-907a-ac1828e70503",
+  "versionId": "90848f61-c2b4-4864-ac28-a0f3de0f5608",
+  "activeVersionId": "90848f61-c2b4-4864-ac28-a0f3de0f5608",
   "triggerCount": 17,
   "shared": [
     {
@@ -826,9 +826,9 @@
     }
   ],
   "activeVersion": {
-    "updatedAt": "2026-02-28T08:46:10.460Z",
-    "createdAt": "2026-02-28T08:44:57.318Z",
-    "versionId": "b09a16da-f1fe-4a37-907a-ac1828e70503",
+    "updatedAt": "2026-03-01T14:18:54.622Z",
+    "createdAt": "2026-03-01T14:18:21.915Z",
+    "versionId": "90848f61-c2b4-4864-ac28-a0f3de0f5608",
     "workflowId": "8E2fWpTJgVyuIxFe",
     "nodes": [
       {
@@ -1289,9 +1289,9 @@
         "parameters": {
           "model": {
             "__rl": true,
-            "value": "smart-regular",
+            "value": "qwen3.5-plus",
             "mode": "list",
-            "cachedResultName": "smart-regular"
+            "cachedResultName": "qwen3.5-plus"
           },
           "responsesApiEnabled": false,
           "options": {
@@ -1310,8 +1310,8 @@
         "waitBetweenTries": 2000,
         "credentials": {
           "openAiApi": {
-            "id": "BtNUoaYPZrKSsCA2",
-            "name": "NewAPI-VPS"
+            "id": "gyuAIYPDLYyRYJh7",
+            "name": "NewAPI-OE"
           }
         }
       },
@@ -1573,7 +1573,7 @@
       }
     },
     "authors": "Administrator NTLx",
-    "name": "Version b09a16da",
+    "name": "Version 90848f61",
     "description": "",
     "autosaved": true
   },
