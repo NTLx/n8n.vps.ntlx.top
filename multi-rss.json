@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-03-01T14:18:21.908Z",
+  "updatedAt": "2026-03-02T15:46:43.243Z",
   "createdAt": "2026-02-28T07:42:26.118Z",
   "id": "8E2fWpTJgVyuIxFe",
   "name": "Multi RSS",
@@ -768,19 +768,19 @@
       "lastItemDate": "2026-02-26T16:01:50.000Z"
     },
     "node:量子位（QbitAI）": {
-      "lastItemDate": "2026-02-28T12:59:13.000Z"
+      "lastItemDate": "2026-03-02T16:28:55.000Z"
     },
     "node:少数派": {
-      "lastItemDate": "2026-03-01T23:04:42.000Z"
+      "lastItemDate": "2026-03-02T09:41:03.000Z"
     },
     "node:爱范儿": {
-      "lastItemDate": "2026-03-01T00:35:30.000Z"
+      "lastItemDate": "2026-03-03T00:00:58.000Z"
     },
     "node:宝玉的分享": {
-      "lastItemDate": "2026-02-28T00:00:00.000Z"
+      "lastItemDate": "2026-03-02T00:00:00.000Z"
     },
     "node:The GitHub Blog": {
-      "lastItemDate": "2026-02-27T16:00:00.000Z"
+      "lastItemDate": "2026-03-02T17:00:00.000Z"
     },
     "node:Hugging Face Blog": {
       "lastItemDate": "2026-02-26T00:00:00.000Z"
@@ -789,17 +789,17 @@
       "lastItemDate": "2026-02-25T14:56:00.000Z"
     },
     "node:ByteByteGo Newsletter": {
-      "lastItemDate": "2026-02-28T16:30:26.000Z"
+      "lastItemDate": "2026-03-02T16:30:50.000Z"
     },
     "node:Simon Willison's Weblog": {
-      "lastItemDate": "2026-03-01T11:21:45.000Z"
+      "lastItemDate": "2026-03-02T16:35:10.000Z"
     },
     "node:LangChain Blog": {
-      "lastItemDate": "2026-03-01T22:58:56.000Z"
+      "lastItemDate": "2026-02-26T04:28:00.000Z"
     },
     "node:paulgraham.com": {},
     "node:Vercel News": {
-      "lastItemDate": "2026-02-27T13:00:00.000Z"
+      "lastItemDate": "2026-03-02T13:00:00.000Z"
     },
     "node:gwern.net": {
       "lastItemDate": "2021-06-11T14:16:22.000Z"
@@ -813,7 +813,7 @@
   },
   "meta": null,
   "pinData": {},
-  "versionId": "90848f61-c2b4-4864-ac28-a0f3de0f5608",
+  "versionId": "16fea156-43ff-4af8-aa21-8eafa9bcbc59",
   "activeVersionId": "90848f61-c2b4-4864-ac28-a0f3de0f5608",
   "triggerCount": 17,
   "shared": [
