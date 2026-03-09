@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-03-07T06:47:11.212Z",
+  "updatedAt": "2026-03-08T14:17:12.948Z",
   "createdAt": "2026-02-28T07:42:26.118Z",
   "id": "8E2fWpTJgVyuIxFe",
   "name": "Multi RSS",
@@ -720,7 +720,7 @@
     "timeSavedMode": "fixed",
     "errorWorkflow": "3LE3BnPfHSuIZCVR",
     "saveDataErrorExecution": "all",
-    "saveDataSuccessExecution": "none",
+    "saveDataSuccessExecution": "all",
     "saveExecutionProgress": false,
     "saveManualExecutions": false,
     "callerPolicy": "workflowsFromSameOwner",
@@ -734,16 +734,16 @@
       "lastItemDate": "2026-03-03T16:35:55.000Z"
     },
     "node:量子位（QbitAI）": {
-      "lastItemDate": "2026-03-07T08:40:25.000Z"
+      "lastItemDate": "2026-03-08T10:07:27.000Z"
     },
     "node:少数派": {
-      "lastItemDate": "2026-03-07T03:59:51.000Z"
+      "lastItemDate": "2026-03-08T23:03:31.000Z"
     },
     "node:爱范儿": {
-      "lastItemDate": "2026-03-07T00:35:23.000Z"
+      "lastItemDate": "2026-03-09T00:00:42.000Z"
     },
     "node:宝玉的分享": {
-      "lastItemDate": "2026-03-05T00:00:00.000Z"
+      "lastItemDate": "2026-03-08T00:00:00.000Z"
     },
     "node:The GitHub Blog": {
       "lastItemDate": "2026-03-06T21:09:04.000Z"
@@ -758,7 +758,7 @@
       "lastItemDate": "2026-03-07T16:31:24.000Z"
     },
     "node:Simon Willison's Weblog": {
-      "lastItemDate": "2026-03-07T18:13:39.000Z"
+      "lastItemDate": "2026-03-08T14:59:48.000Z"
     },
     "node:LangChain Blog": {
       "lastItemDate": "2026-03-05T18:00:49.000Z"
@@ -774,7 +774,7 @@
       "lastItemDate": "2026-02-10T00:00:00.000Z"
     },
     "node:BestBlogs.dev": {
-      "lastItemDate": "2026-02-27T09:44:10.354Z"
+      "lastItemDate": "2026-03-06T06:51:22.522Z"
     }
   },
   "meta": null,
