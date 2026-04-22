@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-03-27T13:50:14.594Z",
+  "updatedAt": "2026-04-21T09:02:10.785Z",
   "createdAt": "2026-03-27T13:46:50.927Z",
   "id": "LcNJmWBfnxEd118S",
   "name": "Multi RSS with Jina Parse",
@@ -88,9 +88,9 @@
       "parameters": {
         "model": {
           "__rl": true,
-          "value": "step-3.5-flash",
+          "value": "ZhipuAI/GLM-5.1",
           "mode": "list",
-          "cachedResultName": "step-3.5-flash"
+          "cachedResultName": "ZhipuAI/GLM-5.1"
         },
         "responsesApiEnabled": false,
         "options": {
@@ -107,8 +107,8 @@
       "name": "OpenAI Chat Model1",
       "credentials": {
         "openAiApi": {
-          "id": "BtNUoaYPZrKSsCA2",
-          "name": "NewAPI-VPS"
+          "id": "lfpMhTWntIROY18Y",
+          "name": "modelscope"
         }
       }
     },
@@ -198,13 +198,34 @@
   },
   "staticData": {
     "node:Hugging Face Blog": {
-      "lastItemDate": "2026-04-17T16:17:55.000Z"
+      "lastItemDate": "2026-04-21T10:09:58.000Z"
     }
   },
   "meta": null,
-  "pinData": {},
-  "versionId": "081b84f4-2ff1-44c0-9380-f90bb67f9a55",
-  "activeVersionId": "081b84f4-2ff1-44c0-9380-f90bb67f9a55",
+  "pinData": {
+    "Hugging Face Blog": [
+      {
+        "json": {
+          "title": "The PR you would have opened yourself",
+          "link": "https://huggingface.co/blog/transformers-to-mlx",
+          "pubDate": "Thu, 16 Apr 2026 00:00:00 GMT",
+          "guid": "https://huggingface.co/blog/transformers-to-mlx",
+          "isoDate": "2026-04-16T00:00:00.000Z"
+        }
+      },
+      {
+        "json": {
+          "title": "Training and Finetuning Multimodal Embedding & Reranker Models with Sentence Transformers",
+          "link": "https://huggingface.co/blog/train-multimodal-sentence-transformers",
+          "pubDate": "Thu, 16 Apr 2026 00:00:00 GMT",
+          "guid": "https://huggingface.co/blog/train-multimodal-sentence-transformers",
+          "isoDate": "2026-04-16T00:00:00.000Z"
+        }
+      }
+    ]
+  },
+  "versionId": "1935853b-1434-419b-8069-ab344743c91b",
+  "activeVersionId": "1935853b-1434-419b-8069-ab344743c91b",
   "triggerCount": 1,
   "shared": [
     {
@@ -216,9 +237,9 @@
     }
   ],
   "activeVersion": {
-    "updatedAt": "2026-03-27T14:07:31.089Z",
-    "createdAt": "2026-03-27T13:50:14.603Z",
-    "versionId": "081b84f4-2ff1-44c0-9380-f90bb67f9a55",
+    "updatedAt": "2026-04-21T09:02:42.436Z",
+    "createdAt": "2026-04-21T09:02:10.792Z",
+    "versionId": "1935853b-1434-419b-8069-ab344743c91b",
     "workflowId": "LcNJmWBfnxEd118S",
     "nodes": [
       {
@@ -303,9 +324,9 @@
         "parameters": {
           "model": {
             "__rl": true,
-            "value": "step-3.5-flash",
+            "value": "ZhipuAI/GLM-5.1",
             "mode": "list",
-            "cachedResultName": "step-3.5-flash"
+            "cachedResultName": "ZhipuAI/GLM-5.1"
           },
           "responsesApiEnabled": false,
           "options": {
@@ -322,8 +343,8 @@
         "name": "OpenAI Chat Model1",
         "credentials": {
           "openAiApi": {
-            "id": "BtNUoaYPZrKSsCA2",
-            "name": "NewAPI-VPS"
+            "id": "lfpMhTWntIROY18Y",
+            "name": "modelscope"
           }
         }
       },
@@ -407,7 +428,7 @@
       }
     },
     "authors": "Administrator NTLx",
-    "name": "Version 081b84f4",
+    "name": "Version 1935853b",
     "description": "",
     "autosaved": true
   },
