@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-04-21T09:02:10.785Z",
+  "updatedAt": "2026-04-24T01:17:03.981Z",
   "createdAt": "2026-03-27T13:46:50.927Z",
   "id": "LcNJmWBfnxEd118S",
   "name": "Multi RSS with Jina Parse",
@@ -194,11 +194,17 @@
   "settings": {
     "executionOrder": "v1",
     "binaryMode": "separate",
-    "availableInMCP": false
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "saveDataSuccessExecution": "none",
+    "saveExecutionProgress": false,
+    "saveManualExecutions": false,
+    "callerPolicy": "workflowsFromSameOwner",
+    "timeSavedPerExecution": 15
   },
   "staticData": {
     "node:Hugging Face Blog": {
-      "lastItemDate": "2026-04-22T15:40:50.000Z"
+      "lastItemDate": "2026-04-24T00:00:00.000Z"
     }
   },
   "meta": null,
