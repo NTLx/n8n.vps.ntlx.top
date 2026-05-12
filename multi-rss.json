@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-03-27T13:48:25.646Z",
+  "updatedAt": "2026-05-12T00:58:33.775Z",
   "createdAt": "2026-02-28T07:42:26.118Z",
   "id": "8E2fWpTJgVyuIxFe",
   "name": "Multi RSS",
@@ -104,29 +104,6 @@
           "item": [
             {
               "hour": 8,
-              "minute": 15
-            }
-          ]
-        },
-        "feedUrl": "http://feeds.feedburner.com/ruanyifeng"
-      },
-      "type": "n8n-nodes-base.rssFeedReadTrigger",
-      "typeVersion": 1,
-      "position": [
-        -560,
-        -432
-      ],
-      "id": "e8faa302-5698-4c64-87bd-8936a0d5a086",
-      "name": "阮一峰的网络日志",
-      "retryOnFail": true,
-      "waitBetweenTries": 5000
-    },
-    {
-      "parameters": {
-        "pollTimes": {
-          "item": [
-            {
-              "hour": 8,
               "minute": 20
             }
           ]
@@ -141,75 +118,6 @@
       ],
       "id": "da8c02c5-0f03-42fd-8fdb-74a0f5389f2c",
       "name": "Google DeepMind Blog",
-      "retryOnFail": true,
-      "waitBetweenTries": 5000
-    },
-    {
-      "parameters": {
-        "pollTimes": {
-          "item": [
-            {
-              "hour": 8,
-              "minute": 16
-            }
-          ]
-        },
-        "feedUrl": "https://www.qbitai.com/feed"
-      },
-      "type": "n8n-nodes-base.rssFeedReadTrigger",
-      "typeVersion": 1,
-      "position": [
-        -560,
-        -288
-      ],
-      "id": "1bab6bd9-8dba-4fc1-b3d6-2b958f5cf811",
-      "name": "量子位（QbitAI）",
-      "retryOnFail": true,
-      "waitBetweenTries": 5000
-    },
-    {
-      "parameters": {
-        "pollTimes": {
-          "item": [
-            {
-              "hour": 8,
-              "minute": 17
-            }
-          ]
-        },
-        "feedUrl": "https://sspai.com/feed"
-      },
-      "type": "n8n-nodes-base.rssFeedReadTrigger",
-      "typeVersion": 1,
-      "position": [
-        -560,
-        -144
-      ],
-      "id": "5cc4b6d2-83f2-4342-9cfb-e5bb8fee8e59",
-      "name": "少数派",
-      "retryOnFail": true,
-      "waitBetweenTries": 5000
-    },
-    {
-      "parameters": {
-        "pollTimes": {
-          "item": [
-            {
-              "hour": 8,
-              "minute": 18
-            }
-          ]
-        },
-        "feedUrl": "http://www.ifanr.com/feed"
-      },
-      "type": "n8n-nodes-base.rssFeedReadTrigger",
-      "typeVersion": 1,
-      "position": [
-        -560,
-        0
-      ],
-      "id": "ed973ca5-9dab-4c98-8d41-4cd42767e631",
-      "name": "爱范儿",
       "retryOnFail": true,
       "waitBetweenTries": 5000
     },
@@ -311,52 +219,6 @@
           "item": [
             {
               "hour": 8,
-              "minute": 25
-            }
-          ]
-        },
-        "feedUrl": "https://simonwillison.net/atom/everything/"
-      },
-      "type": "n8n-nodes-base.rssFeedReadTrigger",
-      "typeVersion": 1,
-      "position": [
-        -304,
-        0
-      ],
-      "id": "f61ea680-06af-4ecf-ae3d-7b68227b8d14",
-      "name": "Simon Willison's Weblog",
-      "retryOnFail": true,
-      "waitBetweenTries": 5000
-    },
-    {
-      "parameters": {
-        "pollTimes": {
-          "item": [
-            {
-              "hour": 8,
-              "minute": 26
-            }
-          ]
-        },
-        "feedUrl": "https://blog.langchain.dev/rss/"
-      },
-      "type": "n8n-nodes-base.rssFeedReadTrigger",
-      "typeVersion": 1,
-      "position": [
-        -304,
-        144
-      ],
-      "id": "e962a516-0fc8-40ed-878d-fd9d9f41421b",
-      "name": "LangChain Blog",
-      "retryOnFail": true,
-      "waitBetweenTries": 5000
-    },
-    {
-      "parameters": {
-        "pollTimes": {
-          "item": [
-            {
-              "hour": 8,
               "minute": 27
             }
           ]
@@ -424,9 +286,9 @@
       "parameters": {
         "model": {
           "__rl": true,
-          "value": "qwen3.5-plus",
+          "value": "deepseek-v4-flash",
           "mode": "list",
-          "cachedResultName": "qwen3.5-plus"
+          "cachedResultName": "deepseek-v4-flash"
         },
         "responsesApiEnabled": false,
         "options": {
@@ -470,6 +332,165 @@
       ],
       "id": "06fefec0-2daa-41f3-8cb7-a66bb7521b08",
       "name": "BestBlogs.dev",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "hour": 8,
+              "minute": 25
+            }
+          ]
+        },
+        "feedUrl": "https://simonwillison.net/atom/everything/"
+      },
+      "type": "n8n-nodes-base.rssFeedReadTrigger",
+      "typeVersion": 1,
+      "position": [
+        -304,
+        0
+      ],
+      "id": "f61ea680-06af-4ecf-ae3d-7b68227b8d14",
+      "name": "Simon Willison Weblog",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "hour": 8,
+              "minute": 18
+            }
+          ]
+        },
+        "feedUrl": "http://www.ifanr.com/feed"
+      },
+      "type": "n8n-nodes-base.rssFeedReadTrigger",
+      "typeVersion": 1,
+      "position": [
+        -560,
+        0
+      ],
+      "id": "ed973ca5-9dab-4c98-8d41-4cd42767e631",
+      "name": "爱范儿",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "hour": 8,
+              "minute": 17
+            }
+          ]
+        },
+        "feedUrl": "https://sspai.com/feed"
+      },
+      "type": "n8n-nodes-base.rssFeedReadTrigger",
+      "typeVersion": 1,
+      "position": [
+        -560,
+        -144
+      ],
+      "id": "5cc4b6d2-83f2-4342-9cfb-e5bb8fee8e59",
+      "name": "少数派",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "hour": 8,
+              "minute": 15
+            }
+          ]
+        },
+        "feedUrl": "http://feeds.feedburner.com/ruanyifeng"
+      },
+      "type": "n8n-nodes-base.rssFeedReadTrigger",
+      "typeVersion": 1,
+      "position": [
+        -560,
+        -432
+      ],
+      "id": "e8faa302-5698-4c64-87bd-8936a0d5a086",
+      "name": "阮一峰的网络日志",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "hour": 8,
+              "minute": 16
+            }
+          ]
+        },
+        "feedUrl": "https://www.qbitai.com/feed"
+      },
+      "type": "n8n-nodes-base.rssFeedReadTrigger",
+      "typeVersion": 1,
+      "position": [
+        -560,
+        -288
+      ],
+      "id": "1bab6bd9-8dba-4fc1-b3d6-2b958f5cf811",
+      "name": "量子位",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "hour": 8,
+              "minute": 26
+            }
+          ]
+        },
+        "feedUrl": "https://www.langchain.com/blog/rss.xml"
+      },
+      "type": "n8n-nodes-base.rssFeedReadTrigger",
+      "typeVersion": 1,
+      "position": [
+        -304,
+        144
+      ],
+      "id": "9fff42ab-65da-4bdc-9e2e-53bb7eb6d8fb",
+      "name": "LangChain"
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "hour": 8,
+              "minute": 31
+            }
+          ]
+        },
+        "feedUrl": "https://vercel.com/atom"
+      },
+      "type": "n8n-nodes-base.rssFeedReadTrigger",
+      "typeVersion": 1,
+      "position": [
+        -48,
+        -288
+      ],
+      "id": "bf255a92-f884-422f-aeb5-13fa210d7dc1",
+      "name": "Vercel News",
       "retryOnFail": true,
       "waitBetweenTries": 5000
     }
@@ -519,50 +540,6 @@
         ]
       ]
     },
-    "阮一峰的网络日志": {
-      "main": [
-        [
-          {
-            "node": "HTTP Request",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "量子位（QbitAI）": {
-      "main": [
-        [
-          {
-            "node": "HTTP Request",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "少数派": {
-      "main": [
-        [
-          {
-            "node": "HTTP Request",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "爱范儿": {
-      "main": [
-        [
-          {
-            "node": "HTTP Request",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "宝玉的分享": {
       "main": [
         [
@@ -597,28 +574,6 @@
       ]
     },
     "ByteByteGo Newsletter": {
-      "main": [
-        [
-          {
-            "node": "HTTP Request",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Simon Willison's Weblog": {
-      "main": [
-        [
-          {
-            "node": "HTTP Request",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "LangChain Blog": {
       "main": [
         [
           {
@@ -675,6 +630,33 @@
     },
     "BestBlogs.dev": {
       "main": [
+        []
+      ]
+    },
+    "Simon Willison Weblog": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LangChain": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Vercel News": {
+      "main": [
         [
           {
             "node": "HTTP Request",
@@ -706,19 +688,19 @@
       "lastItemDate": "2026-05-06T10:43:49.000Z"
     },
     "node:量子位（QbitAI）": {
-      "lastItemDate": "2026-05-10T16:26:14.000Z"
+      "lastItemDate": "2026-05-11T10:18:49.000Z"
     },
     "node:少数派": {
-      "lastItemDate": "2026-05-10T23:12:39.000Z"
+      "lastItemDate": "2026-05-11T10:01:05.000Z"
     },
     "node:爱范儿": {
-      "lastItemDate": "2026-05-10T00:27:50.000Z"
+      "lastItemDate": "2026-05-12T00:13:58.000Z"
     },
     "node:宝玉的分享": {
-      "lastItemDate": "2026-05-10T00:00:00.000Z"
+      "lastItemDate": "2026-05-11T00:00:00.000Z"
     },
     "node:The GitHub Blog": {
-      "lastItemDate": "2026-05-08T16:30:00.000Z"
+      "lastItemDate": "2026-05-11T16:00:00.000Z"
     },
     "node:Hugging Face Blog": {
       "lastItemDate": "2026-03-24T02:01:52.000Z"
@@ -727,17 +709,17 @@
       "lastItemDate": "2026-05-05T16:23:00.000Z"
     },
     "node:ByteByteGo Newsletter": {
-      "lastItemDate": "2026-05-09T15:31:10.000Z"
+      "lastItemDate": "2026-05-11T15:31:17.000Z"
     },
     "node:Simon Willison's Weblog": {
-      "lastItemDate": "2026-05-10T23:58:49.000Z"
+      "lastItemDate": "2026-05-11T23:58:55.000Z"
     },
     "node:LangChain Blog": {
       "lastItemDate": "2026-04-11T14:52:02.000Z"
     },
     "node:paulgraham.com": {},
     "node:Vercel News": {
-      "lastItemDate": "2026-03-02T13:00:00.000Z"
+      "lastItemDate": "2026-05-11T08:00:00.000Z"
     },
     "node:gwern.net": {
       "lastItemDate": "2021-06-11T14:16:22.000Z"
@@ -747,13 +729,22 @@
     },
     "node:BestBlogs.dev": {
       "lastItemDate": "2026-05-08T08:17:23.283Z"
+    },
+    "node:Simon Willison Weblog": {
+      "lastItemDate": "2026-05-11T23:58:55.000Z"
+    },
+    "node:量子位": {
+      "lastItemDate": "2026-05-11T10:18:49.000Z"
+    },
+    "node:LangChain": {
+      "lastItemDate": "2026-05-09T17:00:37.000Z"
     }
   },
   "meta": null,
   "pinData": {},
-  "versionId": "99657c26-c1f9-4964-9132-f23d091cfe29",
-  "activeVersionId": "99657c26-c1f9-4964-9132-f23d091cfe29",
-  "triggerCount": 15,
+  "versionId": "319b687f-7da4-4bf9-a79d-e170cb923085",
+  "activeVersionId": "b2ca02cf-27f2-4636-8a72-95a3d3bf89bd",
+  "triggerCount": 16,
   "shared": [
     {
       "updatedAt": "2026-02-28T07:42:26.118Z",
@@ -764,9 +755,9 @@
     }
   ],
   "activeVersion": {
-    "updatedAt": "2026-03-27T13:48:40.593Z",
-    "createdAt": "2026-03-27T13:48:25.654Z",
-    "versionId": "99657c26-c1f9-4964-9132-f23d091cfe29",
+    "updatedAt": "2026-05-12T00:50:36.449Z",
+    "createdAt": "2026-05-12T00:49:48.084Z",
+    "versionId": "b2ca02cf-27f2-4636-8a72-95a3d3bf89bd",
     "workflowId": "8E2fWpTJgVyuIxFe",
     "nodes": [
       {
@@ -867,29 +858,6 @@
             "item": [
               {
                 "hour": 8,
-                "minute": 15
-              }
-            ]
-          },
-          "feedUrl": "http://feeds.feedburner.com/ruanyifeng"
-        },
-        "type": "n8n-nodes-base.rssFeedReadTrigger",
-        "typeVersion": 1,
-        "position": [
-          -560,
-          -432
-        ],
-        "id": "e8faa302-5698-4c64-87bd-8936a0d5a086",
-        "name": "阮一峰的网络日志",
-        "retryOnFail": true,
-        "waitBetweenTries": 5000
-      },
-      {
-        "parameters": {
-          "pollTimes": {
-            "item": [
-              {
-                "hour": 8,
                 "minute": 20
               }
             ]
@@ -904,75 +872,6 @@
         ],
         "id": "da8c02c5-0f03-42fd-8fdb-74a0f5389f2c",
         "name": "Google DeepMind Blog",
-        "retryOnFail": true,
-        "waitBetweenTries": 5000
-      },
-      {
-        "parameters": {
-          "pollTimes": {
-            "item": [
-              {
-                "hour": 8,
-                "minute": 16
-              }
-            ]
-          },
-          "feedUrl": "https://www.qbitai.com/feed"
-        },
-        "type": "n8n-nodes-base.rssFeedReadTrigger",
-        "typeVersion": 1,
-        "position": [
-          -560,
-          -288
-        ],
-        "id": "1bab6bd9-8dba-4fc1-b3d6-2b958f5cf811",
-        "name": "量子位（QbitAI）",
-        "retryOnFail": true,
-        "waitBetweenTries": 5000
-      },
-      {
-        "parameters": {
-          "pollTimes": {
-            "item": [
-              {
-                "hour": 8,
-                "minute": 17
-              }
-            ]
-          },
-          "feedUrl": "https://sspai.com/feed"
-        },
-        "type": "n8n-nodes-base.rssFeedReadTrigger",
-        "typeVersion": 1,
-        "position": [
-          -560,
-          -144
-        ],
-        "id": "5cc4b6d2-83f2-4342-9cfb-e5bb8fee8e59",
-        "name": "少数派",
-        "retryOnFail": true,
-        "waitBetweenTries": 5000
-      },
-      {
-        "parameters": {
-          "pollTimes": {
-            "item": [
-              {
-                "hour": 8,
-                "minute": 18
-              }
-            ]
-          },
-          "feedUrl": "http://www.ifanr.com/feed"
-        },
-        "type": "n8n-nodes-base.rssFeedReadTrigger",
-        "typeVersion": 1,
-        "position": [
-          -560,
-          0
-        ],
-        "id": "ed973ca5-9dab-4c98-8d41-4cd42767e631",
-        "name": "爱范儿",
         "retryOnFail": true,
         "waitBetweenTries": 5000
       },
@@ -1074,52 +973,6 @@
             "item": [
               {
                 "hour": 8,
-                "minute": 25
-              }
-            ]
-          },
-          "feedUrl": "https://simonwillison.net/atom/everything/"
-        },
-        "type": "n8n-nodes-base.rssFeedReadTrigger",
-        "typeVersion": 1,
-        "position": [
-          -304,
-          0
-        ],
-        "id": "f61ea680-06af-4ecf-ae3d-7b68227b8d14",
-        "name": "Simon Willison's Weblog",
-        "retryOnFail": true,
-        "waitBetweenTries": 5000
-      },
-      {
-        "parameters": {
-          "pollTimes": {
-            "item": [
-              {
-                "hour": 8,
-                "minute": 26
-              }
-            ]
-          },
-          "feedUrl": "https://blog.langchain.dev/rss/"
-        },
-        "type": "n8n-nodes-base.rssFeedReadTrigger",
-        "typeVersion": 1,
-        "position": [
-          -304,
-          144
-        ],
-        "id": "e962a516-0fc8-40ed-878d-fd9d9f41421b",
-        "name": "LangChain Blog",
-        "retryOnFail": true,
-        "waitBetweenTries": 5000
-      },
-      {
-        "parameters": {
-          "pollTimes": {
-            "item": [
-              {
-                "hour": 8,
                 "minute": 27
               }
             ]
@@ -1187,9 +1040,9 @@
         "parameters": {
           "model": {
             "__rl": true,
-            "value": "qwen3.5-plus",
+            "value": "deepseek-v4-flash",
             "mode": "list",
-            "cachedResultName": "qwen3.5-plus"
+            "cachedResultName": "deepseek-v4-flash"
           },
           "responsesApiEnabled": false,
           "options": {
@@ -1233,6 +1086,165 @@
         ],
         "id": "06fefec0-2daa-41f3-8cb7-a66bb7521b08",
         "name": "BestBlogs.dev",
+        "retryOnFail": true,
+        "waitBetweenTries": 5000
+      },
+      {
+        "parameters": {
+          "pollTimes": {
+            "item": [
+              {
+                "hour": 8,
+                "minute": 25
+              }
+            ]
+          },
+          "feedUrl": "https://simonwillison.net/atom/everything/"
+        },
+        "type": "n8n-nodes-base.rssFeedReadTrigger",
+        "typeVersion": 1,
+        "position": [
+          -304,
+          0
+        ],
+        "id": "f61ea680-06af-4ecf-ae3d-7b68227b8d14",
+        "name": "Simon Willison Weblog",
+        "retryOnFail": true,
+        "waitBetweenTries": 5000
+      },
+      {
+        "parameters": {
+          "pollTimes": {
+            "item": [
+              {
+                "hour": 8,
+                "minute": 18
+              }
+            ]
+          },
+          "feedUrl": "http://www.ifanr.com/feed"
+        },
+        "type": "n8n-nodes-base.rssFeedReadTrigger",
+        "typeVersion": 1,
+        "position": [
+          -560,
+          0
+        ],
+        "id": "ed973ca5-9dab-4c98-8d41-4cd42767e631",
+        "name": "爱范儿",
+        "retryOnFail": true,
+        "waitBetweenTries": 5000
+      },
+      {
+        "parameters": {
+          "pollTimes": {
+            "item": [
+              {
+                "hour": 8,
+                "minute": 17
+              }
+            ]
+          },
+          "feedUrl": "https://sspai.com/feed"
+        },
+        "type": "n8n-nodes-base.rssFeedReadTrigger",
+        "typeVersion": 1,
+        "position": [
+          -560,
+          -144
+        ],
+        "id": "5cc4b6d2-83f2-4342-9cfb-e5bb8fee8e59",
+        "name": "少数派",
+        "retryOnFail": true,
+        "waitBetweenTries": 5000
+      },
+      {
+        "parameters": {
+          "pollTimes": {
+            "item": [
+              {
+                "hour": 8,
+                "minute": 15
+              }
+            ]
+          },
+          "feedUrl": "http://feeds.feedburner.com/ruanyifeng"
+        },
+        "type": "n8n-nodes-base.rssFeedReadTrigger",
+        "typeVersion": 1,
+        "position": [
+          -560,
+          -432
+        ],
+        "id": "e8faa302-5698-4c64-87bd-8936a0d5a086",
+        "name": "阮一峰的网络日志",
+        "retryOnFail": true,
+        "waitBetweenTries": 5000
+      },
+      {
+        "parameters": {
+          "pollTimes": {
+            "item": [
+              {
+                "hour": 8,
+                "minute": 16
+              }
+            ]
+          },
+          "feedUrl": "https://www.qbitai.com/feed"
+        },
+        "type": "n8n-nodes-base.rssFeedReadTrigger",
+        "typeVersion": 1,
+        "position": [
+          -560,
+          -288
+        ],
+        "id": "1bab6bd9-8dba-4fc1-b3d6-2b958f5cf811",
+        "name": "量子位",
+        "retryOnFail": true,
+        "waitBetweenTries": 5000
+      },
+      {
+        "parameters": {
+          "pollTimes": {
+            "item": [
+              {
+                "hour": 8,
+                "minute": 26
+              }
+            ]
+          },
+          "feedUrl": "https://www.langchain.com/blog/rss.xml"
+        },
+        "type": "n8n-nodes-base.rssFeedReadTrigger",
+        "typeVersion": 1,
+        "position": [
+          -304,
+          144
+        ],
+        "id": "9fff42ab-65da-4bdc-9e2e-53bb7eb6d8fb",
+        "name": "LangChain"
+      },
+      {
+        "parameters": {
+          "pollTimes": {
+            "item": [
+              {
+                "hour": 8,
+                "minute": 31
+              }
+            ]
+          },
+          "feedUrl": "https://vercel.com/atom"
+        },
+        "type": "n8n-nodes-base.rssFeedReadTrigger",
+        "typeVersion": 1,
+        "position": [
+          -48,
+          -288
+        ],
+        "id": "bf255a92-f884-422f-aeb5-13fa210d7dc1",
+        "name": "Vercel News",
         "retryOnFail": true,
         "waitBetweenTries": 5000
       }
@@ -1282,50 +1294,6 @@
           ]
         ]
       },
-      "阮一峰的网络日志": {
-        "main": [
-          [
-            {
-              "node": "HTTP Request",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "量子位（QbitAI）": {
-        "main": [
-          [
-            {
-              "node": "HTTP Request",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "少数派": {
-        "main": [
-          [
-            {
-              "node": "HTTP Request",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "爱范儿": {
-        "main": [
-          [
-            {
-              "node": "HTTP Request",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
       "宝玉的分享": {
         "main": [
           [
@@ -1360,28 +1328,6 @@
         ]
       },
       "ByteByteGo Newsletter": {
-        "main": [
-          [
-            {
-              "node": "HTTP Request",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Simon Willison's Weblog": {
-        "main": [
-          [
-            {
-              "node": "HTTP Request",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "LangChain Blog": {
         "main": [
           [
             {
@@ -1438,6 +1384,33 @@
       },
       "BestBlogs.dev": {
         "main": [
+          []
+        ]
+      },
+      "Simon Willison Weblog": {
+        "main": [
+          [
+            {
+              "node": "HTTP Request",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "LangChain": {
+        "main": [
+          [
+            {
+              "node": "HTTP Request",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Vercel News": {
+        "main": [
           [
             {
               "node": "HTTP Request",
@@ -1449,7 +1422,7 @@
       }
     },
     "authors": "Administrator NTLx",
-    "name": "Version 99657c26",
+    "name": "Version b2ca02cf",
     "description": "",
     "autosaved": true
   },
