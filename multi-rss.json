@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-05-12T00:58:33.775Z",
+  "updatedAt": "2026-05-12T07:55:03.769Z",
   "createdAt": "2026-02-28T07:42:26.118Z",
   "id": "8E2fWpTJgVyuIxFe",
   "name": "Multi RSS",
@@ -60,13 +60,13 @@
           "cachedResultName": "rss-feed",
           "cachedResultUrl": "https://discord.com/channels/1223272555885105264/1224879319499800676"
         },
-        "content": "={{ $json.text }}",
+        "content": "={{ $('Basic LLM Chain1').item.json.text }}",
         "options": {}
       },
       "type": "n8n-nodes-base.discord",
       "typeVersion": 2,
       "position": [
-        976,
+        1344,
         0
       ],
       "id": "b404922b-9332-4581-8459-f171f86dfffb",
@@ -493,6 +493,63 @@
       "name": "Vercel News",
       "retryOnFail": true,
       "waitBetweenTries": 5000
+    },
+    {
+      "parameters": {
+        "inputText": "={{ $json.text }}",
+        "categories": {
+          "categories": [
+            {
+              "category": "keep"
+            },
+            {
+              "category": "discard"
+            }
+          ]
+        },
+        "options": {
+          "fallback": "discard",
+          "systemPromptTemplate": "根据对RSS消息进行的解读内容，打分高于6分的保留（keep），其他都丢弃（discard）"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.textClassifier",
+      "typeVersion": 1.1,
+      "position": [
+        976,
+        0
+      ],
+      "id": "4260a0c5-fb75-48c8-8cef-eeafcce82bb0",
+      "name": "Text Classifier"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "deepseek-v4-flash",
+          "mode": "list",
+          "cachedResultName": "deepseek-v4-flash"
+        },
+        "responsesApiEnabled": false,
+        "options": {
+          "temperature": 0
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        1056,
+        192
+      ],
+      "id": "a8dc1e14-55f4-4d95-8a56-0eaa7d690c0b",
+      "name": "OpenAI Chat Model1",
+      "retryOnFail": true,
+      "waitBetweenTries": 2000,
+      "credentials": {
+        "openAiApi": {
+          "id": "gyuAIYPDLYyRYJh7",
+          "name": "NewAPI-OE"
+        }
+      }
     }
   ],
   "connections": {
@@ -522,7 +579,7 @@
       "main": [
         [
           {
-            "node": "Send a message",
+            "node": "Text Classifier",
             "type": "main",
             "index": 0
           }
@@ -665,6 +722,28 @@
           }
         ]
       ]
+    },
+    "Text Classifier": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Text Classifier",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "settings": {
@@ -691,25 +770,25 @@
       "lastItemDate": "2026-05-11T10:18:49.000Z"
     },
     "node:少数派": {
-      "lastItemDate": "2026-05-11T10:01:05.000Z"
+      "lastItemDate": "2026-05-12T09:40:02.000Z"
     },
     "node:爱范儿": {
-      "lastItemDate": "2026-05-12T00:13:58.000Z"
+      "lastItemDate": "2026-05-12T10:51:51.000Z"
     },
     "node:宝玉的分享": {
-      "lastItemDate": "2026-05-11T00:00:00.000Z"
+      "lastItemDate": "2026-05-12T00:00:00.000Z"
     },
     "node:The GitHub Blog": {
-      "lastItemDate": "2026-05-11T16:00:00.000Z"
+      "lastItemDate": "2026-05-12T17:35:41.000Z"
     },
     "node:Hugging Face Blog": {
       "lastItemDate": "2026-03-24T02:01:52.000Z"
     },
     "node:Martin Fowler": {
-      "lastItemDate": "2026-05-05T16:23:00.000Z"
+      "lastItemDate": "2026-05-12T13:30:00.000Z"
     },
     "node:ByteByteGo Newsletter": {
-      "lastItemDate": "2026-05-11T15:31:17.000Z"
+      "lastItemDate": "2026-05-12T15:31:03.000Z"
     },
     "node:Simon Willison's Weblog": {
       "lastItemDate": "2026-05-11T23:58:55.000Z"
@@ -719,7 +798,7 @@
     },
     "node:paulgraham.com": {},
     "node:Vercel News": {
-      "lastItemDate": "2026-05-11T08:00:00.000Z"
+      "lastItemDate": "2026-05-12T19:00:00.000Z"
     },
     "node:gwern.net": {
       "lastItemDate": "2021-06-11T14:16:22.000Z"
@@ -731,19 +810,22 @@
       "lastItemDate": "2026-05-08T08:17:23.283Z"
     },
     "node:Simon Willison Weblog": {
-      "lastItemDate": "2026-05-11T23:58:55.000Z"
+      "lastItemDate": "2026-05-12T23:41:06.000Z"
     },
     "node:量子位": {
-      "lastItemDate": "2026-05-11T10:18:49.000Z"
+      "lastItemDate": "2026-05-12T13:55:01.000Z"
     },
     "node:LangChain": {
-      "lastItemDate": "2026-05-09T17:00:37.000Z"
+      "lastItemDate": "2026-05-12T19:36:14.000Z"
+    },
+    "node:Anthropic Engineering": {
+      "lastItemDate": "2025-11-24T00:00:00.000Z"
     }
   },
   "meta": null,
   "pinData": {},
-  "versionId": "319b687f-7da4-4bf9-a79d-e170cb923085",
-  "activeVersionId": "b2ca02cf-27f2-4636-8a72-95a3d3bf89bd",
+  "versionId": "243b7947-39da-43b5-8a14-5b1a375cf52a",
+  "activeVersionId": "243b7947-39da-43b5-8a14-5b1a375cf52a",
   "triggerCount": 16,
   "shared": [
     {
@@ -755,9 +837,9 @@
     }
   ],
   "activeVersion": {
-    "updatedAt": "2026-05-12T00:50:36.449Z",
-    "createdAt": "2026-05-12T00:49:48.084Z",
-    "versionId": "b2ca02cf-27f2-4636-8a72-95a3d3bf89bd",
+    "updatedAt": "2026-05-12T07:55:25.501Z",
+    "createdAt": "2026-05-12T07:55:03.781Z",
+    "versionId": "243b7947-39da-43b5-8a14-5b1a375cf52a",
     "workflowId": "8E2fWpTJgVyuIxFe",
     "nodes": [
       {
@@ -814,13 +896,13 @@
             "cachedResultName": "rss-feed",
             "cachedResultUrl": "https://discord.com/channels/1223272555885105264/1224879319499800676"
           },
-          "content": "={{ $json.text }}",
+          "content": "={{ $('Basic LLM Chain1').item.json.text }}",
           "options": {}
         },
         "type": "n8n-nodes-base.discord",
         "typeVersion": 2,
         "position": [
-          976,
+          1344,
           0
         ],
         "id": "b404922b-9332-4581-8459-f171f86dfffb",
@@ -1247,6 +1329,63 @@
         "name": "Vercel News",
         "retryOnFail": true,
         "waitBetweenTries": 5000
+      },
+      {
+        "parameters": {
+          "inputText": "={{ $json.text }}",
+          "categories": {
+            "categories": [
+              {
+                "category": "keep"
+              },
+              {
+                "category": "discard"
+              }
+            ]
+          },
+          "options": {
+            "fallback": "discard",
+            "systemPromptTemplate": "根据对RSS消息进行的解读内容，打分高于6分的保留（keep），其他都丢弃（discard）"
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.textClassifier",
+        "typeVersion": 1.1,
+        "position": [
+          976,
+          0
+        ],
+        "id": "4260a0c5-fb75-48c8-8cef-eeafcce82bb0",
+        "name": "Text Classifier"
+      },
+      {
+        "parameters": {
+          "model": {
+            "__rl": true,
+            "value": "deepseek-v4-flash",
+            "mode": "list",
+            "cachedResultName": "deepseek-v4-flash"
+          },
+          "responsesApiEnabled": false,
+          "options": {
+            "temperature": 0
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+        "typeVersion": 1.3,
+        "position": [
+          1056,
+          192
+        ],
+        "id": "a8dc1e14-55f4-4d95-8a56-0eaa7d690c0b",
+        "name": "OpenAI Chat Model1",
+        "retryOnFail": true,
+        "waitBetweenTries": 2000,
+        "credentials": {
+          "openAiApi": {
+            "id": "gyuAIYPDLYyRYJh7",
+            "name": "NewAPI-OE"
+          }
+        }
       }
     ],
     "connections": {
@@ -1276,7 +1415,7 @@
         "main": [
           [
             {
-              "node": "Send a message",
+              "node": "Text Classifier",
               "type": "main",
               "index": 0
             }
@@ -1419,10 +1558,32 @@
             }
           ]
         ]
+      },
+      "Text Classifier": {
+        "main": [
+          [
+            {
+              "node": "Send a message",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "OpenAI Chat Model1": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "Text Classifier",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
       }
     },
     "authors": "Administrator NTLx",
-    "name": "Version b2ca02cf",
+    "name": "Version 243b7947",
     "description": "",
     "autosaved": true
   },
