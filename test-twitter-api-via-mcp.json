@@ -1,0 +1,142 @@
+{
+  "updatedAt": "2026-05-14T01:24:42.620Z",
+  "createdAt": "2026-05-14T01:16:20.647Z",
+  "id": "NQInqgcNTEs2q9Nm",
+  "name": "Test Twitter API via MCP",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        0
+      ],
+      "id": "cc5081ee-e201-48e4-90b6-171eb3568281",
+      "name": "When chat message received",
+      "webhookId": "7415ac56-116e-41ff-b0f1-a4e578357766"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        208,
+        0
+      ],
+      "id": "4cb44113-e48d-488b-ba63-af4720fa5170",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "endpointUrl": "https://n8n.vps.ntlx.top/mcp/d59303bf-c812-4b13-aa8a-7cd40052dab0",
+        "authentication": "bearerAuth",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.mcpClientTool",
+      "typeVersion": 1.2,
+      "position": [
+        448,
+        224
+      ],
+      "id": "ac17e136-ec1d-4b13-9b7d-8d80aae0e624",
+      "name": "MCP Client",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "C6qLO178JVZklDXs",
+          "name": "外部调用n8n的MCP"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "openrouter/free",
+          "mode": "list",
+          "cachedResultName": "openrouter/free"
+        },
+        "responsesApiEnabled": false,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        80,
+        208
+      ],
+      "id": "fda1d2eb-be1e-463f-9374-650b016c2f24",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "BtNUoaYPZrKSsCA2",
+          "name": "NewAPI-VPS"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MCP Client": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "a593c504-5f4e-4c2d-ac2a-7147c9453e44",
+  "activeVersionId": null,
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2026-05-14T01:16:20.647Z",
+      "createdAt": "2026-05-14T01:16:20.647Z",
+      "role": "workflow:owner",
+      "workflowId": "NQInqgcNTEs2q9Nm",
+      "projectId": "cNMj0K6AdJmi0OAZ"
+    }
+  ],
+  "activeVersion": null,
+  "tags": []
+}
