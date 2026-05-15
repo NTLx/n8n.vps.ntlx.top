@@ -1,0 +1,152 @@
+{
+  "updatedAt": "2026-05-14T01:25:10.219Z",
+  "createdAt": "2026-05-14T01:05:53.160Z",
+  "id": "9WfKGFaBbBKfmR8E",
+  "name": "Twitter API to MCP",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "authentication": "bearerAuth",
+        "path": "d59303bf-c812-4b13-aa8a-7cd40052dab0"
+      },
+      "type": "@n8n/n8n-nodes-langchain.mcpTrigger",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "64539ac1-0c97-469f-a3c5-c60af5b1d221",
+      "name": "MCP Server Trigger",
+      "webhookId": "d59303bf-c812-4b13-aa8a-7cd40052dab0",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "C6qLO178JVZklDXs",
+          "name": "外部调用n8n的MCP"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "text": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Text', ``, 'string') }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.twitterTool",
+      "typeVersion": 2,
+      "position": [
+        80,
+        208
+      ],
+      "id": "50a4c1eb-b0eb-48e8-a9f8-49257b491316",
+      "name": "Create Tweet in X",
+      "credentials": {
+        "twitterOAuth2Api": {
+          "id": "nsQTGGIMiDydUwno",
+          "name": "NTLx"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Create Tweet in X": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Server Trigger",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "db76c465-adff-4832-acb7-728371e46d1b",
+  "activeVersionId": "db76c465-adff-4832-acb7-728371e46d1b",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-05-14T01:05:53.160Z",
+      "createdAt": "2026-05-14T01:05:53.160Z",
+      "role": "workflow:owner",
+      "workflowId": "9WfKGFaBbBKfmR8E",
+      "projectId": "cNMj0K6AdJmi0OAZ"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2026-05-14T01:16:02.459Z",
+    "createdAt": "2026-05-14T01:14:19.982Z",
+    "versionId": "db76c465-adff-4832-acb7-728371e46d1b",
+    "workflowId": "9WfKGFaBbBKfmR8E",
+    "nodes": [
+      {
+        "parameters": {
+          "authentication": "bearerAuth",
+          "path": "d59303bf-c812-4b13-aa8a-7cd40052dab0"
+        },
+        "type": "@n8n/n8n-nodes-langchain.mcpTrigger",
+        "typeVersion": 2,
+        "position": [
+          0,
+          0
+        ],
+        "id": "64539ac1-0c97-469f-a3c5-c60af5b1d221",
+        "name": "MCP Server Trigger",
+        "webhookId": "d59303bf-c812-4b13-aa8a-7cd40052dab0",
+        "credentials": {
+          "httpBearerAuth": {
+            "id": "C6qLO178JVZklDXs",
+            "name": "外部调用n8n的MCP"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "text": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Text', ``, 'string') }}",
+          "additionalFields": {}
+        },
+        "type": "n8n-nodes-base.twitterTool",
+        "typeVersion": 2,
+        "position": [
+          80,
+          208
+        ],
+        "id": "50a4c1eb-b0eb-48e8-a9f8-49257b491316",
+        "name": "Create Tweet in X",
+        "credentials": {
+          "twitterOAuth2Api": {
+            "id": "nsQTGGIMiDydUwno",
+            "name": "NTLx"
+          }
+        }
+      }
+    ],
+    "connections": {
+      "Create Tweet in X": {
+        "ai_tool": [
+          [
+            {
+              "node": "MCP Server Trigger",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Administrator NTLx",
+    "name": "Version db76c465",
+    "description": "",
+    "autosaved": true
+  },
+  "tags": []
+}
