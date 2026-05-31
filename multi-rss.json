@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-05-23T04:41:41.737Z",
+  "updatedAt": "2026-05-30T07:11:30.634Z",
   "createdAt": "2026-02-28T07:42:26.118Z",
   "id": "8E2fWpTJgVyuIxFe",
   "name": "Multi RSS",
@@ -514,6 +514,29 @@
       ],
       "id": "c97c77d0-bdb5-4211-81a7-6052d5ded8f5",
       "name": "Hugging Face Blog"
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "hour": 8,
+              "minute": 15
+            }
+          ]
+        },
+        "feedUrl": "https://blog.google/rss/"
+      },
+      "type": "n8n-nodes-base.rssFeedReadTrigger",
+      "typeVersion": 1,
+      "position": [
+        -48,
+        0
+      ],
+      "id": "db7be539-d26f-45cc-a33d-1b4eeae32340",
+      "name": "Blog.Google",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000
     }
   ],
   "connections": {
@@ -697,6 +720,17 @@
           }
         ]
       ]
+    },
+    "Blog.Google": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "settings": {
@@ -723,10 +757,10 @@
       "lastItemDate": "2026-05-11T10:18:49.000Z"
     },
     "node:少数派": {
-      "lastItemDate": "2026-05-29T10:12:15.000Z"
+      "lastItemDate": "2026-05-30T09:04:38.000Z"
     },
     "node:爱范儿": {
-      "lastItemDate": "2026-05-29T13:08:50.000Z"
+      "lastItemDate": "2026-05-30T00:44:15.000Z"
     },
     "node:宝玉的分享": {
       "lastItemDate": "2026-05-23T00:00:00.000Z"
@@ -741,7 +775,7 @@
       "lastItemDate": "2026-05-27T19:40:00.000Z"
     },
     "node:ByteByteGo Newsletter": {
-      "lastItemDate": "2026-05-28T16:31:00.000Z"
+      "lastItemDate": "2026-05-30T15:30:52.000Z"
     },
     "node:Simon Willison's Weblog": {
       "lastItemDate": "2026-05-11T23:58:55.000Z"
@@ -763,23 +797,26 @@
       "lastItemDate": "2026-05-29T06:20:43.220Z"
     },
     "node:Simon Willison Weblog": {
-      "lastItemDate": "2026-05-29T03:32:02.000Z"
+      "lastItemDate": "2026-05-30T21:36:24.000Z"
     },
     "node:量子位": {
-      "lastItemDate": "2026-05-29T14:30:20.000Z"
+      "lastItemDate": "2026-05-30T06:43:26.000Z"
     },
     "node:LangChain": {
-      "lastItemDate": "2026-05-29T23:45:05.000Z"
+      "lastItemDate": "2026-05-30T01:01:20.000Z"
     },
     "node:Anthropic Engineering": {
       "lastItemDate": "2025-11-24T00:00:00.000Z"
+    },
+    "node:Blog.Google": {
+      "lastItemDate": "2026-05-29T19:00:00.000Z"
     }
   },
   "meta": null,
   "pinData": {},
-  "versionId": "d4602ee2-c39e-4c72-9428-b22c06e39087",
-  "activeVersionId": "d4602ee2-c39e-4c72-9428-b22c06e39087",
-  "triggerCount": 17,
+  "versionId": "616f84e3-e5b3-42d3-b0ce-32842a90f310",
+  "activeVersionId": "616f84e3-e5b3-42d3-b0ce-32842a90f310",
+  "triggerCount": 18,
   "shared": [
     {
       "updatedAt": "2026-02-28T07:42:26.118Z",
@@ -790,9 +827,9 @@
     }
   ],
   "activeVersion": {
-    "updatedAt": "2026-05-23T06:08:23.423Z",
-    "createdAt": "2026-05-23T04:40:36.275Z",
-    "versionId": "d4602ee2-c39e-4c72-9428-b22c06e39087",
+    "updatedAt": "2026-05-30T07:12:39.254Z",
+    "createdAt": "2026-05-30T07:11:30.637Z",
+    "versionId": "616f84e3-e5b3-42d3-b0ce-32842a90f310",
     "workflowId": "8E2fWpTJgVyuIxFe",
     "nodes": [
       {
@@ -1303,6 +1340,29 @@
         ],
         "id": "c97c77d0-bdb5-4211-81a7-6052d5ded8f5",
         "name": "Hugging Face Blog"
+      },
+      {
+        "parameters": {
+          "pollTimes": {
+            "item": [
+              {
+                "hour": 8,
+                "minute": 15
+              }
+            ]
+          },
+          "feedUrl": "https://blog.google/rss/"
+        },
+        "type": "n8n-nodes-base.rssFeedReadTrigger",
+        "typeVersion": 1,
+        "position": [
+          -48,
+          0
+        ],
+        "id": "db7be539-d26f-45cc-a33d-1b4eeae32340",
+        "name": "Blog.Google",
+        "retryOnFail": true,
+        "waitBetweenTries": 5000
       }
     ],
     "connections": {
@@ -1486,12 +1546,23 @@
             }
           ]
         ]
+      },
+      "Blog.Google": {
+        "main": [
+          [
+            {
+              "node": "HTTP Request",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
       }
     },
     "authors": "Administrator NTLx",
-    "name": "Version d4602ee2",
+    "name": "Version 616f84e3",
     "description": "",
-    "autosaved": true
+    "autosaved": false
   },
   "tags": []
 }
