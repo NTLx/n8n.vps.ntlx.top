@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-05-30T07:11:30.634Z",
+  "updatedAt": "2026-06-01T07:35:51.110Z",
   "createdAt": "2026-02-28T07:42:26.118Z",
   "id": "8E2fWpTJgVyuIxFe",
   "name": "Multi RSS",
@@ -537,6 +537,29 @@
       "name": "Blog.Google",
       "retryOnFail": true,
       "waitBetweenTries": 5000
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "hour": 8,
+              "minute": 16
+            }
+          ]
+        },
+        "feedUrl": "https://blog.palantir.com/feed"
+      },
+      "type": "n8n-nodes-base.rssFeedReadTrigger",
+      "typeVersion": 1,
+      "position": [
+        -48,
+        144
+      ],
+      "id": "1f8436af-fc33-4f91-8509-dce00b767e6b",
+      "name": "Palantir",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000
     }
   ],
   "connections": {
@@ -731,6 +754,11 @@
           }
         ]
       ]
+    },
+    "Palantir": {
+      "main": [
+        []
+      ]
     }
   },
   "settings": {
@@ -757,10 +785,10 @@
       "lastItemDate": "2026-05-11T10:18:49.000Z"
     },
     "node:少数派": {
-      "lastItemDate": "2026-05-31T06:36:11.000Z"
+      "lastItemDate": "2026-06-01T09:57:27.000Z"
     },
     "node:爱范儿": {
-      "lastItemDate": "2026-05-31T23:59:39.000Z"
+      "lastItemDate": "2026-06-01T13:32:23.000Z"
     },
     "node:宝玉的分享": {
       "lastItemDate": "2026-05-23T00:00:00.000Z"
@@ -769,7 +797,7 @@
       "lastItemDate": "2026-05-28T18:18:43.000Z"
     },
     "node:Hugging Face Blog": {
-      "lastItemDate": "2026-05-29T00:00:00.000Z"
+      "lastItemDate": "2026-06-01T15:45:17.000Z"
     },
     "node:Martin Fowler": {
       "lastItemDate": "2026-05-27T19:40:00.000Z"
@@ -785,7 +813,7 @@
     },
     "node:paulgraham.com": {},
     "node:Vercel News": {
-      "lastItemDate": "2026-05-29T10:00:00.000Z"
+      "lastItemDate": "2026-06-01T18:30:00.000Z"
     },
     "node:gwern.net": {
       "lastItemDate": "2021-06-11T14:16:22.000Z"
@@ -797,26 +825,29 @@
       "lastItemDate": "2026-05-29T06:20:43.220Z"
     },
     "node:Simon Willison Weblog": {
-      "lastItemDate": "2026-05-31T23:23:38.000Z"
+      "lastItemDate": "2026-06-01T21:14:47.000Z"
     },
     "node:量子位": {
-      "lastItemDate": "2026-05-31T14:30:16.000Z"
+      "lastItemDate": "2026-06-01T10:34:31.000Z"
     },
     "node:LangChain": {
-      "lastItemDate": "2026-05-30T01:01:20.000Z"
+      "lastItemDate": "2026-06-01T16:05:12.000Z"
     },
     "node:Anthropic Engineering": {
       "lastItemDate": "2025-11-24T00:00:00.000Z"
     },
     "node:Blog.Google": {
-      "lastItemDate": "2026-05-29T19:00:00.000Z"
+      "lastItemDate": "2026-06-01T16:00:00.000Z"
+    },
+    "node:Palantir": {
+      "lastItemDate": "2026-05-29T15:06:52.000Z"
     }
   },
   "meta": null,
   "pinData": {},
-  "versionId": "616f84e3-e5b3-42d3-b0ce-32842a90f310",
-  "activeVersionId": "616f84e3-e5b3-42d3-b0ce-32842a90f310",
-  "triggerCount": 18,
+  "versionId": "614377e0-3bf4-43ad-a659-067312e97e87",
+  "activeVersionId": "614377e0-3bf4-43ad-a659-067312e97e87",
+  "triggerCount": 19,
   "shared": [
     {
       "updatedAt": "2026-02-28T07:42:26.118Z",
@@ -827,9 +858,9 @@
     }
   ],
   "activeVersion": {
-    "updatedAt": "2026-05-30T07:12:39.254Z",
-    "createdAt": "2026-05-30T07:11:30.637Z",
-    "versionId": "616f84e3-e5b3-42d3-b0ce-32842a90f310",
+    "updatedAt": "2026-06-01T07:39:16.089Z",
+    "createdAt": "2026-06-01T07:35:51.116Z",
+    "versionId": "614377e0-3bf4-43ad-a659-067312e97e87",
     "workflowId": "8E2fWpTJgVyuIxFe",
     "nodes": [
       {
@@ -1363,6 +1394,29 @@
         "name": "Blog.Google",
         "retryOnFail": true,
         "waitBetweenTries": 5000
+      },
+      {
+        "parameters": {
+          "pollTimes": {
+            "item": [
+              {
+                "hour": 8,
+                "minute": 16
+              }
+            ]
+          },
+          "feedUrl": "https://blog.palantir.com/feed"
+        },
+        "type": "n8n-nodes-base.rssFeedReadTrigger",
+        "typeVersion": 1,
+        "position": [
+          -48,
+          144
+        ],
+        "id": "1f8436af-fc33-4f91-8509-dce00b767e6b",
+        "name": "Palantir",
+        "retryOnFail": true,
+        "waitBetweenTries": 5000
       }
     ],
     "connections": {
@@ -1557,12 +1611,17 @@
             }
           ]
         ]
+      },
+      "Palantir": {
+        "main": [
+          []
+        ]
       }
     },
     "authors": "Administrator NTLx",
-    "name": "Version 616f84e3",
+    "name": "Version 614377e0",
     "description": "",
-    "autosaved": false
+    "autosaved": true
   },
   "tags": []
 }
