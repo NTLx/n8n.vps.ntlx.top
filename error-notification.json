@@ -349,6 +349,7 @@
   "meta": {
     "templateCredsSetupCompleted": true
   },
+  "nodeGroups": [],
   "pinData": {},
   "versionId": "fc32e907-4837-4ffa-9608-6f26bff581f5",
   "activeVersionId": "fc32e907-4837-4ffa-9608-6f26bff581f5",
@@ -695,6 +696,7 @@
         ]
       }
     },
+    "nodeGroups": [],
     "authors": "Administrator NTLx",
     "name": "Version fc32e907",
     "description": "",
