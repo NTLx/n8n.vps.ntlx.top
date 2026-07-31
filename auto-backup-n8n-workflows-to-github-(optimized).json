@@ -441,10 +441,16 @@
   },
   "staticData": {
     "node:Daily Trigger": {
-      "recurrenceRules": []
+      "recurrenceRules": [
+        null
+      ],
+      "recurrenceRuleSignatures": [
+        null
+      ]
     }
   },
   "meta": null,
+  "nodeGroups": [],
   "pinData": {},
   "versionId": "45a37f34-5983-43f0-ab57-52fa9366cbf2",
   "activeVersionId": "45a37f34-5983-43f0-ab57-52fa9366cbf2",
@@ -884,6 +890,7 @@
         ]
       }
     },
+    "nodeGroups": [],
     "authors": "Administrator NTLx",
     "name": "Version 45a37f34",
     "description": "",
