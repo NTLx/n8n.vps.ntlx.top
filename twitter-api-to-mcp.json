@@ -69,6 +69,7 @@
   "meta": {
     "templateCredsSetupCompleted": true
   },
+  "nodeGroups": [],
   "pinData": {},
   "versionId": "db76c465-adff-4832-acb7-728371e46d1b",
   "activeVersionId": "db76c465-adff-4832-acb7-728371e46d1b",
@@ -143,6 +144,7 @@
         ]
       }
     },
+    "nodeGroups": [],
     "authors": "Administrator NTLx",
     "name": "Version db76c465",
     "description": "",
