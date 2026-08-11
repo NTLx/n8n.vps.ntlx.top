@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-07-30T06:26:48.445Z",
+  "updatedAt": "2026-08-10T05:22:14.126Z",
   "createdAt": "2026-02-28T07:42:26.118Z",
   "id": "8E2fWpTJgVyuIxFe",
   "name": "Multi RSS",
@@ -362,29 +362,6 @@
           "item": [
             {
               "hour": 8,
-              "minute": 18
-            }
-          ]
-        },
-        "feedUrl": "http://www.ifanr.com/feed"
-      },
-      "type": "n8n-nodes-base.rssFeedReadTrigger",
-      "typeVersion": 1,
-      "position": [
-        -560,
-        0
-      ],
-      "id": "ed973ca5-9dab-4c98-8d41-4cd42767e631",
-      "name": "爱范儿",
-      "retryOnFail": true,
-      "waitBetweenTries": 5000
-    },
-    {
-      "parameters": {
-        "pollTimes": {
-          "item": [
-            {
-              "hour": 8,
               "minute": 17
             }
           ]
@@ -556,6 +533,29 @@
       ],
       "id": "1f8436af-fc33-4f91-8509-dce00b767e6b",
       "name": "Palantir",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "hour": 8,
+              "minute": 18
+            }
+          ]
+        },
+        "feedUrl": "https://blog.modelcontextprotocol.io/index.xml"
+      },
+      "type": "n8n-nodes-base.rssFeedReadTrigger",
+      "typeVersion": 1,
+      "position": [
+        -560,
+        0
+      ],
+      "id": "ed973ca5-9dab-4c98-8d41-4cd42767e631",
+      "name": "MCP Blog",
       "retryOnFail": true,
       "waitBetweenTries": 5000
     }
@@ -763,6 +763,17 @@
           }
         ]
       ]
+    },
+    "MCP Blog": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "settings": {
@@ -789,7 +800,7 @@
       "lastItemDate": "2026-05-11T10:18:49.000Z"
     },
     "node:少数派": {
-      "lastItemDate": "2026-08-09T23:08:03.000Z"
+      "lastItemDate": "2026-08-10T13:50:02.000Z"
     },
     "node:爱范儿": {
       "lastItemDate": "2026-08-05T09:15:23.000Z"
@@ -798,16 +809,16 @@
       "lastItemDate": "2026-07-29T00:00:00.000Z"
     },
     "node:The GitHub Blog": {
-      "lastItemDate": "2026-08-06T19:49:34.000Z"
+      "lastItemDate": "2026-08-10T19:30:00.000Z"
     },
     "node:Hugging Face Blog": {
-      "lastItemDate": "2026-08-07T17:53:32.000Z"
+      "lastItemDate": "2026-08-10T16:25:36.000Z"
     },
     "node:Martin Fowler": {
       "lastItemDate": "2026-08-04T12:08:00.000Z"
     },
     "node:ByteByteGo Newsletter": {
-      "lastItemDate": "2026-08-06T15:31:50.000Z"
+      "lastItemDate": "2026-08-10T15:30:49.000Z"
     },
     "node:Simon Willison's Weblog": {
       "lastItemDate": "2026-05-11T23:58:55.000Z"
@@ -817,7 +828,7 @@
     },
     "node:paulgraham.com": {},
     "node:Vercel News": {
-      "lastItemDate": "2026-08-08T00:00:00.000Z"
+      "lastItemDate": "2026-08-11T00:00:00.000Z"
     },
     "node:gwern.net": {
       "lastItemDate": "2021-06-11T14:16:22.000Z"
@@ -827,10 +838,10 @@
       "lastItemDate": "2026-08-07T07:14:54.907Z"
     },
     "node:Simon Willison Weblog": {
-      "lastItemDate": "2026-08-09T23:31:39.000Z"
+      "lastItemDate": "2026-08-10T23:56:03.000Z"
     },
     "node:量子位": {
-      "lastItemDate": "2026-08-09T09:25:10.000Z"
+      "lastItemDate": "2026-08-10T13:58:46.000Z"
     },
     "node:LangChain": {
       "lastItemDate": "2026-08-07T19:39:38.000Z"
@@ -839,17 +850,20 @@
       "lastItemDate": "2025-11-24T00:00:00.000Z"
     },
     "node:Blog.Google": {
-      "lastItemDate": "2026-08-07T14:00:00.000Z"
+      "lastItemDate": "2026-08-10T16:00:00.000Z"
     },
     "node:Palantir": {
       "lastItemDate": "2026-07-27T12:51:42.000Z"
+    },
+    "node:MCP Blog": {
+      "lastItemDate": "2026-07-28T09:00:00.000Z"
     }
   },
   "meta": null,
   "nodeGroups": [],
   "pinData": {},
-  "versionId": "0d24d3ac-81e0-4b4b-a97a-55d9f23630db",
-  "activeVersionId": "0d24d3ac-81e0-4b4b-a97a-55d9f23630db",
+  "versionId": "1dcf86f1-1910-4b11-b362-4525dc9d3626",
+  "activeVersionId": "1dcf86f1-1910-4b11-b362-4525dc9d3626",
   "triggerCount": 19,
   "shared": [
     {
@@ -861,9 +875,9 @@
     }
   ],
   "activeVersion": {
-    "updatedAt": "2026-08-03T06:16:44.222Z",
-    "createdAt": "2026-07-30T06:19:51.571Z",
-    "versionId": "0d24d3ac-81e0-4b4b-a97a-55d9f23630db",
+    "updatedAt": "2026-08-10T05:25:08.204Z",
+    "createdAt": "2026-08-10T05:22:14.129Z",
+    "versionId": "1dcf86f1-1910-4b11-b362-4525dc9d3626",
     "workflowId": "8E2fWpTJgVyuIxFe",
     "nodes": [
       {
@@ -1222,29 +1236,6 @@
             "item": [
               {
                 "hour": 8,
-                "minute": 18
-              }
-            ]
-          },
-          "feedUrl": "http://www.ifanr.com/feed"
-        },
-        "type": "n8n-nodes-base.rssFeedReadTrigger",
-        "typeVersion": 1,
-        "position": [
-          -560,
-          0
-        ],
-        "id": "ed973ca5-9dab-4c98-8d41-4cd42767e631",
-        "name": "爱范儿",
-        "retryOnFail": true,
-        "waitBetweenTries": 5000
-      },
-      {
-        "parameters": {
-          "pollTimes": {
-            "item": [
-              {
-                "hour": 8,
                 "minute": 17
               }
             ]
@@ -1416,6 +1407,29 @@
         ],
         "id": "1f8436af-fc33-4f91-8509-dce00b767e6b",
         "name": "Palantir",
+        "retryOnFail": true,
+        "waitBetweenTries": 5000
+      },
+      {
+        "parameters": {
+          "pollTimes": {
+            "item": [
+              {
+                "hour": 8,
+                "minute": 18
+              }
+            ]
+          },
+          "feedUrl": "https://blog.modelcontextprotocol.io/index.xml"
+        },
+        "type": "n8n-nodes-base.rssFeedReadTrigger",
+        "typeVersion": 1,
+        "position": [
+          -560,
+          0
+        ],
+        "id": "ed973ca5-9dab-4c98-8d41-4cd42767e631",
+        "name": "MCP Blog",
         "retryOnFail": true,
         "waitBetweenTries": 5000
       }
@@ -1623,11 +1637,22 @@
             }
           ]
         ]
+      },
+      "MCP Blog": {
+        "main": [
+          [
+            {
+              "node": "HTTP Request",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
       }
     },
     "nodeGroups": [],
     "authors": "Administrator NTLx",
-    "name": "Version 0d24d3ac",
+    "name": "Version 1dcf86f1",
     "description": "",
     "autosaved": true
   },
