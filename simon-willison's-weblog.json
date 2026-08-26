@@ -1,10 +1,13 @@
 {
-  "updatedAt": "2026-02-28T07:56:36.921Z",
-  "createdAt": "2026-02-23T09:55:25.486Z",
   "id": "mMHNtUMk1FfQNPAq",
   "name": "Simon Willison's Weblog",
   "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-02-23T09:55:25.486Z",
+  "updatedAt": "2026-02-28T07:56:36.921Z",
   "isArchived": false,
+  "versionId": "1b550ba7-907a-4888-961d-3392f30894d9",
+  "triggerCount": 1,
   "nodes": [
     {
       "parameters": {
@@ -191,6 +194,7 @@
       ]
     }
   },
+  "nodeGroups": [],
   "settings": {
     "callerPolicy": "workflowsFromSameOwner",
     "availableInMCP": false,
@@ -209,21 +213,17 @@
       "lastItemDate": "2026-02-27T22:49:32.000Z"
     }
   },
-  "meta": null,
-  "nodeGroups": [],
   "pinData": {},
-  "versionId": "1b550ba7-907a-4888-961d-3392f30894d9",
-  "activeVersionId": null,
-  "triggerCount": 1,
+  "meta": null,
+  "tags": [],
   "shared": [
     {
-      "updatedAt": "2026-02-23T09:55:25.486Z",
-      "createdAt": "2026-02-23T09:55:25.486Z",
       "role": "workflow:owner",
       "workflowId": "mMHNtUMk1FfQNPAq",
-      "projectId": "cNMj0K6AdJmi0OAZ"
+      "projectId": "cNMj0K6AdJmi0OAZ",
+      "createdAt": "2026-02-23T09:55:25.486Z",
+      "updatedAt": "2026-02-23T09:55:25.486Z"
     }
   ],
-  "activeVersion": null,
-  "tags": []
+  "activeVersion": null
 }
