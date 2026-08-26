@@ -1,10 +1,13 @@
 {
-  "updatedAt": "2026-02-28T07:55:15.604Z",
-  "createdAt": "2026-02-23T09:53:55.835Z",
   "id": "X1qVXITzHI6nXXIx",
   "name": "Martin Fowler",
   "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-02-23T09:53:55.835Z",
+  "updatedAt": "2026-02-28T07:55:15.604Z",
   "isArchived": false,
+  "versionId": "6527b4b0-6ad7-4b3e-8c94-fbc88869c603",
+  "triggerCount": 1,
   "nodes": [
     {
       "parameters": {
@@ -191,6 +194,7 @@
       ]
     }
   },
+  "nodeGroups": [],
   "settings": {
     "callerPolicy": "workflowsFromSameOwner",
     "availableInMCP": false,
@@ -209,21 +213,17 @@
       "lastItemDate": "2026-02-25T14:56:00.000Z"
     }
   },
-  "meta": null,
-  "nodeGroups": [],
   "pinData": {},
-  "versionId": "6527b4b0-6ad7-4b3e-8c94-fbc88869c603",
-  "activeVersionId": null,
-  "triggerCount": 1,
+  "meta": null,
+  "tags": [],
   "shared": [
     {
-      "updatedAt": "2026-02-23T09:53:55.835Z",
-      "createdAt": "2026-02-23T09:53:55.835Z",
       "role": "workflow:owner",
       "workflowId": "X1qVXITzHI6nXXIx",
-      "projectId": "cNMj0K6AdJmi0OAZ"
+      "projectId": "cNMj0K6AdJmi0OAZ",
+      "createdAt": "2026-02-23T09:53:55.835Z",
+      "updatedAt": "2026-02-23T09:53:55.835Z"
     }
   ],
-  "activeVersion": null,
-  "tags": []
+  "activeVersion": null
 }
