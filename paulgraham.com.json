@@ -1,10 +1,13 @@
 {
-  "updatedAt": "2026-02-28T07:57:59.806Z",
-  "createdAt": "2026-02-23T10:01:58.831Z",
   "id": "0SN0EOO3zwTOQVlm",
   "name": "paulgraham.com",
   "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-02-23T10:01:58.831Z",
+  "updatedAt": "2026-02-28T07:57:59.806Z",
   "isArchived": false,
+  "versionId": "0b0278a8-2770-458b-b02a-4ba31ad9e9f1",
+  "triggerCount": 1,
   "nodes": [
     {
       "parameters": {
@@ -191,6 +194,7 @@
       ]
     }
   },
+  "nodeGroups": [],
   "settings": {
     "callerPolicy": "workflowsFromSameOwner",
     "availableInMCP": false,
@@ -207,21 +211,17 @@
   "staticData": {
     "node:RSS Feed Trigger": {}
   },
-  "meta": null,
-  "nodeGroups": [],
   "pinData": {},
-  "versionId": "0b0278a8-2770-458b-b02a-4ba31ad9e9f1",
-  "activeVersionId": null,
-  "triggerCount": 1,
+  "meta": null,
+  "tags": [],
   "shared": [
     {
-      "updatedAt": "2026-02-23T10:01:58.831Z",
-      "createdAt": "2026-02-23T10:01:58.831Z",
       "role": "workflow:owner",
       "workflowId": "0SN0EOO3zwTOQVlm",
-      "projectId": "cNMj0K6AdJmi0OAZ"
+      "projectId": "cNMj0K6AdJmi0OAZ",
+      "createdAt": "2026-02-23T10:01:58.831Z",
+      "updatedAt": "2026-02-23T10:01:58.831Z"
     }
   ],
-  "activeVersion": null,
-  "tags": []
+  "activeVersion": null
 }
