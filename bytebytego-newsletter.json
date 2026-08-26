@@ -1,10 +1,13 @@
 {
-  "updatedAt": "2026-02-28T07:56:00.533Z",
-  "createdAt": "2026-02-23T09:51:17.290Z",
   "id": "gc1LS43ofxDeJM7t",
   "name": "ByteByteGo Newsletter",
   "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-02-23T09:51:17.290Z",
+  "updatedAt": "2026-02-28T07:56:00.533Z",
   "isArchived": false,
+  "versionId": "5303b749-1bf2-459a-bc05-5931b7f1cc43",
+  "triggerCount": 1,
   "nodes": [
     {
       "parameters": {
@@ -191,6 +194,7 @@
       ]
     }
   },
+  "nodeGroups": [],
   "settings": {
     "callerPolicy": "workflowsFromSameOwner",
     "availableInMCP": false,
@@ -209,21 +213,17 @@
       "lastItemDate": "2026-02-26T16:30:39.000Z"
     }
   },
-  "meta": null,
-  "nodeGroups": [],
   "pinData": {},
-  "versionId": "5303b749-1bf2-459a-bc05-5931b7f1cc43",
-  "activeVersionId": null,
-  "triggerCount": 1,
+  "meta": null,
+  "tags": [],
   "shared": [
     {
-      "updatedAt": "2026-02-23T09:51:17.290Z",
-      "createdAt": "2026-02-23T09:51:17.290Z",
       "role": "workflow:owner",
       "workflowId": "gc1LS43ofxDeJM7t",
-      "projectId": "cNMj0K6AdJmi0OAZ"
+      "projectId": "cNMj0K6AdJmi0OAZ",
+      "createdAt": "2026-02-23T09:51:17.290Z",
+      "updatedAt": "2026-02-23T09:51:17.290Z"
     }
   ],
-  "activeVersion": null,
-  "tags": []
+  "activeVersion": null
 }
