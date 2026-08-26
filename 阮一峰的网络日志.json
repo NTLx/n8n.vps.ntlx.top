@@ -1,10 +1,13 @@
 {
-  "updatedAt": "2026-02-28T07:26:40.301Z",
-  "createdAt": "2026-02-23T09:56:49.165Z",
   "id": "XrkKWHXbocNv1Sxk",
   "name": "阮一峰的网络日志",
   "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-02-23T09:56:49.165Z",
+  "updatedAt": "2026-02-28T07:26:40.301Z",
   "isArchived": false,
+  "versionId": "7fb68f08-c82a-4bc3-b554-42d46e9cb6d1",
+  "triggerCount": 1,
   "nodes": [
     {
       "parameters": {
@@ -280,6 +283,7 @@
       ]
     }
   },
+  "nodeGroups": [],
   "settings": {
     "callerPolicy": "workflowsFromSameOwner",
     "availableInMCP": false,
@@ -298,23 +302,19 @@
       "lastItemDate": "2026-02-27T00:07:08.000Z"
     }
   },
+  "pinData": {},
   "meta": {
     "templateCredsSetupCompleted": true
   },
-  "nodeGroups": [],
-  "pinData": {},
-  "versionId": "7fb68f08-c82a-4bc3-b554-42d46e9cb6d1",
-  "activeVersionId": null,
-  "triggerCount": 1,
+  "tags": [],
   "shared": [
     {
-      "updatedAt": "2026-02-23T09:56:49.165Z",
-      "createdAt": "2026-02-23T09:56:49.165Z",
       "role": "workflow:owner",
       "workflowId": "XrkKWHXbocNv1Sxk",
-      "projectId": "cNMj0K6AdJmi0OAZ"
+      "projectId": "cNMj0K6AdJmi0OAZ",
+      "createdAt": "2026-02-23T09:56:49.165Z",
+      "updatedAt": "2026-02-23T09:56:49.165Z"
     }
   ],
-  "activeVersion": null,
-  "tags": []
+  "activeVersion": null
 }
