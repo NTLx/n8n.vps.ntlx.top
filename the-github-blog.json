@@ -1,10 +1,13 @@
 {
-  "updatedAt": "2026-02-28T07:52:48.214Z",
-  "createdAt": "2026-02-23T09:43:52.086Z",
   "id": "KnJbSZt3SzM2Qp4J",
   "name": "The GitHub Blog",
   "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-02-23T09:43:52.086Z",
+  "updatedAt": "2026-02-28T07:52:48.214Z",
   "isArchived": false,
+  "versionId": "30364bc4-5ddc-4db8-8900-d3a040ffadff",
+  "triggerCount": 1,
   "nodes": [
     {
       "parameters": {
@@ -191,6 +194,7 @@
       ]
     }
   },
+  "nodeGroups": [],
   "settings": {
     "callerPolicy": "workflowsFromSameOwner",
     "availableInMCP": false,
@@ -209,21 +213,17 @@
       "lastItemDate": "2026-02-27T16:00:00.000Z"
     }
   },
-  "meta": null,
-  "nodeGroups": [],
   "pinData": {},
-  "versionId": "30364bc4-5ddc-4db8-8900-d3a040ffadff",
-  "activeVersionId": null,
-  "triggerCount": 1,
+  "meta": null,
+  "tags": [],
   "shared": [
     {
-      "updatedAt": "2026-02-23T09:43:52.086Z",
-      "createdAt": "2026-02-23T09:43:52.086Z",
       "role": "workflow:owner",
       "workflowId": "KnJbSZt3SzM2Qp4J",
-      "projectId": "cNMj0K6AdJmi0OAZ"
+      "projectId": "cNMj0K6AdJmi0OAZ",
+      "createdAt": "2026-02-23T09:43:52.086Z",
+      "updatedAt": "2026-02-23T09:43:52.086Z"
     }
   ],
-  "activeVersion": null,
-  "tags": []
+  "activeVersion": null
 }
