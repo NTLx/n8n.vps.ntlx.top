@@ -1,10 +1,13 @@
 {
-  "updatedAt": "2026-07-30T06:30:04.936Z",
-  "createdAt": "2026-03-27T13:46:50.927Z",
   "id": "LcNJmWBfnxEd118S",
   "name": "Multi RSS with Jina Parse",
   "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-03-27T13:46:50.927Z",
+  "updatedAt": "2026-07-30T06:30:04.936Z",
   "isArchived": false,
+  "versionId": "6dde5a6f-3548-4fcb-b215-f7a4706ed581",
+  "triggerCount": 2,
   "nodes": [
     {
       "parameters": {
@@ -219,6 +222,7 @@
       ]
     }
   },
+  "nodeGroups": [],
   "settings": {
     "executionOrder": "v1",
     "binaryMode": "separate",
@@ -238,21 +242,17 @@
       "lastItemDate": "2026-07-27T12:51:42.000Z"
     }
   },
-  "meta": null,
-  "nodeGroups": [],
   "pinData": {},
-  "versionId": "6dde5a6f-3548-4fcb-b215-f7a4706ed581",
-  "activeVersionId": null,
-  "triggerCount": 2,
+  "meta": null,
+  "tags": [],
   "shared": [
     {
-      "updatedAt": "2026-03-27T13:46:50.927Z",
-      "createdAt": "2026-03-27T13:46:50.927Z",
       "role": "workflow:owner",
       "workflowId": "LcNJmWBfnxEd118S",
-      "projectId": "cNMj0K6AdJmi0OAZ"
+      "projectId": "cNMj0K6AdJmi0OAZ",
+      "createdAt": "2026-03-27T13:46:50.927Z",
+      "updatedAt": "2026-03-27T13:46:50.927Z"
     }
   ],
-  "activeVersion": null,
-  "tags": []
+  "activeVersion": null
 }
