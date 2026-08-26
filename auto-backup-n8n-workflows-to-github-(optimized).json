@@ -1,10 +1,13 @@
 {
-  "updatedAt": "2026-02-23T06:52:02.700Z",
-  "createdAt": "2026-02-13T02:34:23.915Z",
   "id": "2PfYPC9DpC8XdniY",
   "name": "Auto-Backup n8n Workflows to GitHub (Optimized)",
   "active": true,
+  "activeVersionId": "45a37f34-5983-43f0-ab57-52fa9366cbf2",
+  "createdAt": "2026-02-13T02:34:23.915Z",
+  "updatedAt": "2026-02-23T06:52:02.700Z",
   "isArchived": false,
+  "versionId": "45a37f34-5983-43f0-ab57-52fa9366cbf2",
+  "triggerCount": 1,
   "nodes": [
     {
       "parameters": {
@@ -426,6 +429,7 @@
       ]
     }
   },
+  "nodeGroups": [],
   "settings": {
     "executionOrder": "v1",
     "saveDataErrorExecution": "all",
@@ -449,24 +453,19 @@
       ]
     }
   },
-  "meta": null,
-  "nodeGroups": [],
   "pinData": {},
-  "versionId": "45a37f34-5983-43f0-ab57-52fa9366cbf2",
-  "activeVersionId": "45a37f34-5983-43f0-ab57-52fa9366cbf2",
-  "triggerCount": 1,
+  "meta": null,
+  "tags": [],
   "shared": [
     {
-      "updatedAt": "2026-02-13T02:34:23.915Z",
-      "createdAt": "2026-02-13T02:34:23.915Z",
       "role": "workflow:owner",
       "workflowId": "2PfYPC9DpC8XdniY",
-      "projectId": "cNMj0K6AdJmi0OAZ"
+      "projectId": "cNMj0K6AdJmi0OAZ",
+      "createdAt": "2026-02-13T02:34:23.915Z",
+      "updatedAt": "2026-02-13T02:34:23.915Z"
     }
   ],
   "activeVersion": {
-    "updatedAt": "2026-02-23T06:51:40.539Z",
-    "createdAt": "2026-02-13T05:16:33.145Z",
     "versionId": "45a37f34-5983-43f0-ab57-52fa9366cbf2",
     "workflowId": "2PfYPC9DpC8XdniY",
     "nodes": [
@@ -894,7 +893,8 @@
     "authors": "Administrator NTLx",
     "name": "Version 45a37f34",
     "description": "",
-    "autosaved": true
-  },
-  "tags": []
+    "autosaved": true,
+    "createdAt": "2026-02-13T05:16:33.145Z",
+    "updatedAt": "2026-02-23T06:51:40.539Z"
+  }
 }
