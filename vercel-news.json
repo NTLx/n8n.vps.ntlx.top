@@ -1,10 +1,13 @@
 {
-  "updatedAt": "2026-02-28T07:58:39.658Z",
-  "createdAt": "2026-02-23T10:02:52.293Z",
   "id": "mgtUbitkQUzzonwY",
   "name": "Vercel News",
   "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-02-23T10:02:52.293Z",
+  "updatedAt": "2026-02-28T07:58:39.658Z",
   "isArchived": false,
+  "versionId": "a2c52fb0-dbe1-4e8f-b122-f306f2f791ce",
+  "triggerCount": 1,
   "nodes": [
     {
       "parameters": {
@@ -191,6 +194,7 @@
       ]
     }
   },
+  "nodeGroups": [],
   "settings": {
     "callerPolicy": "workflowsFromSameOwner",
     "availableInMCP": false,
@@ -209,21 +213,17 @@
       "lastItemDate": "2026-02-27T13:00:00.000Z"
     }
   },
-  "meta": null,
-  "nodeGroups": [],
   "pinData": {},
-  "versionId": "a2c52fb0-dbe1-4e8f-b122-f306f2f791ce",
-  "activeVersionId": null,
-  "triggerCount": 1,
+  "meta": null,
+  "tags": [],
   "shared": [
     {
-      "updatedAt": "2026-02-23T10:02:52.293Z",
-      "createdAt": "2026-02-23T10:02:52.293Z",
       "role": "workflow:owner",
       "workflowId": "mgtUbitkQUzzonwY",
-      "projectId": "cNMj0K6AdJmi0OAZ"
+      "projectId": "cNMj0K6AdJmi0OAZ",
+      "createdAt": "2026-02-23T10:02:52.293Z",
+      "updatedAt": "2026-02-23T10:02:52.293Z"
     }
   ],
-  "activeVersion": null,
-  "tags": []
+  "activeVersion": null
 }
