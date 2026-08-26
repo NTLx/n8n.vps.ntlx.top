@@ -1,10 +1,13 @@
 {
-  "updatedAt": "2026-02-28T07:57:12.908Z",
-  "createdAt": "2026-02-23T10:01:04.180Z",
   "id": "Iz7hOOzfGsZXfeAI",
   "name": "LangChain Blog",
   "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-02-23T10:01:04.180Z",
+  "updatedAt": "2026-02-28T07:57:12.908Z",
   "isArchived": false,
+  "versionId": "56b417f9-634f-4a1e-9c73-b12cbac400e4",
+  "triggerCount": 1,
   "nodes": [
     {
       "parameters": {
@@ -191,6 +194,7 @@
       ]
     }
   },
+  "nodeGroups": [],
   "settings": {
     "callerPolicy": "workflowsFromSameOwner",
     "availableInMCP": false,
@@ -209,21 +213,17 @@
       "lastItemDate": "2026-02-26T04:28:00.000Z"
     }
   },
-  "meta": null,
-  "nodeGroups": [],
   "pinData": {},
-  "versionId": "56b417f9-634f-4a1e-9c73-b12cbac400e4",
-  "activeVersionId": null,
-  "triggerCount": 1,
+  "meta": null,
+  "tags": [],
   "shared": [
     {
-      "updatedAt": "2026-02-23T10:01:04.180Z",
-      "createdAt": "2026-02-23T10:01:04.180Z",
       "role": "workflow:owner",
       "workflowId": "Iz7hOOzfGsZXfeAI",
-      "projectId": "cNMj0K6AdJmi0OAZ"
+      "projectId": "cNMj0K6AdJmi0OAZ",
+      "createdAt": "2026-02-23T10:01:04.180Z",
+      "updatedAt": "2026-02-23T10:01:04.180Z"
     }
   ],
-  "activeVersion": null,
-  "tags": []
+  "activeVersion": null
 }
