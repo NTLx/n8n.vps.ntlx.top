@@ -1,10 +1,13 @@
 {
-  "updatedAt": "2026-03-01T14:17:56.191Z",
-  "createdAt": "2026-02-12T08:00:08.087Z",
   "id": "3LE3BnPfHSuIZCVR",
   "name": "Error Notification",
   "active": true,
+  "activeVersionId": "fc32e907-4837-4ffa-9608-6f26bff581f5",
+  "createdAt": "2026-02-12T08:00:08.087Z",
+  "updatedAt": "2026-03-01T14:17:56.191Z",
   "isArchived": false,
+  "versionId": "fc32e907-4837-4ffa-9608-6f26bff581f5",
+  "triggerCount": 0,
   "nodes": [
     {
       "parameters": {},
@@ -333,6 +336,7 @@
       ]
     }
   },
+  "nodeGroups": [],
   "settings": {
     "executionOrder": "v1",
     "callerPolicy": "workflowsFromSameOwner",
@@ -346,26 +350,21 @@
     "timeSavedPerExecution": 5
   },
   "staticData": null,
+  "pinData": {},
   "meta": {
     "templateCredsSetupCompleted": true
   },
-  "nodeGroups": [],
-  "pinData": {},
-  "versionId": "fc32e907-4837-4ffa-9608-6f26bff581f5",
-  "activeVersionId": "fc32e907-4837-4ffa-9608-6f26bff581f5",
-  "triggerCount": 0,
+  "tags": [],
   "shared": [
     {
-      "updatedAt": "2026-02-12T08:00:08.087Z",
-      "createdAt": "2026-02-12T08:00:08.087Z",
       "role": "workflow:owner",
       "workflowId": "3LE3BnPfHSuIZCVR",
-      "projectId": "cNMj0K6AdJmi0OAZ"
+      "projectId": "cNMj0K6AdJmi0OAZ",
+      "createdAt": "2026-02-12T08:00:08.087Z",
+      "updatedAt": "2026-02-12T08:00:08.087Z"
     }
   ],
   "activeVersion": {
-    "updatedAt": "2026-03-01T14:17:26.717Z",
-    "createdAt": "2026-03-01T14:17:22.635Z",
     "versionId": "fc32e907-4837-4ffa-9608-6f26bff581f5",
     "workflowId": "3LE3BnPfHSuIZCVR",
     "nodes": [
@@ -700,7 +699,8 @@
     "authors": "Administrator NTLx",
     "name": "Version fc32e907",
     "description": "",
-    "autosaved": true
-  },
-  "tags": []
+    "autosaved": true,
+    "createdAt": "2026-03-01T14:17:22.635Z",
+    "updatedAt": "2026-03-01T14:17:26.717Z"
+  }
 }
