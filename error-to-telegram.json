@@ -1,10 +1,13 @@
 {
-  "updatedAt": "2026-02-23T06:50:59.983Z",
-  "createdAt": "2026-02-11T07:09:11.118Z",
   "id": "qvqgsnq3abzHUseIh7U0f",
   "name": "Error to Telegram",
   "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-02-11T07:09:11.118Z",
+  "updatedAt": "2026-02-23T06:50:59.983Z",
   "isArchived": true,
+  "versionId": "e57d36bc-cbb0-4404-a7cb-e2b343199329",
+  "triggerCount": 0,
   "nodes": [
     {
       "parameters": {},
@@ -53,6 +56,7 @@
       ]
     }
   },
+  "nodeGroups": [],
   "settings": {
     "executionOrder": "v1",
     "binaryMode": "separate",
@@ -62,23 +66,19 @@
     "timeSavedPerExecution": 5
   },
   "staticData": null,
+  "pinData": {},
   "meta": {
     "templateCredsSetupCompleted": true
   },
-  "nodeGroups": [],
-  "pinData": {},
-  "versionId": "e57d36bc-cbb0-4404-a7cb-e2b343199329",
-  "activeVersionId": null,
-  "triggerCount": 0,
+  "tags": [],
   "shared": [
     {
-      "updatedAt": "2026-02-11T07:09:11.118Z",
-      "createdAt": "2026-02-11T07:09:11.118Z",
       "role": "workflow:owner",
       "workflowId": "qvqgsnq3abzHUseIh7U0f",
-      "projectId": "cNMj0K6AdJmi0OAZ"
+      "projectId": "cNMj0K6AdJmi0OAZ",
+      "createdAt": "2026-02-11T07:09:11.118Z",
+      "updatedAt": "2026-02-11T07:09:11.118Z"
     }
   ],
-  "activeVersion": null,
-  "tags": []
+  "activeVersion": null
 }
