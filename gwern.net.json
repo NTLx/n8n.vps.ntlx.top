@@ -1,10 +1,13 @@
 {
-  "updatedAt": "2026-02-28T07:59:13.988Z",
-  "createdAt": "2026-02-23T10:03:51.065Z",
   "id": "tfDodfjOzIu939TZ",
   "name": "gwern.net",
   "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-02-23T10:03:51.065Z",
+  "updatedAt": "2026-02-28T07:59:13.988Z",
   "isArchived": false,
+  "versionId": "a915258a-2e24-4c5a-b29e-0cb2349e75ac",
+  "triggerCount": 1,
   "nodes": [
     {
       "parameters": {
@@ -191,6 +194,7 @@
       ]
     }
   },
+  "nodeGroups": [],
   "settings": {
     "callerPolicy": "workflowsFromSameOwner",
     "availableInMCP": false,
@@ -209,21 +213,17 @@
       "lastItemDate": "2021-06-11T14:16:22.000Z"
     }
   },
-  "meta": null,
-  "nodeGroups": [],
   "pinData": {},
-  "versionId": "a915258a-2e24-4c5a-b29e-0cb2349e75ac",
-  "activeVersionId": null,
-  "triggerCount": 1,
+  "meta": null,
+  "tags": [],
   "shared": [
     {
-      "updatedAt": "2026-02-23T10:03:51.065Z",
-      "createdAt": "2026-02-23T10:03:51.065Z",
       "role": "workflow:owner",
       "workflowId": "tfDodfjOzIu939TZ",
-      "projectId": "cNMj0K6AdJmi0OAZ"
+      "projectId": "cNMj0K6AdJmi0OAZ",
+      "createdAt": "2026-02-23T10:03:51.065Z",
+      "updatedAt": "2026-02-23T10:03:51.065Z"
     }
   ],
-  "activeVersion": null,
-  "tags": []
+  "activeVersion": null
 }
