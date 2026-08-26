@@ -1,10 +1,13 @@
 {
-  "updatedAt": "2026-05-12T07:18:59.507Z",
-  "createdAt": "2026-05-12T07:07:15.446Z",
   "id": "533u1MJOLbGn5t7H",
   "name": "Follow Builders",
   "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-05-12T07:07:15.446Z",
+  "updatedAt": "2026-05-12T07:18:59.507Z",
   "isArchived": false,
+  "versionId": "faf695f4-11aa-44f1-9a5f-aa1a7c06b29b",
+  "triggerCount": 0,
   "nodes": [
     {
       "parameters": {
@@ -171,27 +174,24 @@
       ]
     }
   },
+  "nodeGroups": [],
   "settings": {
     "executionOrder": "v1",
     "binaryMode": "separate",
     "availableInMCP": false
   },
   "staticData": null,
-  "meta": null,
-  "nodeGroups": [],
   "pinData": {},
-  "versionId": "faf695f4-11aa-44f1-9a5f-aa1a7c06b29b",
-  "activeVersionId": null,
-  "triggerCount": 0,
+  "meta": null,
+  "tags": [],
   "shared": [
     {
-      "updatedAt": "2026-05-12T07:07:15.446Z",
-      "createdAt": "2026-05-12T07:07:15.446Z",
       "role": "workflow:owner",
       "workflowId": "533u1MJOLbGn5t7H",
-      "projectId": "cNMj0K6AdJmi0OAZ"
+      "projectId": "cNMj0K6AdJmi0OAZ",
+      "createdAt": "2026-05-12T07:07:15.446Z",
+      "updatedAt": "2026-05-12T07:07:15.446Z"
     }
   ],
-  "activeVersion": null,
-  "tags": []
+  "activeVersion": null
 }
