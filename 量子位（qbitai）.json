@@ -1,10 +1,13 @@
 {
-  "updatedAt": "2026-02-28T07:27:47.691Z",
-  "createdAt": "2026-02-23T08:02:48.758Z",
   "id": "mwlYBgu0iB01qIJF",
   "name": "量子位（QbitAI）",
   "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-02-23T08:02:48.758Z",
+  "updatedAt": "2026-02-28T07:27:47.691Z",
   "isArchived": false,
+  "versionId": "07146261-2f9a-419b-923e-1f7c722e0358",
+  "triggerCount": 1,
   "nodes": [
     {
       "parameters": {
@@ -191,6 +194,7 @@
       ]
     }
   },
+  "nodeGroups": [],
   "settings": {
     "callerPolicy": "workflowsFromSameOwner",
     "availableInMCP": false,
@@ -209,21 +213,17 @@
       "lastItemDate": "2026-02-28T03:50:45.000Z"
     }
   },
-  "meta": null,
-  "nodeGroups": [],
   "pinData": {},
-  "versionId": "07146261-2f9a-419b-923e-1f7c722e0358",
-  "activeVersionId": null,
-  "triggerCount": 1,
+  "meta": null,
+  "tags": [],
   "shared": [
     {
-      "updatedAt": "2026-02-23T08:02:48.758Z",
-      "createdAt": "2026-02-23T08:02:48.758Z",
       "role": "workflow:owner",
       "workflowId": "mwlYBgu0iB01qIJF",
-      "projectId": "cNMj0K6AdJmi0OAZ"
+      "projectId": "cNMj0K6AdJmi0OAZ",
+      "createdAt": "2026-02-23T08:02:48.758Z",
+      "updatedAt": "2026-02-23T08:02:48.758Z"
     }
   ],
-  "activeVersion": null,
-  "tags": []
+  "activeVersion": null
 }
