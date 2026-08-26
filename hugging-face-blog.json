@@ -1,10 +1,13 @@
 {
-  "updatedAt": "2026-02-28T07:54:26.775Z",
-  "createdAt": "2026-02-23T09:45:27.781Z",
   "id": "2RAsOcq2jodTRV0D",
   "name": "Hugging Face Blog",
   "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-02-23T09:45:27.781Z",
+  "updatedAt": "2026-02-28T07:54:26.775Z",
   "isArchived": false,
+  "versionId": "50a8569b-b5ac-4b59-aa46-d5661992aef2",
+  "triggerCount": 1,
   "nodes": [
     {
       "parameters": {
@@ -191,6 +194,7 @@
       ]
     }
   },
+  "nodeGroups": [],
   "settings": {
     "callerPolicy": "workflowsFromSameOwner",
     "availableInMCP": false,
@@ -209,21 +213,17 @@
       "lastItemDate": "2026-03-24T02:01:52.000Z"
     }
   },
-  "meta": null,
-  "nodeGroups": [],
   "pinData": {},
-  "versionId": "50a8569b-b5ac-4b59-aa46-d5661992aef2",
-  "activeVersionId": null,
-  "triggerCount": 1,
+  "meta": null,
+  "tags": [],
   "shared": [
     {
-      "updatedAt": "2026-02-23T09:45:27.781Z",
-      "createdAt": "2026-02-23T09:45:27.781Z",
       "role": "workflow:owner",
       "workflowId": "2RAsOcq2jodTRV0D",
-      "projectId": "cNMj0K6AdJmi0OAZ"
+      "projectId": "cNMj0K6AdJmi0OAZ",
+      "createdAt": "2026-02-23T09:45:27.781Z",
+      "updatedAt": "2026-02-23T09:45:27.781Z"
     }
   ],
-  "activeVersion": null,
-  "tags": []
+  "activeVersion": null
 }
