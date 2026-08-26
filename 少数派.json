@@ -1,10 +1,13 @@
 {
-  "updatedAt": "2026-02-28T07:29:47.639Z",
-  "createdAt": "2026-02-23T08:52:41.636Z",
   "id": "p0DwBgVKtSeCE4xZ",
   "name": "少数派",
   "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-02-23T08:52:41.636Z",
+  "updatedAt": "2026-02-28T07:29:47.639Z",
   "isArchived": false,
+  "versionId": "369170b1-9329-4e6a-a28e-e5da0e9e031c",
+  "triggerCount": 1,
   "nodes": [
     {
       "parameters": {
@@ -191,6 +194,7 @@
       ]
     }
   },
+  "nodeGroups": [],
   "settings": {
     "callerPolicy": "workflowsFromSameOwner",
     "availableInMCP": false,
@@ -209,21 +213,17 @@
       "lastItemDate": "2026-02-28T05:47:35.000Z"
     }
   },
-  "meta": null,
-  "nodeGroups": [],
   "pinData": {},
-  "versionId": "369170b1-9329-4e6a-a28e-e5da0e9e031c",
-  "activeVersionId": null,
-  "triggerCount": 1,
+  "meta": null,
+  "tags": [],
   "shared": [
     {
-      "updatedAt": "2026-02-23T08:52:41.636Z",
-      "createdAt": "2026-02-23T08:52:41.636Z",
       "role": "workflow:owner",
       "workflowId": "p0DwBgVKtSeCE4xZ",
-      "projectId": "cNMj0K6AdJmi0OAZ"
+      "projectId": "cNMj0K6AdJmi0OAZ",
+      "createdAt": "2026-02-23T08:52:41.636Z",
+      "updatedAt": "2026-02-23T08:52:41.636Z"
     }
   ],
-  "activeVersion": null,
-  "tags": []
+  "activeVersion": null
 }
