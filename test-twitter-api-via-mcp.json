@@ -1,10 +1,13 @@
 {
-  "updatedAt": "2026-05-14T01:24:42.620Z",
-  "createdAt": "2026-05-14T01:16:20.647Z",
   "id": "NQInqgcNTEs2q9Nm",
   "name": "Test Twitter API via MCP",
   "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-05-14T01:16:20.647Z",
+  "updatedAt": "2026-05-14T01:24:42.620Z",
   "isArchived": false,
+  "versionId": "a593c504-5f4e-4c2d-ac2a-7147c9453e44",
+  "triggerCount": 0,
   "nodes": [
     {
       "parameters": {
@@ -116,28 +119,25 @@
       ]
     }
   },
+  "nodeGroups": [],
   "settings": {
     "executionOrder": "v1",
     "binaryMode": "separate"
   },
   "staticData": null,
+  "pinData": {},
   "meta": {
     "templateCredsSetupCompleted": true
   },
-  "nodeGroups": [],
-  "pinData": {},
-  "versionId": "a593c504-5f4e-4c2d-ac2a-7147c9453e44",
-  "activeVersionId": null,
-  "triggerCount": 0,
+  "tags": [],
   "shared": [
     {
-      "updatedAt": "2026-05-14T01:16:20.647Z",
-      "createdAt": "2026-05-14T01:16:20.647Z",
       "role": "workflow:owner",
       "workflowId": "NQInqgcNTEs2q9Nm",
-      "projectId": "cNMj0K6AdJmi0OAZ"
+      "projectId": "cNMj0K6AdJmi0OAZ",
+      "createdAt": "2026-05-14T01:16:20.647Z",
+      "updatedAt": "2026-05-14T01:16:20.647Z"
     }
   ],
-  "activeVersion": null,
-  "tags": []
+  "activeVersion": null
 }
