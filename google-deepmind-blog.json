@@ -1,10 +1,13 @@
 {
-  "updatedAt": "2026-02-28T07:41:53.951Z",
-  "createdAt": "2026-02-23T09:30:12.118Z",
   "id": "lrel4DHW6WhzFtTI",
   "name": "Google DeepMind Blog",
   "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-02-23T09:30:12.118Z",
+  "updatedAt": "2026-02-28T07:41:53.951Z",
   "isArchived": false,
+  "versionId": "81e54111-ff63-45b4-b2e6-489351dc5891",
+  "triggerCount": 1,
   "nodes": [
     {
       "parameters": {
@@ -191,6 +194,7 @@
       ]
     }
   },
+  "nodeGroups": [],
   "settings": {
     "callerPolicy": "workflowsFromSameOwner",
     "availableInMCP": false,
@@ -209,21 +213,17 @@
       "lastItemDate": "2026-02-26T16:01:50.000Z"
     }
   },
-  "meta": null,
-  "nodeGroups": [],
   "pinData": {},
-  "versionId": "81e54111-ff63-45b4-b2e6-489351dc5891",
-  "activeVersionId": null,
-  "triggerCount": 1,
+  "meta": null,
+  "tags": [],
   "shared": [
     {
-      "updatedAt": "2026-02-23T09:30:12.118Z",
-      "createdAt": "2026-02-23T09:30:12.118Z",
       "role": "workflow:owner",
       "workflowId": "lrel4DHW6WhzFtTI",
-      "projectId": "cNMj0K6AdJmi0OAZ"
+      "projectId": "cNMj0K6AdJmi0OAZ",
+      "createdAt": "2026-02-23T09:30:12.118Z",
+      "updatedAt": "2026-02-23T09:30:12.118Z"
     }
   ],
-  "activeVersion": null,
-  "tags": []
+  "activeVersion": null
 }
