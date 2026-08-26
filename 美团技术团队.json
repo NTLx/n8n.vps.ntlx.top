@@ -1,10 +1,13 @@
 {
-  "updatedAt": "2026-02-28T07:59:47.179Z",
-  "createdAt": "2026-02-23T10:04:46.863Z",
   "id": "LfX2r1l0TddcPPBB",
   "name": "美团技术团队",
   "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-02-23T10:04:46.863Z",
+  "updatedAt": "2026-02-28T07:59:47.179Z",
   "isArchived": false,
+  "versionId": "4fc19b8a-b56b-4c29-ab09-0b4a432b523b",
+  "triggerCount": 1,
   "nodes": [
     {
       "parameters": {
@@ -191,6 +194,7 @@
       ]
     }
   },
+  "nodeGroups": [],
   "settings": {
     "callerPolicy": "workflowsFromSameOwner",
     "availableInMCP": false,
@@ -209,21 +213,17 @@
       "lastItemDate": "2026-02-10T00:00:00.000Z"
     }
   },
-  "meta": null,
-  "nodeGroups": [],
   "pinData": {},
-  "versionId": "4fc19b8a-b56b-4c29-ab09-0b4a432b523b",
-  "activeVersionId": null,
-  "triggerCount": 1,
+  "meta": null,
+  "tags": [],
   "shared": [
     {
-      "updatedAt": "2026-02-23T10:04:46.863Z",
-      "createdAt": "2026-02-23T10:04:46.863Z",
       "role": "workflow:owner",
       "workflowId": "LfX2r1l0TddcPPBB",
-      "projectId": "cNMj0K6AdJmi0OAZ"
+      "projectId": "cNMj0K6AdJmi0OAZ",
+      "createdAt": "2026-02-23T10:04:46.863Z",
+      "updatedAt": "2026-02-23T10:04:46.863Z"
     }
   ],
-  "activeVersion": null,
-  "tags": []
+  "activeVersion": null
 }
