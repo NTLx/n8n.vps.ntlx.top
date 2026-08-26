@@ -1,10 +1,13 @@
 {
-  "updatedAt": "2026-02-28T07:40:36.571Z",
-  "createdAt": "2026-02-23T09:05:50.718Z",
   "id": "2I9BEjh47A2B5wpl",
   "name": "宝玉的分享",
   "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-02-23T09:05:50.718Z",
+  "updatedAt": "2026-02-28T07:40:36.571Z",
   "isArchived": false,
+  "versionId": "08d0230e-6a84-4d7c-93f3-67b334f6f7a2",
+  "triggerCount": 1,
   "nodes": [
     {
       "parameters": {
@@ -191,6 +194,7 @@
       ]
     }
   },
+  "nodeGroups": [],
   "settings": {
     "callerPolicy": "workflowsFromSameOwner",
     "availableInMCP": false,
@@ -209,21 +213,17 @@
       "lastItemDate": "2026-02-27T00:00:00.000Z"
     }
   },
-  "meta": null,
-  "nodeGroups": [],
   "pinData": {},
-  "versionId": "08d0230e-6a84-4d7c-93f3-67b334f6f7a2",
-  "activeVersionId": null,
-  "triggerCount": 1,
+  "meta": null,
+  "tags": [],
   "shared": [
     {
-      "updatedAt": "2026-02-23T09:05:50.718Z",
-      "createdAt": "2026-02-23T09:05:50.718Z",
       "role": "workflow:owner",
       "workflowId": "2I9BEjh47A2B5wpl",
-      "projectId": "cNMj0K6AdJmi0OAZ"
+      "projectId": "cNMj0K6AdJmi0OAZ",
+      "createdAt": "2026-02-23T09:05:50.718Z",
+      "updatedAt": "2026-02-23T09:05:50.718Z"
     }
   ],
-  "activeVersion": null,
-  "tags": []
+  "activeVersion": null
 }
