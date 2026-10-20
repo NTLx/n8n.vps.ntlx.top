@@ -1,0 +1,151 @@
+{
+  "id": "AKwuvPIWm8mmJH6h",
+  "name": "Nutify",
+  "active": true,
+  "activeVersionId": "8a9ebd0e-cc69-4176-bfa8-3e7883effd7d",
+  "createdAt": "2026-10-19T06:27:25.767Z",
+  "updatedAt": "2026-10-19T08:24:13.832Z",
+  "isArchived": false,
+  "versionId": "8a9ebd0e-cc69-4176-bfa8-3e7883effd7d",
+  "triggerCount": 1,
+  "nodes": [
+    {
+      "id": "5b182301-e82f-4b22-934b-2ae08ce17f0d",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.2,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "612ce8fd-c1bd-4001-a8e4-17d92f524b02",
+        "options": {}
+      },
+      "webhookId": "612ce8fd-c1bd-4001-a8e4-17d92f524b02"
+    },
+    {
+      "id": "9d7333c9-2773-448a-8e89-4ebb32cc6073",
+      "name": "发送钉钉 Markdown 消息",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        224,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://oapi.dingtalk.com/robot/send?access_token=f787a1d70308748cd42df998c970af75931e7878aa5fad0be498e4cef641b6ee",
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"msgtype\": \"markdown\",\n  \"markdown\": {\n    \"title\": \"{{ ($json.body.title || 'Nutify UPS 事件').toJsonString().slice(1, -1) }}\",\n    \"text\": \"# 🚨 {{ ($json.body.title || 'Nutify UPS 事件').toJsonString().slice(1, -1) }}\\n\\n> **事件类型：** {{ ($json.body.event_type || '-').toJsonString().slice(1, -1) }}\\n> **优先级：** P{{ (String($json.body.priority ?? '-')).toJsonString().slice(1, -1) }}\\n> **服务器：** {{ ($json.body.server_name || '-').toJsonString().slice(1, -1) }}\\n> **事件时间：** {{ ($json.body.event_timestamp || $json.body.timestamp || '-').toJsonString().slice(1, -1) }}\\n\\n**事件描述：** {{ ($json.body.event_description || $json.body.message || '-').toJsonString().slice(1, -1) }}\\n\\n#### 🔋 UPS 数据\\n\\n- **型号：** {{ ($json.body.ups_data?.ups_model || '-').toJsonString().slice(1, -1) }}\\n- **序列号：** {{ ($json.body.ups_data?.device_serial || '-').toJsonString().slice(1, -1) }}\\n- **状态：** {{ ($json.body.ups_data?.ups_status || '-').toJsonString().slice(1, -1) }}\\n- **电池电量：** {{ (String($json.body.ups_data?.battery_charge || '-')).toJsonString().slice(1, -1) }}%\\n- **输入电压：** {{ ($json.body.ups_data?.input_voltage || '-').toJsonString().slice(1, -1) }}\\n\\n{{ $json.body.test ? '> ⚠️ 这是一条来自 Nutify 的测试消息' : '' }}\\n\\n*Nutify UPS Monitor · 接收于 {{ $now.format('yyyy-LL-dd HH:mm:ss') }}*\"\n  },\n  \"at\": {\n    \"isAtAll\": false\n  }\n}",
+        "options": {}
+      }
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "发送钉钉 Markdown 消息",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "timeSavedMode": "fixed",
+    "errorWorkflow": "3LE3BnPfHSuIZCVR",
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "none",
+    "saveExecutionProgress": false,
+    "saveManualExecutions": false,
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false,
+    "timeSavedPerExecution": 5
+  },
+  "staticData": null,
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "AKwuvPIWm8mmJH6h",
+      "projectId": "cNMj0K6AdJmi0OAZ",
+      "createdAt": "2026-10-19T06:27:25.767Z",
+      "updatedAt": "2026-10-19T06:27:25.767Z"
+    }
+  ],
+  "activeVersion": {
+    "versionId": "8a9ebd0e-cc69-4176-bfa8-3e7883effd7d",
+    "workflowId": "AKwuvPIWm8mmJH6h",
+    "nodes": [
+      {
+        "id": "5b182301-e82f-4b22-934b-2ae08ce17f0d",
+        "name": "Webhook",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.2,
+        "position": [
+          0,
+          0
+        ],
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "612ce8fd-c1bd-4001-a8e4-17d92f524b02",
+          "options": {}
+        },
+        "webhookId": "612ce8fd-c1bd-4001-a8e4-17d92f524b02"
+      },
+      {
+        "id": "9d7333c9-2773-448a-8e89-4ebb32cc6073",
+        "name": "发送钉钉 Markdown 消息",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          224,
+          0
+        ],
+        "parameters": {
+          "method": "POST",
+          "url": "https://oapi.dingtalk.com/robot/send?access_token=f787a1d70308748cd42df998c970af75931e7878aa5fad0be498e4cef641b6ee",
+          "sendBody": true,
+          "contentType": "json",
+          "specifyBody": "json",
+          "jsonBody": "={\n  \"msgtype\": \"markdown\",\n  \"markdown\": {\n    \"title\": \"{{ ($json.body.title || 'Nutify UPS 事件').toJsonString().slice(1, -1) }}\",\n    \"text\": \"# 🚨 {{ ($json.body.title || 'Nutify UPS 事件').toJsonString().slice(1, -1) }}\\n\\n> **事件类型：** {{ ($json.body.event_type || '-').toJsonString().slice(1, -1) }}\\n> **优先级：** P{{ (String($json.body.priority ?? '-')).toJsonString().slice(1, -1) }}\\n> **服务器：** {{ ($json.body.server_name || '-').toJsonString().slice(1, -1) }}\\n> **事件时间：** {{ ($json.body.event_timestamp || $json.body.timestamp || '-').toJsonString().slice(1, -1) }}\\n\\n**事件描述：** {{ ($json.body.event_description || $json.body.message || '-').toJsonString().slice(1, -1) }}\\n\\n#### 🔋 UPS 数据\\n\\n- **型号：** {{ ($json.body.ups_data?.ups_model || '-').toJsonString().slice(1, -1) }}\\n- **序列号：** {{ ($json.body.ups_data?.device_serial || '-').toJsonString().slice(1, -1) }}\\n- **状态：** {{ ($json.body.ups_data?.ups_status || '-').toJsonString().slice(1, -1) }}\\n- **电池电量：** {{ (String($json.body.ups_data?.battery_charge || '-')).toJsonString().slice(1, -1) }}%\\n- **输入电压：** {{ ($json.body.ups_data?.input_voltage || '-').toJsonString().slice(1, -1) }}\\n\\n{{ $json.body.test ? '> ⚠️ 这是一条来自 Nutify 的测试消息' : '' }}\\n\\n*Nutify UPS Monitor · 接收于 {{ $now.format('yyyy-LL-dd HH:mm:ss') }}*\"\n  },\n  \"at\": {\n    \"isAtAll\": false\n  }\n}",
+          "options": {}
+        }
+      }
+    ],
+    "connections": {
+      "Webhook": {
+        "main": [
+          [
+            {
+              "node": "发送钉钉 Markdown 消息",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "nodeGroups": [],
+    "authors": "Administrator NTLx",
+    "name": "Version 8a9ebd0e",
+    "description": "",
+    "autosaved": false,
+    "createdAt": "2026-10-19T08:05:06.185Z",
+    "updatedAt": "2026-10-19T08:11:14.986Z"
+  }
+}
