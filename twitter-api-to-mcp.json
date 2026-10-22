@@ -4,7 +4,7 @@
   "active": true,
   "activeVersionId": "db76c465-adff-4832-acb7-728371e46d1b",
   "createdAt": "2026-05-14T01:05:53.160Z",
-  "updatedAt": "2026-05-14T01:25:10.219Z",
+  "updatedAt": "2026-10-22T04:04:31.179Z",
   "isArchived": false,
   "versionId": "db76c465-adff-4832-acb7-728371e46d1b",
   "triggerCount": 1,
@@ -67,7 +67,8 @@
   "nodeGroups": [],
   "settings": {
     "executionOrder": "v1",
-    "binaryMode": "separate"
+    "binaryMode": "separate",
+    "availableInMCP": true
   },
   "staticData": null,
   "pinData": {},
