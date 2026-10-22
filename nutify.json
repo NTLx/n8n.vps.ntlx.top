@@ -2,17 +2,18 @@
   "id": "AKwuvPIWm8mmJH6h",
   "name": "Nutify",
   "active": true,
-  "activeVersionId": "2ffb5523-0339-44d8-8520-3a0f8e7f0570",
+  "activeVersionId": "c33f7db4-ac4b-4ed3-be95-9ec8d2674e8c",
   "createdAt": "2026-10-19T06:27:25.767Z",
-  "updatedAt": "2026-10-20T04:12:21.705Z",
+  "updatedAt": "2026-10-22T04:21:50.561Z",
   "isArchived": false,
-  "versionId": "2ffb5523-0339-44d8-8520-3a0f8e7f0570",
+  "versionId": "c33f7db4-ac4b-4ed3-be95-9ec8d2674e8c",
   "triggerCount": 1,
   "nodes": [
     {
       "parameters": {
         "httpMethod": "POST",
         "path": "612ce8fd-c1bd-4001-a8e4-17d92f524b02",
+        "authentication": "headerAuth",
         "options": {}
       },
       "id": "5b182301-e82f-4b22-934b-2ae08ce17f0d",
@@ -23,12 +24,20 @@
         0,
         0
       ],
-      "webhookId": "612ce8fd-c1bd-4001-a8e4-17d92f524b02"
+      "webhookId": "612ce8fd-c1bd-4001-a8e4-17d92f524b02",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "RvmfH6qWSIUABPQO",
+          "name": "n8n Webhook（Bearer Auth）"
+        }
+      }
     },
     {
       "parameters": {
         "method": "POST",
-        "url": "https://oapi.dingtalk.com/robot/send?access_token=f787a1d70308748cd42df998c970af75931e7878aa5fad0be498e4cef641b6ee",
+        "url": "https://oapi.dingtalk.com/robot/send",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpQueryAuth",
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={\n  \"msgtype\": \"markdown\",\n  \"markdown\": {\n    \"title\": \"{{ ($json.body.title || 'Nutify UPS 事件').toJsonString().slice(1, -1) }}\",\n    \"text\": \"# 🚨 {{ ($json.body.title || 'Nutify UPS 事件').toJsonString().slice(1, -1) }}\\n\\n> **事件类型：** {{ ($json.body.event_type || '-').toJsonString().slice(1, -1) }}\\n> **优先级：** P{{ (String($json.body.priority ?? '-')).toJsonString().slice(1, -1) }}\\n> **服务器：** {{ ($json.body.server_name || '-').toJsonString().slice(1, -1) }}\\n> **事件时间：** {{ ($json.body.event_timestamp || $json.body.timestamp || '-').toJsonString().slice(1, -1) }}\\n\\n**事件描述：** {{ ($json.body.event_description || $json.body.message || '-').toJsonString().slice(1, -1) }}\\n\\n#### 🔋 UPS 数据\\n\\n- **型号：** {{ ($json.body.ups_data?.ups_model || '-').toJsonString().slice(1, -1) }}\\n- **序列号：** {{ ($json.body.ups_data?.device_serial || '-').toJsonString().slice(1, -1) }}\\n- **状态：** {{ ($json.body.ups_data?.ups_status || '-').toJsonString().slice(1, -1) }}\\n- **电池电量：** {{ (String($json.body.ups_data?.battery_charge || '-')).toJsonString().slice(1, -1) }}\\n- **输入电压：** {{ ($json.body.ups_data?.input_voltage || '-').toJsonString().slice(1, -1) }}\\n\\n{{ $json.body.test ? '> ⚠️ 这是一条来自 Nutify 的测试消息' : '' }}\\n\\n*Nutify UPS Monitor · 接收于 {{ $now.format('yyyy-LL-dd HH:mm:ss') }}*\"\n  },\n  \"at\": {\n    \"isAtAll\": false\n  }\n}",
@@ -41,7 +50,13 @@
       "position": [
         224,
         0
-      ]
+      ],
+      "credentials": {
+        "httpQueryAuth": {
+          "id": "BhuH8Wpmqr9Nndwy",
+          "name": "四有青年 Notifications 关键字通知（钉钉群机器人）"
+        }
+      }
     }
   ],
   "connections": {
@@ -64,17 +79,19 @@
     "timeSavedMode": "fixed",
     "errorWorkflow": "3LE3BnPfHSuIZCVR",
     "saveDataErrorExecution": "all",
-    "saveDataSuccessExecution": "all",
+    "saveDataSuccessExecution": "none",
     "saveExecutionProgress": false,
     "saveManualExecutions": false,
     "callerPolicy": "workflowsFromSameOwner",
-    "availableInMCP": false,
+    "availableInMCP": true,
     "timeSavedPerExecution": 5
   },
   "staticData": null,
   "pinData": {},
   "meta": {
-    "templateCredsSetupCompleted": true
+    "templateCredsSetupCompleted": true,
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
   },
   "tags": [],
   "shared": [
@@ -87,13 +104,14 @@
     }
   ],
   "activeVersion": {
-    "versionId": "2ffb5523-0339-44d8-8520-3a0f8e7f0570",
+    "versionId": "c33f7db4-ac4b-4ed3-be95-9ec8d2674e8c",
     "workflowId": "AKwuvPIWm8mmJH6h",
     "nodes": [
       {
         "parameters": {
           "httpMethod": "POST",
           "path": "612ce8fd-c1bd-4001-a8e4-17d92f524b02",
+          "authentication": "headerAuth",
           "options": {}
         },
         "id": "5b182301-e82f-4b22-934b-2ae08ce17f0d",
@@ -104,12 +122,20 @@
           0,
           0
         ],
-        "webhookId": "612ce8fd-c1bd-4001-a8e4-17d92f524b02"
+        "webhookId": "612ce8fd-c1bd-4001-a8e4-17d92f524b02",
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "RvmfH6qWSIUABPQO",
+            "name": "n8n Webhook（Bearer Auth）"
+          }
+        }
       },
       {
         "parameters": {
           "method": "POST",
-          "url": "https://oapi.dingtalk.com/robot/send?access_token=f787a1d70308748cd42df998c970af75931e7878aa5fad0be498e4cef641b6ee",
+          "url": "https://oapi.dingtalk.com/robot/send",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpQueryAuth",
           "sendBody": true,
           "specifyBody": "json",
           "jsonBody": "={\n  \"msgtype\": \"markdown\",\n  \"markdown\": {\n    \"title\": \"{{ ($json.body.title || 'Nutify UPS 事件').toJsonString().slice(1, -1) }}\",\n    \"text\": \"# 🚨 {{ ($json.body.title || 'Nutify UPS 事件').toJsonString().slice(1, -1) }}\\n\\n> **事件类型：** {{ ($json.body.event_type || '-').toJsonString().slice(1, -1) }}\\n> **优先级：** P{{ (String($json.body.priority ?? '-')).toJsonString().slice(1, -1) }}\\n> **服务器：** {{ ($json.body.server_name || '-').toJsonString().slice(1, -1) }}\\n> **事件时间：** {{ ($json.body.event_timestamp || $json.body.timestamp || '-').toJsonString().slice(1, -1) }}\\n\\n**事件描述：** {{ ($json.body.event_description || $json.body.message || '-').toJsonString().slice(1, -1) }}\\n\\n#### 🔋 UPS 数据\\n\\n- **型号：** {{ ($json.body.ups_data?.ups_model || '-').toJsonString().slice(1, -1) }}\\n- **序列号：** {{ ($json.body.ups_data?.device_serial || '-').toJsonString().slice(1, -1) }}\\n- **状态：** {{ ($json.body.ups_data?.ups_status || '-').toJsonString().slice(1, -1) }}\\n- **电池电量：** {{ (String($json.body.ups_data?.battery_charge || '-')).toJsonString().slice(1, -1) }}\\n- **输入电压：** {{ ($json.body.ups_data?.input_voltage || '-').toJsonString().slice(1, -1) }}\\n\\n{{ $json.body.test ? '> ⚠️ 这是一条来自 Nutify 的测试消息' : '' }}\\n\\n*Nutify UPS Monitor · 接收于 {{ $now.format('yyyy-LL-dd HH:mm:ss') }}*\"\n  },\n  \"at\": {\n    \"isAtAll\": false\n  }\n}",
@@ -122,7 +148,13 @@
         "position": [
           224,
           0
-        ]
+        ],
+        "credentials": {
+          "httpQueryAuth": {
+            "id": "BhuH8Wpmqr9Nndwy",
+            "name": "四有青年 Notifications 关键字通知（钉钉群机器人）"
+          }
+        }
       }
     ],
     "connections": {
@@ -140,10 +172,10 @@
     },
     "nodeGroups": [],
     "authors": "Administrator NTLx",
-    "name": "Version 2ffb5523",
+    "name": "Version c33f7db4",
     "description": "",
     "autosaved": true,
-    "createdAt": "2026-10-20T04:12:21.712Z",
-    "updatedAt": "2026-10-20T04:12:30.440Z"
+    "createdAt": "2026-10-22T04:18:02.757Z",
+    "updatedAt": "2026-10-22T04:18:37.407Z"
   }
 }
