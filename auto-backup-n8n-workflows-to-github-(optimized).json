@@ -2,11 +2,11 @@
   "id": "2PfYPC9DpC8XdniY",
   "name": "Auto-Backup n8n Workflows to GitHub (Optimized)",
   "active": true,
-  "activeVersionId": "45a37f34-5983-43f0-ab57-52fa9366cbf2",
+  "activeVersionId": "88095526-bb7a-48df-a2f6-16e67c332a8f",
   "createdAt": "2026-02-13T02:34:23.915Z",
-  "updatedAt": "2026-02-23T06:52:02.700Z",
+  "updatedAt": "2026-10-22T05:30:42.707Z",
   "isArchived": false,
-  "versionId": "45a37f34-5983-43f0-ab57-52fa9366cbf2",
+  "versionId": "88095526-bb7a-48df-a2f6-16e67c332a8f",
   "triggerCount": 1,
   "nodes": [
     {
@@ -96,7 +96,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// 1. Get input data\n// We use $items() to reliably reference data from previous nodes after the Merge node.\nconst localWorkflows = $items(\"Fetch Local Workflows\");\nconst remoteFiles = $items(\"Fetch GitHub Files\");\n\n// 2. Define helper to format filenames\n// Replaces spaces with dashes, converts to lowercase, and adds .json extension\nconst getFileName = (name) => name.replace(/\\s+/g, '-').toLowerCase() + '.json';\n\nconst results = [];\nconst localMap = {};\n\n// 3. Build a Map of local workflows for easy lookup\nlocalWorkflows.forEach(item => {\n    const fileName = getFileName(item.json.name);\n    localMap[fileName] = item.json;\n});\n\n// 4. Build a Set of remote files (existing in GitHub)\nconst remoteFileSet = new Set();\nremoteFiles.forEach(item => {\n    // Ensure we only track .json files to avoid touching READMEs or other configs\n    if (item.json.name && item.json.type === 'file' && item.json.name.endsWith('.json')) {\n        remoteFileSet.add(item.json.name);\n    }\n});\n\n// 5. Compare: Determine 'Create' or 'Update' actions\nfor (const [fileName, workflowData] of Object.entries(localMap)) {\n    const content = JSON.stringify(workflowData, null, 2);\n    \n    if (remoteFileSet.has(fileName)) {\n        // File exists -> Update\n        results.push({\n            json: {\n                action: 'update',\n                fileName: fileName,\n                content: content,\n                workflowName: workflowData.name\n            }\n        });\n    } else {\n        // File does not exist -> Create\n        results.push({\n            json: {\n                action: 'create',\n                fileName: fileName,\n                content: content,\n                workflowName: workflowData.name\n            }\n        });\n    }\n}\n\n// 6. Compare: Determine 'Delete' actions\n// If it exists in GitHub but not in local map, it means the workflow was deleted or renamed locally.\nremoteFileSet.forEach(remoteName => {\n    if (!localMap[remoteName]) {\n        results.push({\n            json: {\n                action: 'delete',\n                fileName: remoteName\n            }\n        });\n    }\n});\n\nreturn results;"
+        "jsCode": "const crypto = require('crypto');\n\nconst localWorkflows = $('Fetch Local Workflows').all().map(item => item.json);\nconst remoteFiles = $('Fetch GitHub Files').all().map(item => item.json);\n\nconst getFileName = (name) => {\n  const base = String(name ?? '')\n    .trim()\n    .replace(/[\\\\/]+/g, '-')\n    .replace(/\\s+/g, '-')\n    .toLowerCase();\n\n  if (!base) {\n    throw new Error('Backup aborted: workflow name cannot produce an empty filename.');\n  }\n\n  return `${base}.json`;\n};\n\nconst getGitBlobSha = (content) => {\n  const body = Buffer.from(content, 'utf8');\n  const header = Buffer.from(`blob ${body.length}\\0`, 'utf8');\n  return crypto.createHash('sha1').update(header).update(body).digest('hex');\n};\n\nconst localMap = new Map();\nfor (const workflow of localWorkflows) {\n  const fileName = getFileName(workflow.name);\n\n  if (localMap.has(fileName)) {\n    const previous = localMap.get(fileName);\n    throw new Error(\n      `Backup aborted: filename collision for \"${fileName}\" between workflows ` +\n      `\"${previous.workflowName}\" (${previous.workflowId}) and ` +\n      `\"${workflow.name}\" (${workflow.id}). Rename one workflow before retrying.`\n    );\n  }\n\n  const content = JSON.stringify(workflow, null, 2);\n  localMap.set(fileName, {\n    workflowId: workflow.id,\n    workflowName: workflow.name,\n    content,\n    blobSha: getGitBlobSha(content),\n  });\n}\n\nconst remoteMap = new Map();\nfor (const file of remoteFiles) {\n  if (file.name && file.type === 'file' && file.name.endsWith('.json')) {\n    remoteMap.set(file.name, file.sha);\n  }\n}\n\nconst results = [];\n\nfor (const [fileName, local] of localMap.entries()) {\n  const remoteSha = remoteMap.get(fileName);\n\n  if (!remoteSha) {\n    results.push({\n      json: {\n        action: 'create',\n        fileName,\n        content: local.content,\n        workflowId: local.workflowId,\n        workflowName: local.workflowName,\n      },\n    });\n    continue;\n  }\n\n  if (remoteSha !== local.blobSha) {\n    results.push({\n      json: {\n        action: 'update',\n        fileName,\n        content: local.content,\n        workflowId: local.workflowId,\n        workflowName: local.workflowName,\n        localBlobSha: local.blobSha,\n        remoteBlobSha: remoteSha,\n      },\n    });\n  }\n}\n\nfor (const fileName of remoteMap.keys()) {\n  if (!localMap.has(fileName)) {\n    results.push({\n      json: {\n        action: 'delete',\n        fileName,\n      },\n    });\n  }\n}\n\nreturn results;"
       },
       "id": "be4a7802-157e-4cf2-80a6-f3d11aa7f318",
       "name": "Calculate Sync Actions",
@@ -278,8 +278,8 @@
     },
     {
       "parameters": {
-        "content": "## Auto-Backup n8n Workflows to GitHub\n\nSyncs all your n8n workflows to a GitHub repository. Handles create, update, and delete operations automatically.\n\n### How it works\n1. Daily Trigger starts the workflow at 9:00 UTC\n2. Fetch Local Workflows gets all workflows from your n8n instance\n3. Fetch GitHub Files lists current files in your repo\n4. Calculate Sync Actions compares both lists and determines what to do\n5. Filter nodes route each workflow to the correct operation\n6. Push nodes execute GitHub actions (create/update/delete)\n\n### Setup checklist\n- [ ] Add n8n API credential to `Fetch Local Workflows`\n- [ ] Add GitHub OAuth2 credential to all GitHub nodes\n- [ ] Set your GitHub username in repository settings\n- [ ] Set your repository name in all GitHub nodes\n- [ ] Ensure GitHub PAT has `repo` scope (private repos) or `public_repo` (public repos)",
-        "height": 480,
+        "content": "## Auto-Backup n8n Workflows to GitHub\n\n每天 **09:00（Asia/Shanghai）** 将当前 n8n workflows 增量同步到私有 GitHub 仓库。\n\n### How it works\n1. Daily Trigger 启动同步\n2. 并行获取本地 workflows 与 GitHub 根目录文件清单\n3. Calculate Sync Actions 将本地 JSON 序列化为与 Git 一致的 blob SHA\n4. 远端不存在 → Create\n5. SHA 不同 → Update\n6. 远端存在但本地不存在 → Delete\n7. SHA 相同 → 不产生任何 GitHub 写操作或空 commit\n\n### Safety\n- 仅处理仓库根目录的 `.json` 文件\n- 文件名由 workflow 名称规范化生成\n- 若两个 workflow 映射到同一文件名，流程直接失败并交给 Error Notification，避免静默覆盖",
+        "height": 520,
         "width": 620
       },
       "id": "f641f045-7bd9-45d8-bad6-1dce0d5c24df",
@@ -309,9 +309,9 @@
     },
     {
       "parameters": {
-        "content": "## Sync Logic\n\nThe `Calculate Sync Actions` node compares local workflows with GitHub files:\n\n- **Create**: Workflow exists locally but not in GitHub → Push: Create File\n- **Update**: Workflow exists in both but content differs → Push: Update File\n- **Delete**: Workflow in GitHub but not locally → Push: Delete File\n\nThis ensures your GitHub repo always matches your n8n instance.",
-        "height": 288,
-        "width": 300,
+        "content": "## Sync Logic\n\n`Calculate Sync Actions` 使用 GitHub Contents API 返回的 **blob SHA** 做内容级增量判断：\n\n- **Create**：本地存在、GitHub 不存在\n- **Update**：本地计算的 Git blob SHA 与 GitHub SHA 不同\n- **Skip**：SHA 完全相同，不提交\n- **Delete**：GitHub 有对应 `.json`，本地已不存在\n\n因此稳定状态下每天运行可以是 **0 次 GitHub 写操作**。",
+        "height": 320,
+        "width": 340,
         "color": 3
       },
       "id": "19293bab-682e-45c9-9ea3-bd702407eccb",
@@ -435,13 +435,14 @@
     "saveDataErrorExecution": "all",
     "saveDataSuccessExecution": "none",
     "callerPolicy": "workflowsFromSameOwner",
-    "availableInMCP": false,
+    "availableInMCP": true,
     "timeSavedMode": "fixed",
     "errorWorkflow": "3LE3BnPfHSuIZCVR",
     "saveExecutionProgress": false,
     "saveManualExecutions": false,
     "binaryMode": "separate",
-    "timeSavedPerExecution": 15
+    "timeSavedPerExecution": 15,
+    "timezone": "Asia/Shanghai"
   },
   "staticData": {
     "node:Daily Trigger": {
@@ -454,7 +455,10 @@
     }
   },
   "pinData": {},
-  "meta": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
   "tags": [],
   "shared": [
     {
@@ -466,7 +470,7 @@
     }
   ],
   "activeVersion": {
-    "versionId": "45a37f34-5983-43f0-ab57-52fa9366cbf2",
+    "versionId": "88095526-bb7a-48df-a2f6-16e67c332a8f",
     "workflowId": "2PfYPC9DpC8XdniY",
     "nodes": [
       {
@@ -556,7 +560,7 @@
       },
       {
         "parameters": {
-          "jsCode": "// 1. Get input data\n// We use $items() to reliably reference data from previous nodes after the Merge node.\nconst localWorkflows = $items(\"Fetch Local Workflows\");\nconst remoteFiles = $items(\"Fetch GitHub Files\");\n\n// 2. Define helper to format filenames\n// Replaces spaces with dashes, converts to lowercase, and adds .json extension\nconst getFileName = (name) => name.replace(/\\s+/g, '-').toLowerCase() + '.json';\n\nconst results = [];\nconst localMap = {};\n\n// 3. Build a Map of local workflows for easy lookup\nlocalWorkflows.forEach(item => {\n    const fileName = getFileName(item.json.name);\n    localMap[fileName] = item.json;\n});\n\n// 4. Build a Set of remote files (existing in GitHub)\nconst remoteFileSet = new Set();\nremoteFiles.forEach(item => {\n    // Ensure we only track .json files to avoid touching READMEs or other configs\n    if (item.json.name && item.json.type === 'file' && item.json.name.endsWith('.json')) {\n        remoteFileSet.add(item.json.name);\n    }\n});\n\n// 5. Compare: Determine 'Create' or 'Update' actions\nfor (const [fileName, workflowData] of Object.entries(localMap)) {\n    const content = JSON.stringify(workflowData, null, 2);\n    \n    if (remoteFileSet.has(fileName)) {\n        // File exists -> Update\n        results.push({\n            json: {\n                action: 'update',\n                fileName: fileName,\n                content: content,\n                workflowName: workflowData.name\n            }\n        });\n    } else {\n        // File does not exist -> Create\n        results.push({\n            json: {\n                action: 'create',\n                fileName: fileName,\n                content: content,\n                workflowName: workflowData.name\n            }\n        });\n    }\n}\n\n// 6. Compare: Determine 'Delete' actions\n// If it exists in GitHub but not in local map, it means the workflow was deleted or renamed locally.\nremoteFileSet.forEach(remoteName => {\n    if (!localMap[remoteName]) {\n        results.push({\n            json: {\n                action: 'delete',\n                fileName: remoteName\n            }\n        });\n    }\n});\n\nreturn results;"
+          "jsCode": "const crypto = require('crypto');\n\nconst localWorkflows = $('Fetch Local Workflows').all().map(item => item.json);\nconst remoteFiles = $('Fetch GitHub Files').all().map(item => item.json);\n\nconst getFileName = (name) => {\n  const base = String(name ?? '')\n    .trim()\n    .replace(/[\\\\/]+/g, '-')\n    .replace(/\\s+/g, '-')\n    .toLowerCase();\n\n  if (!base) {\n    throw new Error('Backup aborted: workflow name cannot produce an empty filename.');\n  }\n\n  return `${base}.json`;\n};\n\nconst getGitBlobSha = (content) => {\n  const body = Buffer.from(content, 'utf8');\n  const header = Buffer.from(`blob ${body.length}\\0`, 'utf8');\n  return crypto.createHash('sha1').update(header).update(body).digest('hex');\n};\n\nconst localMap = new Map();\nfor (const workflow of localWorkflows) {\n  const fileName = getFileName(workflow.name);\n\n  if (localMap.has(fileName)) {\n    const previous = localMap.get(fileName);\n    throw new Error(\n      `Backup aborted: filename collision for \"${fileName}\" between workflows ` +\n      `\"${previous.workflowName}\" (${previous.workflowId}) and ` +\n      `\"${workflow.name}\" (${workflow.id}). Rename one workflow before retrying.`\n    );\n  }\n\n  const content = JSON.stringify(workflow, null, 2);\n  localMap.set(fileName, {\n    workflowId: workflow.id,\n    workflowName: workflow.name,\n    content,\n    blobSha: getGitBlobSha(content),\n  });\n}\n\nconst remoteMap = new Map();\nfor (const file of remoteFiles) {\n  if (file.name && file.type === 'file' && file.name.endsWith('.json')) {\n    remoteMap.set(file.name, file.sha);\n  }\n}\n\nconst results = [];\n\nfor (const [fileName, local] of localMap.entries()) {\n  const remoteSha = remoteMap.get(fileName);\n\n  if (!remoteSha) {\n    results.push({\n      json: {\n        action: 'create',\n        fileName,\n        content: local.content,\n        workflowId: local.workflowId,\n        workflowName: local.workflowName,\n      },\n    });\n    continue;\n  }\n\n  if (remoteSha !== local.blobSha) {\n    results.push({\n      json: {\n        action: 'update',\n        fileName,\n        content: local.content,\n        workflowId: local.workflowId,\n        workflowName: local.workflowName,\n        localBlobSha: local.blobSha,\n        remoteBlobSha: remoteSha,\n      },\n    });\n  }\n}\n\nfor (const fileName of remoteMap.keys()) {\n  if (!localMap.has(fileName)) {\n    results.push({\n      json: {\n        action: 'delete',\n        fileName,\n      },\n    });\n  }\n}\n\nreturn results;"
         },
         "id": "be4a7802-157e-4cf2-80a6-f3d11aa7f318",
         "name": "Calculate Sync Actions",
@@ -738,8 +742,8 @@
       },
       {
         "parameters": {
-          "content": "## Auto-Backup n8n Workflows to GitHub\n\nSyncs all your n8n workflows to a GitHub repository. Handles create, update, and delete operations automatically.\n\n### How it works\n1. Daily Trigger starts the workflow at 9:00 UTC\n2. Fetch Local Workflows gets all workflows from your n8n instance\n3. Fetch GitHub Files lists current files in your repo\n4. Calculate Sync Actions compares both lists and determines what to do\n5. Filter nodes route each workflow to the correct operation\n6. Push nodes execute GitHub actions (create/update/delete)\n\n### Setup checklist\n- [ ] Add n8n API credential to `Fetch Local Workflows`\n- [ ] Add GitHub OAuth2 credential to all GitHub nodes\n- [ ] Set your GitHub username in repository settings\n- [ ] Set your repository name in all GitHub nodes\n- [ ] Ensure GitHub PAT has `repo` scope (private repos) or `public_repo` (public repos)",
-          "height": 480,
+          "content": "## Auto-Backup n8n Workflows to GitHub\n\n每天 **09:00（Asia/Shanghai）** 将当前 n8n workflows 增量同步到私有 GitHub 仓库。\n\n### How it works\n1. Daily Trigger 启动同步\n2. 并行获取本地 workflows 与 GitHub 根目录文件清单\n3. Calculate Sync Actions 将本地 JSON 序列化为与 Git 一致的 blob SHA\n4. 远端不存在 → Create\n5. SHA 不同 → Update\n6. 远端存在但本地不存在 → Delete\n7. SHA 相同 → 不产生任何 GitHub 写操作或空 commit\n\n### Safety\n- 仅处理仓库根目录的 `.json` 文件\n- 文件名由 workflow 名称规范化生成\n- 若两个 workflow 映射到同一文件名，流程直接失败并交给 Error Notification，避免静默覆盖",
+          "height": 520,
           "width": 620
         },
         "id": "f641f045-7bd9-45d8-bad6-1dce0d5c24df",
@@ -769,9 +773,9 @@
       },
       {
         "parameters": {
-          "content": "## Sync Logic\n\nThe `Calculate Sync Actions` node compares local workflows with GitHub files:\n\n- **Create**: Workflow exists locally but not in GitHub → Push: Create File\n- **Update**: Workflow exists in both but content differs → Push: Update File\n- **Delete**: Workflow in GitHub but not locally → Push: Delete File\n\nThis ensures your GitHub repo always matches your n8n instance.",
-          "height": 288,
-          "width": 300,
+          "content": "## Sync Logic\n\n`Calculate Sync Actions` 使用 GitHub Contents API 返回的 **blob SHA** 做内容级增量判断：\n\n- **Create**：本地存在、GitHub 不存在\n- **Update**：本地计算的 Git blob SHA 与 GitHub SHA 不同\n- **Skip**：SHA 完全相同，不提交\n- **Delete**：GitHub 有对应 `.json`，本地已不存在\n\n因此稳定状态下每天运行可以是 **0 次 GitHub 写操作**。",
+          "height": 320,
+          "width": 340,
           "color": 3
         },
         "id": "19293bab-682e-45c9-9ea3-bd702407eccb",
@@ -890,11 +894,11 @@
       }
     },
     "nodeGroups": [],
-    "authors": "Administrator NTLx",
-    "name": "Version 45a37f34",
-    "description": "",
-    "autosaved": true,
-    "createdAt": "2026-02-13T05:16:33.145Z",
-    "updatedAt": "2026-02-23T06:51:40.539Z"
+    "authors": "Administrator NTLx (via MCP)",
+    "name": "True incremental GitHub backup",
+    "description": "Fix backup churn by comparing each local workflow's computed Git blob SHA against the SHA returned by GitHub. Unchanged workflows are skipped. Add filename collision protection, explicitly set Asia/Shanghai timezone, and update workflow notes to match real behavior.",
+    "autosaved": false,
+    "createdAt": "2026-10-22T05:30:42.728Z",
+    "updatedAt": "2026-10-22T05:30:42.728Z"
   }
 }
