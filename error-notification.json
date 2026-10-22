@@ -2,11 +2,11 @@
   "id": "3LE3BnPfHSuIZCVR",
   "name": "Error Notification",
   "active": true,
-  "activeVersionId": "fc32e907-4837-4ffa-9608-6f26bff581f5",
+  "activeVersionId": "2699f528-69f5-4b1c-840c-93500454839b",
   "createdAt": "2026-02-12T08:00:08.087Z",
-  "updatedAt": "2026-03-01T14:17:56.191Z",
+  "updatedAt": "2026-10-22T04:25:58.633Z",
   "isArchived": false,
-  "versionId": "fc32e907-4837-4ffa-9608-6f26bff581f5",
+  "versionId": "2699f528-69f5-4b1c-840c-93500454839b",
   "triggerCount": 0,
   "nodes": [
     {
@@ -22,52 +22,20 @@
     },
     {
       "parameters": {
-        "jsCode": "// ====== 配置 ======\nconst TELEGRAM_CHAT_ID = '135590865';\nconst RATE_LIMIT_SECONDS = 300;\nconst SILENT_HOURS_START = 23;\nconst SILENT_HOURS_END = 8;\nconst MIN_ERROR_LEVEL = 'error';\n\n// ====== 获取错误数据 ======\nconst errorData = $input.item.json;\nconst workflowName = errorData.workflow?.name || 'Unknown';\nconst errorLevel = errorData.execution?.error?.level || 'info';\nconst errorMsg = errorData.execution?.error?.message || 'No message';\nconst executionId = errorData.execution?.id;\nconst executionUrl = errorData.execution?.url;\nconst lastNodeExecuted = errorData.execution?.lastNodeExecuted;\nconst errorName = errorData.execution?.error?.name;\nconst mode = errorData.execution?.mode;\n\n// ====== 错误级别过滤 ======\nconst errorLevels = ['info', 'warning', 'error', 'critical'];\nconst currentLevelIndex = errorLevels.indexOf(errorLevel.toLowerCase());\nconst minLevelIndex = errorLevels.indexOf(MIN_ERROR_LEVEL.toLowerCase());\n\nif (currentLevelIndex < minLevelIndex) {\n  return [{ json: { shouldSend: false, reason: `Level '${errorLevel}' below threshold` } }];\n}\n\n// ====== 静默时段检查 ======\nconst now = new Date();\nconst hour = now.getUTCHours();\nconst isSilentHour = hour >= SILENT_HOURS_START || hour < SILENT_HOURS_END;\n\n// ====== 频率限制 ======\nconst staticData = $getWorkflowStaticData('global');\nconst rateLimitKey = `lastNotification_${workflowName}`;\nconst lastNotification = staticData[rateLimitKey] ? new Date(staticData[rateLimitKey]) : null;\nconst nowTime = now.getTime();\n\nlet shouldSend = true;\nlet reason = '';\n\nif (lastNotification) {\n  const secondsSinceLast = (nowTime - lastNotification.getTime()) / 1000;\n  if (secondsSinceLast < RATE_LIMIT_SECONDS) {\n    shouldSend = false;\n    reason = `Rate limited: ${Math.round(RATE_LIMIT_SECONDS - secondsSinceLast)}s remaining`;\n  }\n}\n\n// ====== 构建消息 ======\nconst silentNote = isSilentHour ? '🌙 [静默时段]' : '';\n\nconst message = `# n8n 流程报错 ${silentNote}\n- From: n8n.vps.ntlx.top\n- Workflow: ${workflowName}\n\n## 执行信息\n- Mode: ${mode}\n- Level: ${errorLevel}\n- Node: ${lastNodeExecuted}\n- Error: ${errorName}\n- Message: ${errorMsg}\n\n## 链接\n- Execution ID: ${executionId}\n- URL: ${executionUrl}`;\n\n// ====== 返回结果 ======\nif (shouldSend) {\n  staticData[rateLimitKey] = nowTime;\n  return [{ json: { shouldSend: true, message: message, chatId: TELEGRAM_CHAT_ID, workflowName: workflowName, silent: isSilentHour } }];\n} else {\n  return [{ json: { shouldSend: false, reason: reason, workflowName: workflowName } }];\n}"
-      },
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        224,
-        0
-      ],
-      "name": "Filter & Rate Limit",
-      "id": "ac55e3fa-cb94-4f26-b1a4-f4b09477d6d6"
-    },
-    {
-      "parameters": {
-        "conditions": {
-          "boolean": [
-            {
-              "value1": "={{ $json.shouldSend }}",
-              "value2": true
-            }
-          ]
-        }
-      },
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 1,
-      "position": [
-        448,
-        0
-      ],
-      "name": "Should Send?",
-      "id": "c285f1cb-5645-428a-af2e-27c7d7bacc9e"
-    },
-    {
-      "parameters": {
-        "chatId": "={{ $json.chatId }}",
-        "text": "={{ $json.message }}",
+        "chatId": "135590865",
+        "text": "={{ $('Format Error Alert').item.json.telegramMessage }}",
         "additionalFields": {
-          "disable_notification": "={{ $json.silent }}"
+          "appendAttribution": false,
+          "disable_web_page_preview": true
         }
       },
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
-        672,
-        -64
+        960,
+        432
       ],
-      "name": "Send Notification",
+      "name": "Telegram Fallback",
       "id": "4dd1c3b6-9137-4ec5-bd32-360c6004fecc",
       "webhookId": "c6d07374-17c4-48b7-bfa0-a20768198d8e",
       "credentials": {
@@ -75,141 +43,10 @@
           "id": "tVb8Nv4w2KsUp66k",
           "name": "lx3325360"
         }
-      }
-    },
-    {
-      "parameters": {
-        "jsCode": "const data = $input.item.json;\nconsole.log(`[Filtered] ${data.workflowName}: ${data.reason}`);\nreturn [];"
       },
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        672,
-        128
-      ],
-      "name": "Log Filtered",
-      "id": "873e8ba5-c31b-477e-945b-01d3eb3af1a8"
-    },
-    {
-      "parameters": {
-        "promptType": "define",
-        "text": "={{ $json }}",
-        "messages": {
-          "messageValues": [
-            {
-              "message": "=# Role\n你是一个资深的 n8n 自动化工作流运维专家。你的任务是接收 n8n Error Trigger 传来的 JSON 格式报错信息，提取关键数据，并将其总结、翻译、排版为一条高度可读的 Discord 消息。\n\n# Objectives\n1. **快速定位**：让用户在 3 秒内知道是哪个工作流、哪个节点挂了。\n2. **通俗易懂**：将技术性的报错（如 HTTP 429, NodeApiError）翻译/总结为普通人能听懂的大白话。\n3. **提供行动指南**：基于报错内容，给出具体的、可落地的解决建议。\n4. **适配 Discord**：充分利用 Discord 的 Markdown 语法（加粗、代码块、引用、Emoji）优化阅读体验。\n\n# Workflow & Guidelines\n当你收到一段 JSON 报错信息时，请严格按照以下步骤处理：\n1. **提取关键信息**：\n   - 工作流名称 (`workflow.name`)\n   - 失败节点 (`execution.lastNodeExecuted` 或 `error.node.name`)\n   - 错误状态码 (`error.httpCode`)\n   - 错误描述 (`error.message`, `error.description`, `error.messages`)\n   - 执行日志链接 (`execution.url`)\n2. **翻译与总结**：将核心的英文报错翻译为流畅的中文，并合并冗余信息（例如：将 \"The service is receiving too many requests from you\" 和 \"您已受到速率限制\" 总结为 \"API 请求过于频繁，触发了目标服务的速率限制 (Rate Limit)\"）。\n3. **智能诊断**：根据报错类型推测原因并给出建议（例如遇到 429，建议增加节点等待时间/排队处理；遇到 401 建议检查 Token 等）。\n\n# Output Format (Discord Markdown Template)\n请严格使用以下格式输出消息（不要输出 JSON，直接输出这段 Discord 文本）：\n\n🚨 **[工作流名称] 运行失败**\n> **出错节点**：`[出错的节点名称]`\n> **发生时间**：[将时间戳转化为 YYYY-MM-DD HH:mm 格式]\n\n⚠️ **错误详情**\n* **状态码**：`[HTTP Code]` | `[Error Name]`\n* **问题描述**：[用通俗易懂的中文总结报错原因]\n* **原始信息**：\n```json\n[提取核心的 error message 或 stack 前两行，保持简短]"
-            }
-          ]
-        },
-        "batching": {}
-      },
-      "type": "@n8n/n8n-nodes-langchain.chainLlm",
-      "typeVersion": 1.9,
-      "position": [
-        432,
-        304
-      ],
-      "id": "68ad7c71-467e-42c0-9262-d21e9b6c3235",
-      "name": "Basic LLM Chain",
       "retryOnFail": true,
-      "waitBetweenTries": 2000
-    },
-    {
-      "parameters": {
-        "model": {
-          "__rl": true,
-          "value": "qwen3.5-plus",
-          "mode": "list",
-          "cachedResultName": "qwen3.5-plus"
-        },
-        "responsesApiEnabled": false,
-        "options": {
-          "temperature": 0
-        }
-      },
-      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
-      "typeVersion": 1.3,
-      "position": [
-        496,
-        496
-      ],
-      "id": "537f0570-a71e-4208-8da2-dadfadf72b9a",
-      "name": "OpenAI Chat Model",
-      "retryOnFail": true,
-      "waitBetweenTries": 2000,
-      "credentials": {
-        "openAiApi": {
-          "id": "gyuAIYPDLYyRYJh7",
-          "name": "NewAPI-OE"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "inputText": "={{ $json.text }}",
-        "categories": {
-          "categories": [
-            {
-              "category": "True",
-              "description": "表明需要将报错信息发给用户"
-            },
-            {
-              "category": "False",
-              "description": "表明不需要将报错信息发给用户"
-            }
-          ]
-        },
-        "options": {
-          "systemPromptTemplate": "=# Role\n你是一个智能的 n8n 工作流错误分发路由（Error Triage Agent）。你的任务是分析 n8n 运行失败后产生的 JSON 报错数据，并判断该错误是否需要立即发送通知让人工介入处理。\n\n# Classification Categories\n你必须将错误分类为以下两个结果之一：\n- **True**：需要通知用户（需要人工干预、修复或关注的严重错误）。\n- **False**：不需要通知用户（可以忽略的瞬时错误、系统可自愈的波动、或低级别的警告）。\n\n# Evaluation Rules\n请仔细阅读 JSON 中的 `error.httpCode`, `error.message`, `error.name` 和 `error.level`，并按照以下规则进行评估：\n\n## 判为 True (需要通知) 的情况：\n1. **身份验证与权限失败**：如 HTTP 401 (Unauthorized), 403 (Forbidden)。说明 Token 过期或 API Key 失效，必须人工更新。\n2. **工作流逻辑/配置错误**：如 HTTP 400 (Bad Request)，缺少必要参数，变量解析失败，语法错误（SyntaxError, TypeError, ReferenceError）。\n3. **资源不存在**：如 HTTP 404 (Not Found)，说明目标端点或数据源结构已更改。\n4. **配额耗尽/严重限流**：如 HTTP 429 (Too Many Requests)，且明确提示账户额度耗尽，或严重阻断了核心业务，需要人工调整节点触发频率（如增加 Wait 节点）。\n\n## 判为 False (忽略通知) 的情况：\n1. **轻微警告 (Warning)**：如果 JSON 中 `\"level\": \"warning\"`，且不是致命中断，通常不影响大局。\n2. **瞬时网络抖动**：如 HTTP 502 (Bad Gateway), 503 (Service Unavailable), 504 (Gateway Timeout), ECONNRESET, socket hang up。这类错误通常在 n8n 节点的自动重试 (Auto-retry) 机制下会自行解决。\n3. **极短的速率限制**：如 HTTP 429 且提示 `retry_after` 只有几秒或零点几秒（例如 0.3 秒），这属于正常的 API 节流，不需要人类恐慌。\n\n# Task\n请分析传入的 JSON 数据。基于上述规则，思考这属于哪种情况。\n最后，**仅输出类别名称（True 或 False），不要输出任何其他多余的解释文字或标点符号。**"
-        }
-      },
-      "type": "@n8n/n8n-nodes-langchain.textClassifier",
-      "typeVersion": 1.1,
-      "position": [
-        928,
-        -64
-      ],
-      "id": "13925e0f-8337-4738-a2f4-e4f58cb1865a",
-      "name": "Text Classifier"
-    },
-    {
-      "parameters": {
-        "model": {
-          "__rl": true,
-          "value": "smart-regular",
-          "mode": "list",
-          "cachedResultName": "smart-regular"
-        },
-        "responsesApiEnabled": false,
-        "options": {
-          "temperature": 0
-        }
-      },
-      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
-      "typeVersion": 1.3,
-      "position": [
-        1008,
-        128
-      ],
-      "id": "b8645e6b-4a32-45df-9515-d51db6d1a3c5",
-      "name": "OpenAI Chat Model1",
-      "credentials": {
-        "openAiApi": {
-          "id": "BtNUoaYPZrKSsCA2",
-          "name": "NewAPI-VPS"
-        }
-      }
-    },
-    {
-      "parameters": {},
-      "type": "n8n-nodes-base.noOp",
-      "typeVersion": 1,
-      "position": [
-        1264,
-        16
-      ],
-      "id": "768bfb50-be08-4187-94bc-40f1c7640daa",
-      "name": "No Operation, do nothing"
+      "maxTries": 3,
+      "waitBetweenTries": 5000
     },
     {
       "parameters": {
@@ -227,25 +64,58 @@
           "cachedResultName": "service-status",
           "cachedResultUrl": "https://discord.com/channels/1223272555885105264/1224990958718812170"
         },
-        "content": "={{ $json.text }}",
+        "content": "={{ $json.discordMessage }}",
         "options": {}
       },
       "type": "n8n-nodes-base.discord",
       "typeVersion": 2,
       "position": [
-        784,
+        704,
         304
       ],
       "id": "79e60af0-8edc-4a75-93bb-a02315ef2213",
-      "name": "Send a message",
+      "name": "Discord Primary Alert",
       "webhookId": "32359dd1-65c8-496a-ab0b-d53b85eb58c2",
       "retryOnFail": true,
-      "waitBetweenTries": 3000,
+      "waitBetweenTries": 5000,
       "credentials": {
         "discordOAuth2Api": {
           "id": "ep3LAXJ2M9XUjEj1",
           "name": "NTLx"
         }
+      },
+      "onError": "continueErrorOutput",
+      "maxTries": 3
+    },
+    {
+      "id": "c6686195-ea59-4de0-8cca-a40ba647bd1b",
+      "name": "Format Error Alert",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        448,
+        304
+      ],
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "discordMessage",
+              "name": "discordMessage",
+              "type": "string",
+              "value": "={{ (() => { const e = $json.execution?.error || {}; const wf = $json.workflow?.name || 'Unknown workflow'; const node = $json.execution?.lastNodeExecuted || e.node?.name || 'Unknown'; const code = e.httpCode || '-'; const name = e.name || 'Error'; const level = e.level || '-'; const msg = String(e.description || e.message || e.messages?.[0] || 'No message').replace(/\\s+/g, ' ').slice(0, 700); const url = $json.execution?.url || '-'; const id = $json.execution?.id || '-'; const mode = $json.execution?.mode || '-'; const time = $now.setZone('Asia/Shanghai').toFormat('yyyy-LL-dd HH:mm:ss'); return `🚨 **${wf} 运行失败**\\n> **出错节点**：\\`${node}\\`\\n> **发生时间**：${time}\\n\\n⚠️ **错误详情**\\n* **状态码**：\\`${code}\\` | \\`${name}\\`\\n* **级别 / 模式**：\\`${level}\\` / \\`${mode}\\`\\n* **问题描述**：${msg}\\n\\n🔗 **Execution ${id}**\\n${url}`; })() }}"
+            },
+            {
+              "id": "telegramMessage",
+              "name": "telegramMessage",
+              "type": "string",
+              "value": "={{ (() => { const e = $json.execution?.error || {}; const wf = $json.workflow?.name || 'Unknown workflow'; const node = $json.execution?.lastNodeExecuted || e.node?.name || 'Unknown'; const code = e.httpCode || '-'; const name = e.name || 'Error'; const msg = String(e.description || e.message || e.messages?.[0] || 'No message').replace(/\\s+/g, ' ').slice(0, 900); const url = $json.execution?.url || '-'; const id = $json.execution?.id || '-'; const time = $now.setZone('Asia/Shanghai').toFormat('yyyy-LL-dd HH:mm:ss'); return `🚨 n8n 工作流运行失败\\nWorkflow: ${wf}\\nNode: ${node}\\nTime: ${time}\\nHTTP: ${code}\\nError: ${name}\\nMessage: ${msg}\\nExecution: ${id}\\n${url}`; })() }}"
+            }
+          ]
+        },
+        "includeOtherFields": false,
+        "options": {}
       }
     }
   ],
@@ -254,81 +124,30 @@
       "main": [
         [
           {
-            "node": "Basic LLM Chain",
+            "node": "Format Error Alert",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Filter & Rate Limit": {
+    "Format Error Alert": {
       "main": [
         [
           {
-            "node": "Should Send?",
+            "node": "Discord Primary Alert",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Should Send?": {
+    "Discord Primary Alert": {
       "main": [
+        null,
         [
           {
-            "node": "Send Notification",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Log Filtered",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "OpenAI Chat Model": {
-      "ai_languageModel": [
-        [
-          {
-            "node": "Basic LLM Chain",
-            "type": "ai_languageModel",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Basic LLM Chain": {
-      "main": [
-        [
-          {
-            "node": "Send a message",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "OpenAI Chat Model1": {
-      "ai_languageModel": [
-        [
-          {
-            "node": "Text Classifier",
-            "type": "ai_languageModel",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Text Classifier": {
-      "main": [
-        [],
-        [
-          {
-            "node": "No Operation, do nothing",
+            "node": "Telegram Fallback",
             "type": "main",
             "index": 0
           }
@@ -340,10 +159,10 @@
   "settings": {
     "executionOrder": "v1",
     "callerPolicy": "workflowsFromSameOwner",
-    "availableInMCP": false,
+    "availableInMCP": true,
     "timeSavedMode": "fixed",
     "saveDataErrorExecution": "all",
-    "saveDataSuccessExecution": "all",
+    "saveDataSuccessExecution": "none",
     "saveExecutionProgress": false,
     "saveManualExecutions": false,
     "binaryMode": "separate",
@@ -352,7 +171,9 @@
   "staticData": null,
   "pinData": {},
   "meta": {
-    "templateCredsSetupCompleted": true
+    "templateCredsSetupCompleted": true,
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
   },
   "tags": [],
   "shared": [
@@ -365,7 +186,7 @@
     }
   ],
   "activeVersion": {
-    "versionId": "fc32e907-4837-4ffa-9608-6f26bff581f5",
+    "versionId": "2699f528-69f5-4b1c-840c-93500454839b",
     "workflowId": "3LE3BnPfHSuIZCVR",
     "nodes": [
       {
@@ -381,52 +202,20 @@
       },
       {
         "parameters": {
-          "jsCode": "// ====== 配置 ======\nconst TELEGRAM_CHAT_ID = '135590865';\nconst RATE_LIMIT_SECONDS = 300;\nconst SILENT_HOURS_START = 23;\nconst SILENT_HOURS_END = 8;\nconst MIN_ERROR_LEVEL = 'error';\n\n// ====== 获取错误数据 ======\nconst errorData = $input.item.json;\nconst workflowName = errorData.workflow?.name || 'Unknown';\nconst errorLevel = errorData.execution?.error?.level || 'info';\nconst errorMsg = errorData.execution?.error?.message || 'No message';\nconst executionId = errorData.execution?.id;\nconst executionUrl = errorData.execution?.url;\nconst lastNodeExecuted = errorData.execution?.lastNodeExecuted;\nconst errorName = errorData.execution?.error?.name;\nconst mode = errorData.execution?.mode;\n\n// ====== 错误级别过滤 ======\nconst errorLevels = ['info', 'warning', 'error', 'critical'];\nconst currentLevelIndex = errorLevels.indexOf(errorLevel.toLowerCase());\nconst minLevelIndex = errorLevels.indexOf(MIN_ERROR_LEVEL.toLowerCase());\n\nif (currentLevelIndex < minLevelIndex) {\n  return [{ json: { shouldSend: false, reason: `Level '${errorLevel}' below threshold` } }];\n}\n\n// ====== 静默时段检查 ======\nconst now = new Date();\nconst hour = now.getUTCHours();\nconst isSilentHour = hour >= SILENT_HOURS_START || hour < SILENT_HOURS_END;\n\n// ====== 频率限制 ======\nconst staticData = $getWorkflowStaticData('global');\nconst rateLimitKey = `lastNotification_${workflowName}`;\nconst lastNotification = staticData[rateLimitKey] ? new Date(staticData[rateLimitKey]) : null;\nconst nowTime = now.getTime();\n\nlet shouldSend = true;\nlet reason = '';\n\nif (lastNotification) {\n  const secondsSinceLast = (nowTime - lastNotification.getTime()) / 1000;\n  if (secondsSinceLast < RATE_LIMIT_SECONDS) {\n    shouldSend = false;\n    reason = `Rate limited: ${Math.round(RATE_LIMIT_SECONDS - secondsSinceLast)}s remaining`;\n  }\n}\n\n// ====== 构建消息 ======\nconst silentNote = isSilentHour ? '🌙 [静默时段]' : '';\n\nconst message = `# n8n 流程报错 ${silentNote}\n- From: n8n.vps.ntlx.top\n- Workflow: ${workflowName}\n\n## 执行信息\n- Mode: ${mode}\n- Level: ${errorLevel}\n- Node: ${lastNodeExecuted}\n- Error: ${errorName}\n- Message: ${errorMsg}\n\n## 链接\n- Execution ID: ${executionId}\n- URL: ${executionUrl}`;\n\n// ====== 返回结果 ======\nif (shouldSend) {\n  staticData[rateLimitKey] = nowTime;\n  return [{ json: { shouldSend: true, message: message, chatId: TELEGRAM_CHAT_ID, workflowName: workflowName, silent: isSilentHour } }];\n} else {\n  return [{ json: { shouldSend: false, reason: reason, workflowName: workflowName } }];\n}"
-        },
-        "type": "n8n-nodes-base.code",
-        "typeVersion": 2,
-        "position": [
-          224,
-          0
-        ],
-        "name": "Filter & Rate Limit",
-        "id": "ac55e3fa-cb94-4f26-b1a4-f4b09477d6d6"
-      },
-      {
-        "parameters": {
-          "conditions": {
-            "boolean": [
-              {
-                "value1": "={{ $json.shouldSend }}",
-                "value2": true
-              }
-            ]
-          }
-        },
-        "type": "n8n-nodes-base.if",
-        "typeVersion": 1,
-        "position": [
-          448,
-          0
-        ],
-        "name": "Should Send?",
-        "id": "c285f1cb-5645-428a-af2e-27c7d7bacc9e"
-      },
-      {
-        "parameters": {
-          "chatId": "={{ $json.chatId }}",
-          "text": "={{ $json.message }}",
+          "chatId": "135590865",
+          "text": "={{ $('Format Error Alert').item.json.telegramMessage }}",
           "additionalFields": {
-            "disable_notification": "={{ $json.silent }}"
+            "appendAttribution": false,
+            "disable_web_page_preview": true
           }
         },
         "type": "n8n-nodes-base.telegram",
         "typeVersion": 1.2,
         "position": [
-          672,
-          -64
+          960,
+          432
         ],
-        "name": "Send Notification",
+        "name": "Telegram Fallback",
         "id": "4dd1c3b6-9137-4ec5-bd32-360c6004fecc",
         "webhookId": "c6d07374-17c4-48b7-bfa0-a20768198d8e",
         "credentials": {
@@ -434,141 +223,10 @@
             "id": "tVb8Nv4w2KsUp66k",
             "name": "lx3325360"
           }
-        }
-      },
-      {
-        "parameters": {
-          "jsCode": "const data = $input.item.json;\nconsole.log(`[Filtered] ${data.workflowName}: ${data.reason}`);\nreturn [];"
         },
-        "type": "n8n-nodes-base.code",
-        "typeVersion": 2,
-        "position": [
-          672,
-          128
-        ],
-        "name": "Log Filtered",
-        "id": "873e8ba5-c31b-477e-945b-01d3eb3af1a8"
-      },
-      {
-        "parameters": {
-          "promptType": "define",
-          "text": "={{ $json }}",
-          "messages": {
-            "messageValues": [
-              {
-                "message": "=# Role\n你是一个资深的 n8n 自动化工作流运维专家。你的任务是接收 n8n Error Trigger 传来的 JSON 格式报错信息，提取关键数据，并将其总结、翻译、排版为一条高度可读的 Discord 消息。\n\n# Objectives\n1. **快速定位**：让用户在 3 秒内知道是哪个工作流、哪个节点挂了。\n2. **通俗易懂**：将技术性的报错（如 HTTP 429, NodeApiError）翻译/总结为普通人能听懂的大白话。\n3. **提供行动指南**：基于报错内容，给出具体的、可落地的解决建议。\n4. **适配 Discord**：充分利用 Discord 的 Markdown 语法（加粗、代码块、引用、Emoji）优化阅读体验。\n\n# Workflow & Guidelines\n当你收到一段 JSON 报错信息时，请严格按照以下步骤处理：\n1. **提取关键信息**：\n   - 工作流名称 (`workflow.name`)\n   - 失败节点 (`execution.lastNodeExecuted` 或 `error.node.name`)\n   - 错误状态码 (`error.httpCode`)\n   - 错误描述 (`error.message`, `error.description`, `error.messages`)\n   - 执行日志链接 (`execution.url`)\n2. **翻译与总结**：将核心的英文报错翻译为流畅的中文，并合并冗余信息（例如：将 \"The service is receiving too many requests from you\" 和 \"您已受到速率限制\" 总结为 \"API 请求过于频繁，触发了目标服务的速率限制 (Rate Limit)\"）。\n3. **智能诊断**：根据报错类型推测原因并给出建议（例如遇到 429，建议增加节点等待时间/排队处理；遇到 401 建议检查 Token 等）。\n\n# Output Format (Discord Markdown Template)\n请严格使用以下格式输出消息（不要输出 JSON，直接输出这段 Discord 文本）：\n\n🚨 **[工作流名称] 运行失败**\n> **出错节点**：`[出错的节点名称]`\n> **发生时间**：[将时间戳转化为 YYYY-MM-DD HH:mm 格式]\n\n⚠️ **错误详情**\n* **状态码**：`[HTTP Code]` | `[Error Name]`\n* **问题描述**：[用通俗易懂的中文总结报错原因]\n* **原始信息**：\n```json\n[提取核心的 error message 或 stack 前两行，保持简短]"
-              }
-            ]
-          },
-          "batching": {}
-        },
-        "type": "@n8n/n8n-nodes-langchain.chainLlm",
-        "typeVersion": 1.9,
-        "position": [
-          432,
-          304
-        ],
-        "id": "68ad7c71-467e-42c0-9262-d21e9b6c3235",
-        "name": "Basic LLM Chain",
         "retryOnFail": true,
-        "waitBetweenTries": 2000
-      },
-      {
-        "parameters": {
-          "model": {
-            "__rl": true,
-            "value": "qwen3.5-plus",
-            "mode": "list",
-            "cachedResultName": "qwen3.5-plus"
-          },
-          "responsesApiEnabled": false,
-          "options": {
-            "temperature": 0
-          }
-        },
-        "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
-        "typeVersion": 1.3,
-        "position": [
-          496,
-          496
-        ],
-        "id": "537f0570-a71e-4208-8da2-dadfadf72b9a",
-        "name": "OpenAI Chat Model",
-        "retryOnFail": true,
-        "waitBetweenTries": 2000,
-        "credentials": {
-          "openAiApi": {
-            "id": "gyuAIYPDLYyRYJh7",
-            "name": "NewAPI-OE"
-          }
-        }
-      },
-      {
-        "parameters": {
-          "inputText": "={{ $json.text }}",
-          "categories": {
-            "categories": [
-              {
-                "category": "True",
-                "description": "表明需要将报错信息发给用户"
-              },
-              {
-                "category": "False",
-                "description": "表明不需要将报错信息发给用户"
-              }
-            ]
-          },
-          "options": {
-            "systemPromptTemplate": "=# Role\n你是一个智能的 n8n 工作流错误分发路由（Error Triage Agent）。你的任务是分析 n8n 运行失败后产生的 JSON 报错数据，并判断该错误是否需要立即发送通知让人工介入处理。\n\n# Classification Categories\n你必须将错误分类为以下两个结果之一：\n- **True**：需要通知用户（需要人工干预、修复或关注的严重错误）。\n- **False**：不需要通知用户（可以忽略的瞬时错误、系统可自愈的波动、或低级别的警告）。\n\n# Evaluation Rules\n请仔细阅读 JSON 中的 `error.httpCode`, `error.message`, `error.name` 和 `error.level`，并按照以下规则进行评估：\n\n## 判为 True (需要通知) 的情况：\n1. **身份验证与权限失败**：如 HTTP 401 (Unauthorized), 403 (Forbidden)。说明 Token 过期或 API Key 失效，必须人工更新。\n2. **工作流逻辑/配置错误**：如 HTTP 400 (Bad Request)，缺少必要参数，变量解析失败，语法错误（SyntaxError, TypeError, ReferenceError）。\n3. **资源不存在**：如 HTTP 404 (Not Found)，说明目标端点或数据源结构已更改。\n4. **配额耗尽/严重限流**：如 HTTP 429 (Too Many Requests)，且明确提示账户额度耗尽，或严重阻断了核心业务，需要人工调整节点触发频率（如增加 Wait 节点）。\n\n## 判为 False (忽略通知) 的情况：\n1. **轻微警告 (Warning)**：如果 JSON 中 `\"level\": \"warning\"`，且不是致命中断，通常不影响大局。\n2. **瞬时网络抖动**：如 HTTP 502 (Bad Gateway), 503 (Service Unavailable), 504 (Gateway Timeout), ECONNRESET, socket hang up。这类错误通常在 n8n 节点的自动重试 (Auto-retry) 机制下会自行解决。\n3. **极短的速率限制**：如 HTTP 429 且提示 `retry_after` 只有几秒或零点几秒（例如 0.3 秒），这属于正常的 API 节流，不需要人类恐慌。\n\n# Task\n请分析传入的 JSON 数据。基于上述规则，思考这属于哪种情况。\n最后，**仅输出类别名称（True 或 False），不要输出任何其他多余的解释文字或标点符号。**"
-          }
-        },
-        "type": "@n8n/n8n-nodes-langchain.textClassifier",
-        "typeVersion": 1.1,
-        "position": [
-          928,
-          -64
-        ],
-        "id": "13925e0f-8337-4738-a2f4-e4f58cb1865a",
-        "name": "Text Classifier"
-      },
-      {
-        "parameters": {
-          "model": {
-            "__rl": true,
-            "value": "smart-regular",
-            "mode": "list",
-            "cachedResultName": "smart-regular"
-          },
-          "responsesApiEnabled": false,
-          "options": {
-            "temperature": 0
-          }
-        },
-        "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
-        "typeVersion": 1.3,
-        "position": [
-          1008,
-          128
-        ],
-        "id": "b8645e6b-4a32-45df-9515-d51db6d1a3c5",
-        "name": "OpenAI Chat Model1",
-        "credentials": {
-          "openAiApi": {
-            "id": "BtNUoaYPZrKSsCA2",
-            "name": "NewAPI-VPS"
-          }
-        }
-      },
-      {
-        "parameters": {},
-        "type": "n8n-nodes-base.noOp",
-        "typeVersion": 1,
-        "position": [
-          1264,
-          16
-        ],
-        "id": "768bfb50-be08-4187-94bc-40f1c7640daa",
-        "name": "No Operation, do nothing"
+        "maxTries": 3,
+        "waitBetweenTries": 5000
       },
       {
         "parameters": {
@@ -586,25 +244,58 @@
             "cachedResultName": "service-status",
             "cachedResultUrl": "https://discord.com/channels/1223272555885105264/1224990958718812170"
           },
-          "content": "={{ $json.text }}",
+          "content": "={{ $json.discordMessage }}",
           "options": {}
         },
         "type": "n8n-nodes-base.discord",
         "typeVersion": 2,
         "position": [
-          784,
+          704,
           304
         ],
         "id": "79e60af0-8edc-4a75-93bb-a02315ef2213",
-        "name": "Send a message",
+        "name": "Discord Primary Alert",
         "webhookId": "32359dd1-65c8-496a-ab0b-d53b85eb58c2",
         "retryOnFail": true,
-        "waitBetweenTries": 3000,
+        "waitBetweenTries": 5000,
         "credentials": {
           "discordOAuth2Api": {
             "id": "ep3LAXJ2M9XUjEj1",
             "name": "NTLx"
           }
+        },
+        "onError": "continueErrorOutput",
+        "maxTries": 3
+      },
+      {
+        "id": "c6686195-ea59-4de0-8cca-a40ba647bd1b",
+        "name": "Format Error Alert",
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.5,
+        "position": [
+          448,
+          304
+        ],
+        "parameters": {
+          "mode": "manual",
+          "assignments": {
+            "assignments": [
+              {
+                "id": "discordMessage",
+                "name": "discordMessage",
+                "type": "string",
+                "value": "={{ (() => { const e = $json.execution?.error || {}; const wf = $json.workflow?.name || 'Unknown workflow'; const node = $json.execution?.lastNodeExecuted || e.node?.name || 'Unknown'; const code = e.httpCode || '-'; const name = e.name || 'Error'; const level = e.level || '-'; const msg = String(e.description || e.message || e.messages?.[0] || 'No message').replace(/\\s+/g, ' ').slice(0, 700); const url = $json.execution?.url || '-'; const id = $json.execution?.id || '-'; const mode = $json.execution?.mode || '-'; const time = $now.setZone('Asia/Shanghai').toFormat('yyyy-LL-dd HH:mm:ss'); return `🚨 **${wf} 运行失败**\\n> **出错节点**：\\`${node}\\`\\n> **发生时间**：${time}\\n\\n⚠️ **错误详情**\\n* **状态码**：\\`${code}\\` | \\`${name}\\`\\n* **级别 / 模式**：\\`${level}\\` / \\`${mode}\\`\\n* **问题描述**：${msg}\\n\\n🔗 **Execution ${id}**\\n${url}`; })() }}"
+              },
+              {
+                "id": "telegramMessage",
+                "name": "telegramMessage",
+                "type": "string",
+                "value": "={{ (() => { const e = $json.execution?.error || {}; const wf = $json.workflow?.name || 'Unknown workflow'; const node = $json.execution?.lastNodeExecuted || e.node?.name || 'Unknown'; const code = e.httpCode || '-'; const name = e.name || 'Error'; const msg = String(e.description || e.message || e.messages?.[0] || 'No message').replace(/\\s+/g, ' ').slice(0, 900); const url = $json.execution?.url || '-'; const id = $json.execution?.id || '-'; const time = $now.setZone('Asia/Shanghai').toFormat('yyyy-LL-dd HH:mm:ss'); return `🚨 n8n 工作流运行失败\\nWorkflow: ${wf}\\nNode: ${node}\\nTime: ${time}\\nHTTP: ${code}\\nError: ${name}\\nMessage: ${msg}\\nExecution: ${id}\\n${url}`; })() }}"
+              }
+            ]
+          },
+          "includeOtherFields": false,
+          "options": {}
         }
       }
     ],
@@ -613,81 +304,30 @@
         "main": [
           [
             {
-              "node": "Basic LLM Chain",
+              "node": "Format Error Alert",
               "type": "main",
               "index": 0
             }
           ]
         ]
       },
-      "Filter & Rate Limit": {
+      "Format Error Alert": {
         "main": [
           [
             {
-              "node": "Should Send?",
+              "node": "Discord Primary Alert",
               "type": "main",
               "index": 0
             }
           ]
         ]
       },
-      "Should Send?": {
+      "Discord Primary Alert": {
         "main": [
+          null,
           [
             {
-              "node": "Send Notification",
-              "type": "main",
-              "index": 0
-            }
-          ],
-          [
-            {
-              "node": "Log Filtered",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "OpenAI Chat Model": {
-        "ai_languageModel": [
-          [
-            {
-              "node": "Basic LLM Chain",
-              "type": "ai_languageModel",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Basic LLM Chain": {
-        "main": [
-          [
-            {
-              "node": "Send a message",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "OpenAI Chat Model1": {
-        "ai_languageModel": [
-          [
-            {
-              "node": "Text Classifier",
-              "type": "ai_languageModel",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Text Classifier": {
-        "main": [
-          [],
-          [
-            {
-              "node": "No Operation, do nothing",
+              "node": "Telegram Fallback",
               "type": "main",
               "index": 0
             }
@@ -696,11 +336,11 @@
       }
     },
     "nodeGroups": [],
-    "authors": "Administrator NTLx",
-    "name": "Version fc32e907",
-    "description": "",
-    "autosaved": true,
-    "createdAt": "2026-03-01T14:17:22.635Z",
-    "updatedAt": "2026-03-01T14:17:26.717Z"
+    "authors": "Administrator NTLx (via MCP)",
+    "name": "Harden error notifications",
+    "description": "Remove LLM-dependent and disconnected legacy branches. Format errors deterministically, send the primary alert to Discord with retries, and fall back to Telegram only if Discord delivery still fails. Successful handler runs no longer retain full execution data; failed handler runs remain stored.",
+    "autosaved": false,
+    "createdAt": "2026-10-22T04:25:58.637Z",
+    "updatedAt": "2026-10-22T04:25:58.637Z"
   }
 }
