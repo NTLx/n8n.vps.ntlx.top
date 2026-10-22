@@ -4,7 +4,7 @@
   "active": true,
   "activeVersionId": "1dcf86f1-1910-4b11-b362-4525dc9d3626",
   "createdAt": "2026-02-28T07:42:26.118Z",
-  "updatedAt": "2026-08-10T05:22:14.126Z",
+  "updatedAt": "2026-10-22T04:04:29.338Z",
   "isArchived": false,
   "versionId": "1dcf86f1-1910-4b11-b362-4525dc9d3626",
   "triggerCount": 19,
@@ -783,7 +783,7 @@
   "settings": {
     "executionOrder": "v1",
     "binaryMode": "separate",
-    "availableInMCP": false,
+    "availableInMCP": true,
     "timeSavedMode": "fixed",
     "errorWorkflow": "3LE3BnPfHSuIZCVR",
     "saveDataErrorExecution": "all",
