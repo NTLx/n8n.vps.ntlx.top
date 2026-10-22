@@ -1,0 +1,87 @@
+{
+  "id": "eXvw9BZHUJgX227g",
+  "name": "Error Notification E2E Test",
+  "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-10-22T04:31:02.857Z",
+  "updatedAt": "2026-10-22T04:34:43.737Z",
+  "isArchived": true,
+  "versionId": "2ab9fe0f-0626-4f5c-b504-9cad27963409",
+  "triggerCount": 1,
+  "nodes": [
+    {
+      "id": "dc70e890-41ff-425a-84ec-ee614b4ba747",
+      "name": "E2E Test Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.2,
+      "position": [
+        240,
+        300
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "error-notification-e2e-test",
+        "authentication": "none",
+        "responseMode": "onReceived",
+        "options": {
+          "noResponseBody": true
+        }
+      },
+      "webhookId": "3d00cac4-89af-4000-89f1-514023cb5121"
+    },
+    {
+      "id": "865589df-da7f-4800-b7f5-4e03ca6f02e3",
+      "name": "Force E2E Failure",
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        520,
+        300
+      ],
+      "parameters": {
+        "errorType": "errorMessage",
+        "errorMessage": "E2E_TEST: Error Notification production-path validation"
+      }
+    }
+  ],
+  "connections": {
+    "E2E Test Webhook": {
+      "main": [
+        [
+          {
+            "node": "Force E2E Failure",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true,
+    "errorWorkflow": "3LE3BnPfHSuIZCVR",
+    "saveExecutionProgress": false,
+    "saveManualExecutions": false,
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "none"
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "eXvw9BZHUJgX227g",
+      "projectId": "cNMj0K6AdJmi0OAZ",
+      "createdAt": "2026-10-22T04:31:02.857Z",
+      "updatedAt": "2026-10-22T04:31:02.857Z"
+    }
+  ],
+  "activeVersion": null
+}
