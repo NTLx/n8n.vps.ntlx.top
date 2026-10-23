@@ -1,0 +1,756 @@
+{
+  "id": "GeHImtzcBiGYwfUQ",
+  "name": "Schedule career intelligence watch",
+  "active": true,
+  "activeVersionId": "36772236-bcb6-473c-a03b-6b9431090c29",
+  "createdAt": "2026-10-22T16:34:48.501Z",
+  "updatedAt": "2026-10-22T16:34:54.198Z",
+  "isArchived": false,
+  "versionId": "36772236-bcb6-473c-a03b-6b9431090c29",
+  "triggerCount": 1,
+  "nodes": [
+    {
+      "id": "fdd1584d-dbd7-419e-a5ac-a9332f81a79e",
+      "name": "Every Hour at :00",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 1,
+              "triggerAtMinute": 0
+            }
+          ]
+        },
+        "misfirePolicy": "coalesce",
+        "misfireGraceSeconds": 3600
+      }
+    },
+    {
+      "id": "a96d8151-302c-4935-a26e-887d8eb63fff",
+      "name": "Prepare Job Watch AI Work",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        280,
+        0
+      ],
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "work-id",
+              "name": "work_id",
+              "type": "string",
+              "value": "={{ 'job_watch:career_targets:' + $now.setZone('Asia/Shanghai').toFormat('yyyyLLddHH') }}"
+            },
+            {
+              "id": "kind",
+              "name": "kind",
+              "type": "string",
+              "value": "job_watch"
+            },
+            {
+              "id": "priority",
+              "name": "priority",
+              "type": "number",
+              "value": 2
+            },
+            {
+              "id": "source-event-id",
+              "name": "source_event_id",
+              "type": "string",
+              "value": "={{ 'job_watch.tick:' + $now.setZone('Asia/Shanghai').toFormat('yyyyLLddHH') }}"
+            },
+            {
+              "id": "correlation-id",
+              "name": "correlation_id",
+              "type": "string",
+              "value": "={{ 'job-watch:career-targets:' + $now.setZone('Asia/Shanghai').toFormat('yyyyLLdd') }}"
+            },
+            {
+              "id": "project",
+              "name": "project",
+              "type": "string",
+              "value": "career"
+            },
+            {
+              "id": "input-ref",
+              "name": "input_ref",
+              "type": "string",
+              "value": "job-watch://elis-grit-drugfarm"
+            },
+            {
+              "id": "summary",
+              "name": "summary",
+              "type": "string",
+              "value": "Check material public changes for 艾力斯 AI 全栈工程师（高级经理）, 上海沙砾生物/GRIT AI-Native/AI Agent roles and KunEvo, and Drug Farm/药物牧场 AI roles/platform/org; compare with the durable baseline and surface only meaningful changes."
+            },
+            {
+              "id": "not-before",
+              "name": "not_before",
+              "type": "string",
+              "value": "={{ $now.toISO() }}"
+            },
+            {
+              "id": "deadline",
+              "name": "deadline",
+              "type": "string",
+              "value": "={{ $now.plus({ minutes: 50 }).toISO() }}"
+            },
+            {
+              "id": "event-id",
+              "name": "event_id",
+              "type": "string",
+              "value": "={{ 'job_watch.requested:' + $now.setZone('Asia/Shanghai').toFormat('yyyyLLdd') }}"
+            },
+            {
+              "id": "event-time",
+              "name": "event_occurred_at",
+              "type": "string",
+              "value": "={{ $now.toISO() }}"
+            },
+            {
+              "id": "event-source",
+              "name": "event_source",
+              "type": "string",
+              "value": "n8n:job-watch-schedule"
+            },
+            {
+              "id": "event-category",
+              "name": "event_category",
+              "type": "string",
+              "value": "job_watch.requested"
+            },
+            {
+              "id": "event-title",
+              "name": "event_title",
+              "type": "string",
+              "value": "Career target watch scheduled"
+            },
+            {
+              "id": "event-description",
+              "name": "event_description",
+              "type": "string",
+              "value": "Hourly deterministic trigger requested a ChatGPT review of the configured career targets. This event is daily-upserted to avoid Event Ledger noise."
+            },
+            {
+              "id": "event-status",
+              "name": "event_status",
+              "type": "string",
+              "value": "pending"
+            },
+            {
+              "id": "event-url",
+              "name": "event_url",
+              "type": "string",
+              "value": ""
+            },
+            {
+              "id": "event-meta",
+              "name": "event_metadata_object",
+              "type": "string",
+              "value": "{\"targets\":[\"艾力斯医药\",\"上海沙砾生物/GRIT Biotechnology\",\"Drug Farm/药物牧场\"],\"schedule\":\"hourly\"}"
+            }
+          ]
+        },
+        "includeOtherFields": false,
+        "options": {}
+      }
+    },
+    {
+      "id": "dc10438b-ffd5-4f0f-ab45-da436b6a5a13",
+      "name": "Enqueue Job Watch",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.4,
+      "position": [
+        560,
+        0
+      ],
+      "parameters": {
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "oe8KZW4nLbYUUDzA"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "work_id": "={{ $json.work_id }}",
+            "kind": "={{ $json.kind }}",
+            "priority": "={{ $json.priority }}",
+            "source_event_id": "={{ $json.source_event_id }}",
+            "correlation_id": "={{ $json.correlation_id }}",
+            "project": "={{ $json.project }}",
+            "input_ref": "={{ $json.input_ref }}",
+            "summary": "={{ $json.summary }}",
+            "not_before": "={{ $json.not_before }}",
+            "deadline": "={{ $json.deadline }}",
+            "event_id": "={{ $json.event_id }}",
+            "event_occurred_at": "={{ $json.event_occurred_at }}",
+            "event_source": "={{ $json.event_source }}",
+            "event_category": "={{ $json.event_category }}",
+            "event_title": "={{ $json.event_title }}",
+            "event_description": "={{ $json.event_description }}",
+            "event_status": "={{ $json.event_status }}",
+            "event_url": "={{ $json.event_url }}",
+            "event_metadata_object": "={{ $json.event_metadata_object }}"
+          },
+          "schema": [
+            {
+              "id": "work_id",
+              "displayName": "work_id",
+              "type": "string"
+            },
+            {
+              "id": "kind",
+              "displayName": "kind",
+              "type": "string"
+            },
+            {
+              "id": "priority",
+              "displayName": "priority",
+              "type": "number"
+            },
+            {
+              "id": "source_event_id",
+              "displayName": "source_event_id",
+              "type": "string"
+            },
+            {
+              "id": "correlation_id",
+              "displayName": "correlation_id",
+              "type": "string"
+            },
+            {
+              "id": "project",
+              "displayName": "project",
+              "type": "string"
+            },
+            {
+              "id": "input_ref",
+              "displayName": "input_ref",
+              "type": "string"
+            },
+            {
+              "id": "summary",
+              "displayName": "summary",
+              "type": "string"
+            },
+            {
+              "id": "not_before",
+              "displayName": "not_before",
+              "type": "string"
+            },
+            {
+              "id": "deadline",
+              "displayName": "deadline",
+              "type": "string"
+            },
+            {
+              "id": "event_id",
+              "displayName": "event_id",
+              "type": "string"
+            },
+            {
+              "id": "event_occurred_at",
+              "displayName": "event_occurred_at",
+              "type": "string"
+            },
+            {
+              "id": "event_source",
+              "displayName": "event_source",
+              "type": "string"
+            },
+            {
+              "id": "event_category",
+              "displayName": "event_category",
+              "type": "string"
+            },
+            {
+              "id": "event_title",
+              "displayName": "event_title",
+              "type": "string"
+            },
+            {
+              "id": "event_description",
+              "displayName": "event_description",
+              "type": "string"
+            },
+            {
+              "id": "event_status",
+              "displayName": "event_status",
+              "type": "string"
+            },
+            {
+              "id": "event_url",
+              "displayName": "event_url",
+              "type": "string"
+            },
+            {
+              "id": "event_metadata_object",
+              "displayName": "event_metadata_object",
+              "type": "string"
+            }
+          ]
+        },
+        "mode": "each",
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "onError": "continueRegularOutput"
+    }
+  ],
+  "connections": {
+    "Every Hour at :00": {
+      "main": [
+        [
+          {
+            "node": "Prepare Job Watch AI Work",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Job Watch AI Work": {
+      "main": [
+        [
+          {
+            "node": "Enqueue Job Watch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [
+    {
+      "id": "73c805df-2210-42b1-a41a-5dc87ee28142",
+      "name": "Schedule AI career watch",
+      "nodeIds": [
+        "a96d8151-302c-4935-a26e-887d8eb63fff",
+        "dc10438b-ffd5-4f0f-ab45-da436b6a5a13"
+      ],
+      "description": "Create one idempotent hourly job_watch work item; all research and change judgment belongs to ChatGPT."
+    }
+  ],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true,
+    "errorWorkflow": "3LE3BnPfHSuIZCVR",
+    "timezone": "Asia/Shanghai",
+    "saveExecutionProgress": false,
+    "saveManualExecutions": false,
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "none",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "staticData": {
+    "node:Every Hour at :00": {
+      "recurrenceRules": [
+        null
+      ],
+      "recurrenceRuleSignatures": [
+        null
+      ]
+    }
+  },
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [
+    {
+      "id": "BlGRvaSWqnmTk53i",
+      "name": "event-producer",
+      "createdAt": "2026-10-22T09:14:35.370Z",
+      "updatedAt": "2026-10-22T09:14:35.370Z"
+    },
+    {
+      "id": "9jw9Bhya2Ylf8E4D",
+      "name": "ai-work-producer",
+      "createdAt": "2026-10-22T09:14:35.367Z",
+      "updatedAt": "2026-10-22T09:14:35.367Z"
+    },
+    {
+      "id": "5x8Ku7hwyJeQ95Ib",
+      "name": "career",
+      "createdAt": "2026-10-22T16:34:54.019Z",
+      "updatedAt": "2026-10-22T16:34:54.019Z"
+    },
+    {
+      "id": "twNsKNALbdWLw0Ox",
+      "name": "automation",
+      "createdAt": "2026-10-22T08:25:54.546Z",
+      "updatedAt": "2026-10-22T08:25:54.546Z"
+    }
+  ],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "GeHImtzcBiGYwfUQ",
+      "projectId": "cNMj0K6AdJmi0OAZ",
+      "createdAt": "2026-10-22T16:34:48.501Z",
+      "updatedAt": "2026-10-22T16:34:48.501Z"
+    }
+  ],
+  "activeVersion": {
+    "versionId": "36772236-bcb6-473c-a03b-6b9431090c29",
+    "workflowId": "GeHImtzcBiGYwfUQ",
+    "nodes": [
+      {
+        "id": "fdd1584d-dbd7-419e-a5ac-a9332f81a79e",
+        "name": "Every Hour at :00",
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.4,
+        "position": [
+          0,
+          0
+        ],
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "hours",
+                "hoursInterval": 1,
+                "triggerAtMinute": 0
+              }
+            ]
+          },
+          "misfirePolicy": "coalesce",
+          "misfireGraceSeconds": 3600
+        }
+      },
+      {
+        "id": "a96d8151-302c-4935-a26e-887d8eb63fff",
+        "name": "Prepare Job Watch AI Work",
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.5,
+        "position": [
+          280,
+          0
+        ],
+        "parameters": {
+          "mode": "manual",
+          "assignments": {
+            "assignments": [
+              {
+                "id": "work-id",
+                "name": "work_id",
+                "type": "string",
+                "value": "={{ 'job_watch:career_targets:' + $now.setZone('Asia/Shanghai').toFormat('yyyyLLddHH') }}"
+              },
+              {
+                "id": "kind",
+                "name": "kind",
+                "type": "string",
+                "value": "job_watch"
+              },
+              {
+                "id": "priority",
+                "name": "priority",
+                "type": "number",
+                "value": 2
+              },
+              {
+                "id": "source-event-id",
+                "name": "source_event_id",
+                "type": "string",
+                "value": "={{ 'job_watch.tick:' + $now.setZone('Asia/Shanghai').toFormat('yyyyLLddHH') }}"
+              },
+              {
+                "id": "correlation-id",
+                "name": "correlation_id",
+                "type": "string",
+                "value": "={{ 'job-watch:career-targets:' + $now.setZone('Asia/Shanghai').toFormat('yyyyLLdd') }}"
+              },
+              {
+                "id": "project",
+                "name": "project",
+                "type": "string",
+                "value": "career"
+              },
+              {
+                "id": "input-ref",
+                "name": "input_ref",
+                "type": "string",
+                "value": "job-watch://elis-grit-drugfarm"
+              },
+              {
+                "id": "summary",
+                "name": "summary",
+                "type": "string",
+                "value": "Check material public changes for 艾力斯 AI 全栈工程师（高级经理）, 上海沙砾生物/GRIT AI-Native/AI Agent roles and KunEvo, and Drug Farm/药物牧场 AI roles/platform/org; compare with the durable baseline and surface only meaningful changes."
+              },
+              {
+                "id": "not-before",
+                "name": "not_before",
+                "type": "string",
+                "value": "={{ $now.toISO() }}"
+              },
+              {
+                "id": "deadline",
+                "name": "deadline",
+                "type": "string",
+                "value": "={{ $now.plus({ minutes: 50 }).toISO() }}"
+              },
+              {
+                "id": "event-id",
+                "name": "event_id",
+                "type": "string",
+                "value": "={{ 'job_watch.requested:' + $now.setZone('Asia/Shanghai').toFormat('yyyyLLdd') }}"
+              },
+              {
+                "id": "event-time",
+                "name": "event_occurred_at",
+                "type": "string",
+                "value": "={{ $now.toISO() }}"
+              },
+              {
+                "id": "event-source",
+                "name": "event_source",
+                "type": "string",
+                "value": "n8n:job-watch-schedule"
+              },
+              {
+                "id": "event-category",
+                "name": "event_category",
+                "type": "string",
+                "value": "job_watch.requested"
+              },
+              {
+                "id": "event-title",
+                "name": "event_title",
+                "type": "string",
+                "value": "Career target watch scheduled"
+              },
+              {
+                "id": "event-description",
+                "name": "event_description",
+                "type": "string",
+                "value": "Hourly deterministic trigger requested a ChatGPT review of the configured career targets. This event is daily-upserted to avoid Event Ledger noise."
+              },
+              {
+                "id": "event-status",
+                "name": "event_status",
+                "type": "string",
+                "value": "pending"
+              },
+              {
+                "id": "event-url",
+                "name": "event_url",
+                "type": "string",
+                "value": ""
+              },
+              {
+                "id": "event-meta",
+                "name": "event_metadata_object",
+                "type": "string",
+                "value": "{\"targets\":[\"艾力斯医药\",\"上海沙砾生物/GRIT Biotechnology\",\"Drug Farm/药物牧场\"],\"schedule\":\"hourly\"}"
+              }
+            ]
+          },
+          "includeOtherFields": false,
+          "options": {}
+        }
+      },
+      {
+        "id": "dc10438b-ffd5-4f0f-ab45-da436b6a5a13",
+        "name": "Enqueue Job Watch",
+        "type": "n8n-nodes-base.executeWorkflow",
+        "typeVersion": 1.4,
+        "position": [
+          560,
+          0
+        ],
+        "parameters": {
+          "source": "database",
+          "workflowId": {
+            "__rl": true,
+            "mode": "id",
+            "value": "oe8KZW4nLbYUUDzA"
+          },
+          "workflowInputs": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "work_id": "={{ $json.work_id }}",
+              "kind": "={{ $json.kind }}",
+              "priority": "={{ $json.priority }}",
+              "source_event_id": "={{ $json.source_event_id }}",
+              "correlation_id": "={{ $json.correlation_id }}",
+              "project": "={{ $json.project }}",
+              "input_ref": "={{ $json.input_ref }}",
+              "summary": "={{ $json.summary }}",
+              "not_before": "={{ $json.not_before }}",
+              "deadline": "={{ $json.deadline }}",
+              "event_id": "={{ $json.event_id }}",
+              "event_occurred_at": "={{ $json.event_occurred_at }}",
+              "event_source": "={{ $json.event_source }}",
+              "event_category": "={{ $json.event_category }}",
+              "event_title": "={{ $json.event_title }}",
+              "event_description": "={{ $json.event_description }}",
+              "event_status": "={{ $json.event_status }}",
+              "event_url": "={{ $json.event_url }}",
+              "event_metadata_object": "={{ $json.event_metadata_object }}"
+            },
+            "schema": [
+              {
+                "id": "work_id",
+                "displayName": "work_id",
+                "type": "string"
+              },
+              {
+                "id": "kind",
+                "displayName": "kind",
+                "type": "string"
+              },
+              {
+                "id": "priority",
+                "displayName": "priority",
+                "type": "number"
+              },
+              {
+                "id": "source_event_id",
+                "displayName": "source_event_id",
+                "type": "string"
+              },
+              {
+                "id": "correlation_id",
+                "displayName": "correlation_id",
+                "type": "string"
+              },
+              {
+                "id": "project",
+                "displayName": "project",
+                "type": "string"
+              },
+              {
+                "id": "input_ref",
+                "displayName": "input_ref",
+                "type": "string"
+              },
+              {
+                "id": "summary",
+                "displayName": "summary",
+                "type": "string"
+              },
+              {
+                "id": "not_before",
+                "displayName": "not_before",
+                "type": "string"
+              },
+              {
+                "id": "deadline",
+                "displayName": "deadline",
+                "type": "string"
+              },
+              {
+                "id": "event_id",
+                "displayName": "event_id",
+                "type": "string"
+              },
+              {
+                "id": "event_occurred_at",
+                "displayName": "event_occurred_at",
+                "type": "string"
+              },
+              {
+                "id": "event_source",
+                "displayName": "event_source",
+                "type": "string"
+              },
+              {
+                "id": "event_category",
+                "displayName": "event_category",
+                "type": "string"
+              },
+              {
+                "id": "event_title",
+                "displayName": "event_title",
+                "type": "string"
+              },
+              {
+                "id": "event_description",
+                "displayName": "event_description",
+                "type": "string"
+              },
+              {
+                "id": "event_status",
+                "displayName": "event_status",
+                "type": "string"
+              },
+              {
+                "id": "event_url",
+                "displayName": "event_url",
+                "type": "string"
+              },
+              {
+                "id": "event_metadata_object",
+                "displayName": "event_metadata_object",
+                "type": "string"
+              }
+            ]
+          },
+          "mode": "each",
+          "options": {
+            "waitForSubWorkflow": true
+          }
+        },
+        "onError": "continueRegularOutput"
+      }
+    ],
+    "connections": {
+      "Every Hour at :00": {
+        "main": [
+          [
+            {
+              "node": "Prepare Job Watch AI Work",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prepare Job Watch AI Work": {
+        "main": [
+          [
+            {
+              "node": "Enqueue Job Watch",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "nodeGroups": [
+      {
+        "id": "73c805df-2210-42b1-a41a-5dc87ee28142",
+        "name": "Schedule AI career watch",
+        "nodeIds": [
+          "a96d8151-302c-4935-a26e-887d8eb63fff",
+          "dc10438b-ffd5-4f0f-ab45-da436b6a5a13"
+        ],
+        "description": "Create one idempotent hourly job_watch work item; all research and change judgment belongs to ChatGPT."
+      }
+    ],
+    "authors": "Administrator NTLx (via MCP)",
+    "name": "Initial hourly career watch producer",
+    "description": "Runs hourly at :00, creates one idempotent job_watch work item, and daily-upserts the request event to avoid Event Ledger noise.",
+    "autosaved": false,
+    "createdAt": "2026-10-22T16:34:48.501Z",
+    "updatedAt": "2026-10-22T16:34:48.501Z"
+  }
+}
