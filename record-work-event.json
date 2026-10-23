@@ -1,0 +1,708 @@
+{
+  "id": "nr0Rqj2ZaTEf3Mca",
+  "name": "Record work event",
+  "active": true,
+  "activeVersionId": "28e3466d-0800-45be-890b-08d962e96a32",
+  "createdAt": "2026-10-22T08:25:36.634Z",
+  "updatedAt": "2026-10-22T09:13:40.567Z",
+  "isArchived": false,
+  "versionId": "28e3466d-0800-45be-890b-08d962e96a32",
+  "triggerCount": 1,
+  "nodes": [
+    {
+      "id": "1e9a2bbd-f230-49db-95e5-dca2c09a546c",
+      "name": "Receive Work Event",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.2,
+      "position": [
+        0,
+        192
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "work-events",
+        "authentication": "headerAuth",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "webhookId": "c44a4cc3-b405-4700-bf32-ee7f90a0092e",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "RvmfH6qWSIUABPQO",
+          "name": "n8n Webhook（Bearer Auth）"
+        }
+      }
+    },
+    {
+      "id": "97594857-e69a-487c-b003-408e156ee29f",
+      "name": "Validate Event Contract",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.4,
+      "position": [
+        224,
+        192
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.body?.event_id && $json.body?.occurred_at && $json.body?.source && $json.body?.title ? \"valid\" : \"invalid\" }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              },
+              "rightValue": "valid"
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {
+          "ignoreCase": false
+        }
+      }
+    },
+    {
+      "id": "938f2fc2-9099-4319-b7ee-50530d0ccf5e",
+      "name": "Upsert Work Event",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        448,
+        96
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "upsert",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "work_events"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "event_id",
+              "condition": "eq",
+              "keyValue": "={{ $(\"Receive Work Event\").item.json.body.event_id }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "event_id": "={{ $(\"Receive Work Event\").item.json.body.event_id }}",
+            "occurred_at": "={{ $(\"Receive Work Event\").item.json.body.occurred_at }}",
+            "source": "={{ $(\"Receive Work Event\").item.json.body.source }}",
+            "project": "={{ $(\"Receive Work Event\").item.json.body.project ?? \"\" }}",
+            "category": "={{ $(\"Receive Work Event\").item.json.body.category ?? \"\" }}",
+            "title": "={{ $(\"Receive Work Event\").item.json.body.title }}",
+            "description": "={{ $(\"Receive Work Event\").item.json.body.description ?? \"\" }}",
+            "status": "={{ $(\"Receive Work Event\").item.json.body.status ?? \"completed\" }}",
+            "url": "={{ $(\"Receive Work Event\").item.json.body.url ?? \"\" }}",
+            "metadata_object": "={{ typeof $(\"Receive Work Event\").item.json.body.metadata_object === 'string' ? $(\"Receive Work Event\").item.json.body.metadata_object : (($(\"Receive Work Event\").item.json.body.metadata ?? {}).toJsonString()) }}",
+            "correlation_id": "={{ $(\"Receive Work Event\").item.json.body.correlation_id ?? \"\" }}"
+          },
+          "schema": [
+            {
+              "id": "event_id",
+              "displayName": "event_id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "occurred_at",
+              "displayName": "occurred_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "source",
+              "displayName": "source",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "project",
+              "displayName": "project",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "category",
+              "displayName": "category",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "title",
+              "displayName": "title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "description",
+              "displayName": "description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "url",
+              "displayName": "url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "metadata_object",
+              "displayName": "metadata_object",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "correlation_id",
+              "displayName": "correlation_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "id": "b83b8c88-a71f-4304-8ba8-280035cfdd5f",
+      "name": "Respond Success",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        672,
+        0
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { ok: true, event_id: $(\"Receive Work Event\").item.json.body.event_id } }}",
+        "options": {
+          "responseCode": 200
+        }
+      }
+    },
+    {
+      "id": "e305eaaa-8129-4a51-be5b-90be8006d458",
+      "name": "Respond Internal Error",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        672,
+        192
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": {
+          "error": "internal_error",
+          "message": "Failed to persist work event"
+        },
+        "options": {
+          "responseCode": 500
+        }
+      }
+    },
+    {
+      "id": "700f8a53-288f-4a3a-b848-0043c37caa12",
+      "name": "Respond Validation Error",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        448,
+        288
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": {
+          "error": "validation_error",
+          "message": "Required fields: event_id, occurred_at, source, title",
+          "request_schema": {
+            "event_id": "string",
+            "occurred_at": "ISO 8601 datetime",
+            "source": "string",
+            "title": "string"
+          }
+        },
+        "options": {
+          "responseCode": 400
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Receive Work Event": {
+      "main": [
+        [
+          {
+            "node": "Validate Event Contract",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Event Contract": {
+      "main": [
+        [
+          {
+            "node": "Upsert Work Event",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Validation Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upsert Work Event": {
+      "main": [
+        [
+          {
+            "node": "Respond Success",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Internal Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true,
+    "errorWorkflow": "3LE3BnPfHSuIZCVR",
+    "timezone": "Asia/Shanghai",
+    "saveExecutionProgress": false,
+    "saveManualExecutions": false,
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "none",
+    "timeSavedPerExecution": 2,
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [
+    {
+      "id": "twNsKNALbdWLw0Ox",
+      "name": "automation",
+      "createdAt": "2026-10-22T08:25:54.546Z",
+      "updatedAt": "2026-10-22T08:25:54.546Z"
+    },
+    {
+      "id": "wMDPWb1vTtFNeY23",
+      "name": "work-events",
+      "createdAt": "2026-10-22T08:25:54.556Z",
+      "updatedAt": "2026-10-22T08:25:54.556Z"
+    },
+    {
+      "id": "FHTic8vsGI9vqNgN",
+      "name": "event-ledger",
+      "createdAt": "2026-10-22T09:13:40.553Z",
+      "updatedAt": "2026-10-22T09:13:40.553Z"
+    }
+  ],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "nr0Rqj2ZaTEf3Mca",
+      "projectId": "cNMj0K6AdJmi0OAZ",
+      "createdAt": "2026-10-22T08:25:36.634Z",
+      "updatedAt": "2026-10-22T08:25:36.634Z"
+    }
+  ],
+  "activeVersion": {
+    "versionId": "28e3466d-0800-45be-890b-08d962e96a32",
+    "workflowId": "nr0Rqj2ZaTEf3Mca",
+    "nodes": [
+      {
+        "id": "1e9a2bbd-f230-49db-95e5-dca2c09a546c",
+        "name": "Receive Work Event",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.2,
+        "position": [
+          0,
+          192
+        ],
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "work-events",
+          "authentication": "headerAuth",
+          "responseMode": "responseNode",
+          "options": {}
+        },
+        "webhookId": "c44a4cc3-b405-4700-bf32-ee7f90a0092e",
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "RvmfH6qWSIUABPQO",
+            "name": "n8n Webhook（Bearer Auth）"
+          }
+        }
+      },
+      {
+        "id": "97594857-e69a-487c-b003-408e156ee29f",
+        "name": "Validate Event Contract",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.4,
+        "position": [
+          224,
+          192
+        ],
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict"
+            },
+            "conditions": [
+              {
+                "leftValue": "={{ $json.body?.event_id && $json.body?.occurred_at && $json.body?.source && $json.body?.title ? \"valid\" : \"invalid\" }}",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals"
+                },
+                "rightValue": "valid"
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {
+            "ignoreCase": false
+          }
+        }
+      },
+      {
+        "id": "938f2fc2-9099-4319-b7ee-50530d0ccf5e",
+        "name": "Upsert Work Event",
+        "type": "n8n-nodes-base.dataTable",
+        "typeVersion": 1.1,
+        "position": [
+          448,
+          96
+        ],
+        "parameters": {
+          "resource": "row",
+          "operation": "upsert",
+          "dataTableId": {
+            "__rl": true,
+            "mode": "name",
+            "value": "work_events"
+          },
+          "matchType": "allConditions",
+          "filters": {
+            "conditions": [
+              {
+                "keyName": "event_id",
+                "condition": "eq",
+                "keyValue": "={{ $(\"Receive Work Event\").item.json.body.event_id }}"
+              }
+            ]
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "event_id": "={{ $(\"Receive Work Event\").item.json.body.event_id }}",
+              "occurred_at": "={{ $(\"Receive Work Event\").item.json.body.occurred_at }}",
+              "source": "={{ $(\"Receive Work Event\").item.json.body.source }}",
+              "project": "={{ $(\"Receive Work Event\").item.json.body.project ?? \"\" }}",
+              "category": "={{ $(\"Receive Work Event\").item.json.body.category ?? \"\" }}",
+              "title": "={{ $(\"Receive Work Event\").item.json.body.title }}",
+              "description": "={{ $(\"Receive Work Event\").item.json.body.description ?? \"\" }}",
+              "status": "={{ $(\"Receive Work Event\").item.json.body.status ?? \"completed\" }}",
+              "url": "={{ $(\"Receive Work Event\").item.json.body.url ?? \"\" }}",
+              "metadata_object": "={{ typeof $(\"Receive Work Event\").item.json.body.metadata_object === 'string' ? $(\"Receive Work Event\").item.json.body.metadata_object : (($(\"Receive Work Event\").item.json.body.metadata ?? {}).toJsonString()) }}",
+              "correlation_id": "={{ $(\"Receive Work Event\").item.json.body.correlation_id ?? \"\" }}"
+            },
+            "schema": [
+              {
+                "id": "event_id",
+                "displayName": "event_id",
+                "required": false,
+                "defaultMatch": true,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "occurred_at",
+                "displayName": "occurred_at",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "dateTime",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "source",
+                "displayName": "source",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "project",
+                "displayName": "project",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "category",
+                "displayName": "category",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "title",
+                "displayName": "title",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "description",
+                "displayName": "description",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "status",
+                "displayName": "status",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "url",
+                "displayName": "url",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "metadata_object",
+                "displayName": "metadata_object",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "correlation_id",
+                "displayName": "correlation_id",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              }
+            ]
+          },
+          "options": {}
+        },
+        "onError": "continueErrorOutput"
+      },
+      {
+        "id": "b83b8c88-a71f-4304-8ba8-280035cfdd5f",
+        "name": "Respond Success",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.5,
+        "position": [
+          672,
+          0
+        ],
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ { ok: true, event_id: $(\"Receive Work Event\").item.json.body.event_id } }}",
+          "options": {
+            "responseCode": 200
+          }
+        }
+      },
+      {
+        "id": "e305eaaa-8129-4a51-be5b-90be8006d458",
+        "name": "Respond Internal Error",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.5,
+        "position": [
+          672,
+          192
+        ],
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": {
+            "error": "internal_error",
+            "message": "Failed to persist work event"
+          },
+          "options": {
+            "responseCode": 500
+          }
+        }
+      },
+      {
+        "id": "700f8a53-288f-4a3a-b848-0043c37caa12",
+        "name": "Respond Validation Error",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.5,
+        "position": [
+          448,
+          288
+        ],
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": {
+            "error": "validation_error",
+            "message": "Required fields: event_id, occurred_at, source, title",
+            "request_schema": {
+              "event_id": "string",
+              "occurred_at": "ISO 8601 datetime",
+              "source": "string",
+              "title": "string"
+            }
+          },
+          "options": {
+            "responseCode": 400
+          }
+        }
+      }
+    ],
+    "connections": {
+      "Receive Work Event": {
+        "main": [
+          [
+            {
+              "node": "Validate Event Contract",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Validate Event Contract": {
+        "main": [
+          [
+            {
+              "node": "Upsert Work Event",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Respond Validation Error",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Upsert Work Event": {
+        "main": [
+          [
+            {
+              "node": "Respond Success",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Respond Internal Error",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "nodeGroups": [],
+    "authors": "Administrator NTLx (via MCP)",
+    "name": "Align Event Ledger schema",
+    "description": "Renames nested metadata storage to metadata_object, adds correlation_id, and preserves backward compatibility with callers that still send metadata objects.",
+    "autosaved": false,
+    "createdAt": "2026-10-22T09:13:40.569Z",
+    "updatedAt": "2026-10-22T09:13:40.569Z"
+  }
+}
