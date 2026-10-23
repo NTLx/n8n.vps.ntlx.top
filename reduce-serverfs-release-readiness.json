@@ -1,0 +1,2020 @@
+{
+  "id": "4OI7i3wKOfPCkClB",
+  "name": "Reduce ServerFS release readiness",
+  "active": true,
+  "activeVersionId": "844ff7e2-9942-4d41-a288-1e336d107adb",
+  "createdAt": "2026-10-22T08:30:45.706Z",
+  "updatedAt": "2026-10-22T16:22:40.892Z",
+  "isArchived": false,
+  "versionId": "844ff7e2-9942-4d41-a288-1e336d107adb",
+  "triggerCount": 1,
+  "nodes": [
+    {
+      "id": "b0bb2bda-5a7a-4196-971e-1b4498fd2f6c",
+      "name": "Receive Release Gate",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.2,
+      "position": [
+        0,
+        192
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "serverfs/release-gate",
+        "authentication": "headerAuth",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "webhookId": "b91e0ffc-6280-4176-8411-cdf708e94ad5",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "RvmfH6qWSIUABPQO",
+          "name": "n8n Webhook（Bearer Auth）"
+        }
+      }
+    },
+    {
+      "id": "413baee1-16b7-460d-98a0-f04abcd6b784",
+      "name": "Validate Gate Contract",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.4,
+      "position": [
+        224,
+        192
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.body?.version && $json.body?.commit_sha && typeof $json.body?.ci_passed === 'boolean' && typeof $json.body?.tests_passed === 'boolean' && typeof $json.body?.docs_checked === 'boolean' && typeof $json.body?.website_checked === 'boolean' && typeof $json.body?.dev_plan_complete === 'boolean' && typeof $json.body?.assets_ready === 'boolean' ? 'valid' : 'invalid' }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              },
+              "rightValue": "valid"
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {
+          "ignoreCase": false
+        }
+      }
+    },
+    {
+      "id": "37a9d6bb-6b1a-4464-97be-87727168f540",
+      "name": "Evaluate Release Gate",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        448,
+        96
+      ],
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "gate-id",
+              "name": "gate_id",
+              "value": "={{ $json.body.version + \":\" + $json.body.commit_sha }}",
+              "type": "string"
+            },
+            {
+              "id": "version",
+              "name": "version",
+              "value": "={{ $json.body.version }}",
+              "type": "string"
+            },
+            {
+              "id": "commit-sha",
+              "name": "commit_sha",
+              "value": "={{ $json.body.commit_sha }}",
+              "type": "string"
+            },
+            {
+              "id": "ci-passed",
+              "name": "ci_passed",
+              "value": "={{ $json.body.ci_passed }}",
+              "type": "boolean"
+            },
+            {
+              "id": "tests-passed",
+              "name": "tests_passed",
+              "value": "={{ $json.body.tests_passed }}",
+              "type": "boolean"
+            },
+            {
+              "id": "docs-checked",
+              "name": "docs_checked",
+              "value": "={{ $json.body.docs_checked }}",
+              "type": "boolean"
+            },
+            {
+              "id": "website-checked",
+              "name": "website_checked",
+              "value": "={{ $json.body.website_checked }}",
+              "type": "boolean"
+            },
+            {
+              "id": "dev-plan-complete",
+              "name": "dev_plan_complete",
+              "value": "={{ $json.body.dev_plan_complete }}",
+              "type": "boolean"
+            },
+            {
+              "id": "assets-ready",
+              "name": "assets_ready",
+              "value": "={{ $json.body.assets_ready }}",
+              "type": "boolean"
+            },
+            {
+              "id": "outcome",
+              "name": "outcome",
+              "value": "={{ $json.body.ci_passed && $json.body.tests_passed && $json.body.docs_checked && $json.body.website_checked && $json.body.dev_plan_complete && $json.body.assets_ready ? 'pass' : 'blocked' }}",
+              "type": "string"
+            },
+            {
+              "id": "blockers",
+              "name": "blockers",
+              "value": "={{ [!$json.body.ci_passed && 'ci', !$json.body.tests_passed && 'tests', !$json.body.docs_checked && 'docs', !$json.body.website_checked && 'website', !$json.body.dev_plan_complete && 'dev_plan', !$json.body.assets_ready && 'assets'].filter(Boolean).join(',') }}",
+              "type": "string"
+            },
+            {
+              "id": "checked-at",
+              "name": "checked_at",
+              "value": "={{ $now.toISO() }}",
+              "type": "string"
+            },
+            {
+              "id": "source",
+              "name": "source",
+              "value": "={{ $json.body.source ?? 'manual_or_agent' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": false,
+        "options": {}
+      }
+    },
+    {
+      "id": "2fb79e71-9ad2-4331-8054-cfc6831e4291",
+      "name": "Upsert Release Gate",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        672,
+        96
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "upsert",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "release_gates"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "gate_id",
+              "condition": "eq",
+              "keyValue": "={{ $json.gate_id }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "gate_id": "={{ $json.gate_id }}",
+            "version": "={{ $json.version }}",
+            "commit_sha": "={{ $json.commit_sha }}",
+            "ci_passed": "={{ $json.ci_passed }}",
+            "tests_passed": "={{ $json.tests_passed }}",
+            "docs_checked": "={{ $json.docs_checked }}",
+            "website_checked": "={{ $json.website_checked }}",
+            "dev_plan_complete": "={{ $json.dev_plan_complete }}",
+            "assets_ready": "={{ $json.assets_ready }}",
+            "outcome": "={{ $json.outcome }}",
+            "blockers": "={{ $json.blockers }}",
+            "checked_at": "={{ $json.checked_at }}",
+            "source": "={{ $json.source }}"
+          },
+          "schema": [
+            {
+              "id": "gate_id",
+              "displayName": "gate_id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "version",
+              "displayName": "version",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "commit_sha",
+              "displayName": "commit_sha",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ci_passed",
+              "displayName": "ci_passed",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tests_passed",
+              "displayName": "tests_passed",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "docs_checked",
+              "displayName": "docs_checked",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "website_checked",
+              "displayName": "website_checked",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "dev_plan_complete",
+              "displayName": "dev_plan_complete",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "assets_ready",
+              "displayName": "assets_ready",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "outcome",
+              "displayName": "outcome",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "blockers",
+              "displayName": "blockers",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "checked_at",
+              "displayName": "checked_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "source",
+              "displayName": "source",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "id": "9d8552b8-1cd6-4054-9a5f-b4c27e72fd8c",
+      "name": "Respond Gate Result",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        896,
+        0
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { gate_id: $(\"Evaluate Release Gate\").item.json.gate_id, version: $(\"Evaluate Release Gate\").item.json.version, outcome: $(\"Evaluate Release Gate\").item.json.outcome, blockers: $(\"Evaluate Release Gate\").item.json.blockers ? $(\"Evaluate Release Gate\").item.json.blockers.split(\",\") : [] } }}",
+        "options": {
+          "responseCode": 200
+        }
+      }
+    },
+    {
+      "id": "b8a2d5e0-42fb-449c-a8b9-5074ac0a3c7e",
+      "name": "Respond Internal Error",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        896,
+        192
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": {
+          "error": "internal_error",
+          "message": "Failed to persist release gate result"
+        },
+        "options": {
+          "responseCode": 500
+        }
+      }
+    },
+    {
+      "id": "8c0b99b7-b6bc-4147-b71b-0ca59cc7cd19",
+      "name": "Respond Validation Error",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        448,
+        288
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": {
+          "error": "validation_error",
+          "message": "Required: version, commit_sha and boolean ci_passed/tests_passed/docs_checked/website_checked/dev_plan_complete/assets_ready"
+        },
+        "options": {
+          "responseCode": 400
+        }
+      }
+    },
+    {
+      "id": "150e0abc-5248-4409-ae36-fbfacdd45766",
+      "name": "Record Release Gate Event",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        896,
+        64
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "upsert",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "work_events"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "event_id",
+              "condition": "eq",
+              "keyValue": "={{ 'release.gate:' + $(\"Evaluate Release Gate\").item.json.gate_id }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "event_id": "={{ 'release.gate:' + $(\"Evaluate Release Gate\").item.json.gate_id }}",
+            "occurred_at": "={{ $(\"Evaluate Release Gate\").item.json.checked_at }}",
+            "source": "n8n:release-gate",
+            "project": "ServerFS_MCP",
+            "category": "release.gate.evaluated",
+            "title": "={{ 'ServerFS ' + $(\"Evaluate Release Gate\").item.json.version + ' release gate: ' + $(\"Evaluate Release Gate\").item.json.outcome }}",
+            "description": "={{ $(\"Evaluate Release Gate\").item.json.blockers ? 'Blocked by: ' + $(\"Evaluate Release Gate\").item.json.blockers : 'All explicit release-readiness checks passed' }}",
+            "status": "={{ $(\"Evaluate Release Gate\").item.json.outcome }}",
+            "url": "",
+            "metadata_object": "={{ ({ version: $(\"Evaluate Release Gate\").item.json.version, commit_sha: $(\"Evaluate Release Gate\").item.json.commit_sha, blockers: $(\"Evaluate Release Gate\").item.json.blockers }).toJsonString() }}",
+            "correlation_id": "={{ 'release:' + $(\"Evaluate Release Gate\").item.json.gate_id }}"
+          },
+          "schema": [
+            {
+              "id": "event_id",
+              "displayName": "event_id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "occurred_at",
+              "displayName": "occurred_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "source",
+              "displayName": "source",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "project",
+              "displayName": "project",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "category",
+              "displayName": "category",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "title",
+              "displayName": "title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "description",
+              "displayName": "description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "url",
+              "displayName": "url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "metadata_object",
+              "displayName": "metadata_object",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "correlation_id",
+              "displayName": "correlation_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "id": "9a63e2ae-1be6-4213-917f-b7067e485579",
+      "name": "Keep Passed Release Gates",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.4,
+      "position": [
+        1120,
+        256
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $('Evaluate Release Gate').item.json.outcome }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              },
+              "rightValue": "pass"
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {
+          "ignoreCase": false
+        }
+      }
+    },
+    {
+      "id": "6ac7bf8e-a2e2-4c1a-be45-83543882bd78",
+      "name": "Prepare Release Review AI Work",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        1344,
+        256
+      ],
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "work-id",
+              "name": "work_id",
+              "type": "string",
+              "value": "={{ 'release_review:' + $('Evaluate Release Gate').item.json.gate_id }}"
+            },
+            {
+              "id": "kind",
+              "name": "kind",
+              "type": "string",
+              "value": "release_review"
+            },
+            {
+              "id": "priority",
+              "name": "priority",
+              "type": "number",
+              "value": 1
+            },
+            {
+              "id": "source-event-id",
+              "name": "source_event_id",
+              "type": "string",
+              "value": "={{ 'release.review.requested:' + $('Evaluate Release Gate').item.json.gate_id }}"
+            },
+            {
+              "id": "correlation-id",
+              "name": "correlation_id",
+              "type": "string",
+              "value": "={{ 'release:' + $('Evaluate Release Gate').item.json.gate_id }}"
+            },
+            {
+              "id": "project",
+              "name": "project",
+              "type": "string",
+              "value": "ServerFS_MCP"
+            },
+            {
+              "id": "input-ref",
+              "name": "input_ref",
+              "type": "string",
+              "value": "={{ 'https://github.com/NTLx/ServerFS_MCP/commit/' + $('Evaluate Release Gate').item.json.commit_sha }}"
+            },
+            {
+              "id": "summary",
+              "name": "summary",
+              "type": "string",
+              "value": "={{ 'Perform semantic release review for ServerFS ' + $('Evaluate Release Gate').item.json.version + ' at ' + $('Evaluate Release Gate').item.json.commit_sha + ' after all deterministic readiness checks passed.' }}"
+            },
+            {
+              "id": "not-before",
+              "name": "not_before",
+              "type": "string",
+              "value": "={{ $now.toISO() }}"
+            },
+            {
+              "id": "deadline",
+              "name": "deadline",
+              "type": "string",
+              "value": ""
+            },
+            {
+              "id": "event-id",
+              "name": "event_id",
+              "type": "string",
+              "value": "={{ 'release.review.requested:' + $('Evaluate Release Gate').item.json.gate_id }}"
+            },
+            {
+              "id": "event-time",
+              "name": "event_occurred_at",
+              "type": "string",
+              "value": "={{ $now.toISO() }}"
+            },
+            {
+              "id": "event-source",
+              "name": "event_source",
+              "type": "string",
+              "value": "n8n:release-gate"
+            },
+            {
+              "id": "event-category",
+              "name": "event_category",
+              "type": "string",
+              "value": "release.review.requested"
+            },
+            {
+              "id": "event-title",
+              "name": "event_title",
+              "type": "string",
+              "value": "={{ 'Semantic release review requested for ' + $('Evaluate Release Gate').item.json.version }}"
+            },
+            {
+              "id": "event-description",
+              "name": "event_description",
+              "type": "string",
+              "value": "All explicit deterministic release-readiness checks passed; ChatGPT should now review semantic readiness without publishing the release."
+            },
+            {
+              "id": "event-status",
+              "name": "event_status",
+              "type": "string",
+              "value": "pending"
+            },
+            {
+              "id": "event-url",
+              "name": "event_url",
+              "type": "string",
+              "value": "={{ 'https://github.com/NTLx/ServerFS_MCP/commit/' + $('Evaluate Release Gate').item.json.commit_sha }}"
+            },
+            {
+              "id": "event-metadata",
+              "name": "event_metadata_object",
+              "type": "string",
+              "value": "={{ ({ version: $('Evaluate Release Gate').item.json.version, commit_sha: $('Evaluate Release Gate').item.json.commit_sha, gate_id: $('Evaluate Release Gate').item.json.gate_id }).toJsonString() }}"
+            }
+          ]
+        },
+        "includeOtherFields": false,
+        "options": {}
+      }
+    },
+    {
+      "id": "60495fa9-a436-48f2-bb33-c2e02d90e12c",
+      "name": "Enqueue Release Review AI Work",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.4,
+      "position": [
+        1568,
+        256
+      ],
+      "parameters": {
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "oe8KZW4nLbYUUDzA"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "work_id": "={{ $json.work_id }}",
+            "kind": "={{ $json.kind }}",
+            "priority": "={{ $json.priority }}",
+            "source_event_id": "={{ $json.source_event_id }}",
+            "correlation_id": "={{ $json.correlation_id }}",
+            "project": "={{ $json.project }}",
+            "input_ref": "={{ $json.input_ref }}",
+            "summary": "={{ $json.summary }}",
+            "not_before": "={{ $json.not_before }}",
+            "deadline": "={{ $json.deadline }}",
+            "event_id": "={{ $json.event_id }}",
+            "event_occurred_at": "={{ $json.event_occurred_at }}",
+            "event_source": "={{ $json.event_source }}",
+            "event_category": "={{ $json.event_category }}",
+            "event_title": "={{ $json.event_title }}",
+            "event_description": "={{ $json.event_description }}",
+            "event_status": "={{ $json.event_status }}",
+            "event_url": "={{ $json.event_url }}",
+            "event_metadata_object": "={{ $json.event_metadata_object }}"
+          },
+          "schema": [
+            {
+              "id": "work_id",
+              "displayName": "work_id",
+              "type": "string"
+            },
+            {
+              "id": "kind",
+              "displayName": "kind",
+              "type": "string"
+            },
+            {
+              "id": "priority",
+              "displayName": "priority",
+              "type": "number"
+            },
+            {
+              "id": "source_event_id",
+              "displayName": "source_event_id",
+              "type": "string"
+            },
+            {
+              "id": "correlation_id",
+              "displayName": "correlation_id",
+              "type": "string"
+            },
+            {
+              "id": "project",
+              "displayName": "project",
+              "type": "string"
+            },
+            {
+              "id": "input_ref",
+              "displayName": "input_ref",
+              "type": "string"
+            },
+            {
+              "id": "summary",
+              "displayName": "summary",
+              "type": "string"
+            },
+            {
+              "id": "not_before",
+              "displayName": "not_before",
+              "type": "string"
+            },
+            {
+              "id": "deadline",
+              "displayName": "deadline",
+              "type": "string"
+            },
+            {
+              "id": "event_id",
+              "displayName": "event_id",
+              "type": "string"
+            },
+            {
+              "id": "event_occurred_at",
+              "displayName": "event_occurred_at",
+              "type": "string"
+            },
+            {
+              "id": "event_source",
+              "displayName": "event_source",
+              "type": "string"
+            },
+            {
+              "id": "event_category",
+              "displayName": "event_category",
+              "type": "string"
+            },
+            {
+              "id": "event_title",
+              "displayName": "event_title",
+              "type": "string"
+            },
+            {
+              "id": "event_description",
+              "displayName": "event_description",
+              "type": "string"
+            },
+            {
+              "id": "event_status",
+              "displayName": "event_status",
+              "type": "string"
+            },
+            {
+              "id": "event_url",
+              "displayName": "event_url",
+              "type": "string"
+            },
+            {
+              "id": "event_metadata_object",
+              "displayName": "event_metadata_object",
+              "type": "string"
+            }
+          ]
+        },
+        "mode": "each",
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "onError": "continueRegularOutput"
+    }
+  ],
+  "connections": {
+    "Receive Release Gate": {
+      "main": [
+        [
+          {
+            "node": "Validate Gate Contract",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Gate Contract": {
+      "main": [
+        [
+          {
+            "node": "Evaluate Release Gate",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Validation Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Evaluate Release Gate": {
+      "main": [
+        [
+          {
+            "node": "Upsert Release Gate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upsert Release Gate": {
+      "main": [
+        [
+          {
+            "node": "Record Release Gate Event",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Internal Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Record Release Gate Event": {
+      "main": [
+        [
+          {
+            "node": "Respond Gate Result",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Keep Passed Release Gates",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Gate Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Keep Passed Release Gates": {
+      "main": [
+        [
+          {
+            "node": "Prepare Release Review AI Work",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Release Review AI Work": {
+      "main": [
+        [
+          {
+            "node": "Enqueue Release Review AI Work",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [
+    {
+      "id": "9307e875-c85b-4e38-9aa8-517ffc95f8eb",
+      "name": "Evaluate and persist release readiness",
+      "nodeIds": [
+        "37a9d6bb-6b1a-4464-97be-87727168f540",
+        "2fb79e71-9ad2-4331-8054-cfc6831e4291",
+        "150e0abc-5248-4409-ae36-fbfacdd45766",
+        "b8a2d5e0-42fb-449c-a8b9-5074ac0a3c7e"
+      ],
+      "description": "Reduce explicit evidence to pass/blocked, persist the state and event, and terminate with a 5xx response if persistence itself fails."
+    },
+    {
+      "id": "2e891717-395c-4bd9-a98e-ebdbd25e7b0d",
+      "name": "Semantic release review producer",
+      "nodeIds": [
+        "9a63e2ae-1be6-4213-917f-b7067e485579",
+        "6ac7bf8e-a2e2-4c1a-be45-83543882bd78",
+        "60495fa9-a436-48f2-bb33-c2e02d90e12c"
+      ],
+      "description": "Only after deterministic readiness passes, enqueue one semantic ChatGPT release review; formal release remains a human checkpoint."
+    }
+  ],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true,
+    "errorWorkflow": "3LE3BnPfHSuIZCVR",
+    "timezone": "Asia/Shanghai",
+    "saveExecutionProgress": false,
+    "saveManualExecutions": false,
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "none",
+    "timeSavedPerExecution": 5,
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [
+    {
+      "id": "Ljy4crjObq2mrrQG",
+      "name": "state-reducer",
+      "createdAt": "2026-10-22T09:22:13.165Z",
+      "updatedAt": "2026-10-22T09:22:13.165Z"
+    },
+    {
+      "id": "dO6jlaR7zVjNByrJ",
+      "name": "serverfs",
+      "createdAt": "2026-10-22T08:30:55.412Z",
+      "updatedAt": "2026-10-22T08:30:55.412Z"
+    },
+    {
+      "id": "twNsKNALbdWLw0Ox",
+      "name": "automation",
+      "createdAt": "2026-10-22T08:25:54.546Z",
+      "updatedAt": "2026-10-22T08:25:54.546Z"
+    },
+    {
+      "id": "BlGRvaSWqnmTk53i",
+      "name": "event-producer",
+      "createdAt": "2026-10-22T09:14:35.370Z",
+      "updatedAt": "2026-10-22T09:14:35.370Z"
+    },
+    {
+      "id": "9jw9Bhya2Ylf8E4D",
+      "name": "ai-work-producer",
+      "createdAt": "2026-10-22T09:14:35.367Z",
+      "updatedAt": "2026-10-22T09:14:35.367Z"
+    },
+    {
+      "id": "6JiP5qcpM7unTu9m",
+      "name": "release",
+      "createdAt": "2026-10-22T08:30:55.419Z",
+      "updatedAt": "2026-10-22T08:30:55.419Z"
+    }
+  ],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "4OI7i3wKOfPCkClB",
+      "projectId": "cNMj0K6AdJmi0OAZ",
+      "createdAt": "2026-10-22T08:30:45.706Z",
+      "updatedAt": "2026-10-22T08:30:45.706Z"
+    }
+  ],
+  "activeVersion": {
+    "versionId": "844ff7e2-9942-4d41-a288-1e336d107adb",
+    "workflowId": "4OI7i3wKOfPCkClB",
+    "nodes": [
+      {
+        "id": "b0bb2bda-5a7a-4196-971e-1b4498fd2f6c",
+        "name": "Receive Release Gate",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.2,
+        "position": [
+          0,
+          192
+        ],
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "serverfs/release-gate",
+          "authentication": "headerAuth",
+          "responseMode": "responseNode",
+          "options": {}
+        },
+        "webhookId": "b91e0ffc-6280-4176-8411-cdf708e94ad5",
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "RvmfH6qWSIUABPQO",
+            "name": "n8n Webhook（Bearer Auth）"
+          }
+        }
+      },
+      {
+        "id": "413baee1-16b7-460d-98a0-f04abcd6b784",
+        "name": "Validate Gate Contract",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.4,
+        "position": [
+          224,
+          192
+        ],
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict"
+            },
+            "conditions": [
+              {
+                "leftValue": "={{ $json.body?.version && $json.body?.commit_sha && typeof $json.body?.ci_passed === 'boolean' && typeof $json.body?.tests_passed === 'boolean' && typeof $json.body?.docs_checked === 'boolean' && typeof $json.body?.website_checked === 'boolean' && typeof $json.body?.dev_plan_complete === 'boolean' && typeof $json.body?.assets_ready === 'boolean' ? 'valid' : 'invalid' }}",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals"
+                },
+                "rightValue": "valid"
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {
+            "ignoreCase": false
+          }
+        }
+      },
+      {
+        "id": "37a9d6bb-6b1a-4464-97be-87727168f540",
+        "name": "Evaluate Release Gate",
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.5,
+        "position": [
+          448,
+          96
+        ],
+        "parameters": {
+          "mode": "manual",
+          "assignments": {
+            "assignments": [
+              {
+                "id": "gate-id",
+                "name": "gate_id",
+                "value": "={{ $json.body.version + \":\" + $json.body.commit_sha }}",
+                "type": "string"
+              },
+              {
+                "id": "version",
+                "name": "version",
+                "value": "={{ $json.body.version }}",
+                "type": "string"
+              },
+              {
+                "id": "commit-sha",
+                "name": "commit_sha",
+                "value": "={{ $json.body.commit_sha }}",
+                "type": "string"
+              },
+              {
+                "id": "ci-passed",
+                "name": "ci_passed",
+                "value": "={{ $json.body.ci_passed }}",
+                "type": "boolean"
+              },
+              {
+                "id": "tests-passed",
+                "name": "tests_passed",
+                "value": "={{ $json.body.tests_passed }}",
+                "type": "boolean"
+              },
+              {
+                "id": "docs-checked",
+                "name": "docs_checked",
+                "value": "={{ $json.body.docs_checked }}",
+                "type": "boolean"
+              },
+              {
+                "id": "website-checked",
+                "name": "website_checked",
+                "value": "={{ $json.body.website_checked }}",
+                "type": "boolean"
+              },
+              {
+                "id": "dev-plan-complete",
+                "name": "dev_plan_complete",
+                "value": "={{ $json.body.dev_plan_complete }}",
+                "type": "boolean"
+              },
+              {
+                "id": "assets-ready",
+                "name": "assets_ready",
+                "value": "={{ $json.body.assets_ready }}",
+                "type": "boolean"
+              },
+              {
+                "id": "outcome",
+                "name": "outcome",
+                "value": "={{ $json.body.ci_passed && $json.body.tests_passed && $json.body.docs_checked && $json.body.website_checked && $json.body.dev_plan_complete && $json.body.assets_ready ? 'pass' : 'blocked' }}",
+                "type": "string"
+              },
+              {
+                "id": "blockers",
+                "name": "blockers",
+                "value": "={{ [!$json.body.ci_passed && 'ci', !$json.body.tests_passed && 'tests', !$json.body.docs_checked && 'docs', !$json.body.website_checked && 'website', !$json.body.dev_plan_complete && 'dev_plan', !$json.body.assets_ready && 'assets'].filter(Boolean).join(',') }}",
+                "type": "string"
+              },
+              {
+                "id": "checked-at",
+                "name": "checked_at",
+                "value": "={{ $now.toISO() }}",
+                "type": "string"
+              },
+              {
+                "id": "source",
+                "name": "source",
+                "value": "={{ $json.body.source ?? 'manual_or_agent' }}",
+                "type": "string"
+              }
+            ]
+          },
+          "includeOtherFields": false,
+          "options": {}
+        }
+      },
+      {
+        "id": "2fb79e71-9ad2-4331-8054-cfc6831e4291",
+        "name": "Upsert Release Gate",
+        "type": "n8n-nodes-base.dataTable",
+        "typeVersion": 1.1,
+        "position": [
+          672,
+          96
+        ],
+        "parameters": {
+          "resource": "row",
+          "operation": "upsert",
+          "dataTableId": {
+            "__rl": true,
+            "mode": "name",
+            "value": "release_gates"
+          },
+          "matchType": "allConditions",
+          "filters": {
+            "conditions": [
+              {
+                "keyName": "gate_id",
+                "condition": "eq",
+                "keyValue": "={{ $json.gate_id }}"
+              }
+            ]
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "gate_id": "={{ $json.gate_id }}",
+              "version": "={{ $json.version }}",
+              "commit_sha": "={{ $json.commit_sha }}",
+              "ci_passed": "={{ $json.ci_passed }}",
+              "tests_passed": "={{ $json.tests_passed }}",
+              "docs_checked": "={{ $json.docs_checked }}",
+              "website_checked": "={{ $json.website_checked }}",
+              "dev_plan_complete": "={{ $json.dev_plan_complete }}",
+              "assets_ready": "={{ $json.assets_ready }}",
+              "outcome": "={{ $json.outcome }}",
+              "blockers": "={{ $json.blockers }}",
+              "checked_at": "={{ $json.checked_at }}",
+              "source": "={{ $json.source }}"
+            },
+            "schema": [
+              {
+                "id": "gate_id",
+                "displayName": "gate_id",
+                "required": false,
+                "defaultMatch": true,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "version",
+                "displayName": "version",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "commit_sha",
+                "displayName": "commit_sha",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "ci_passed",
+                "displayName": "ci_passed",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "boolean",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "tests_passed",
+                "displayName": "tests_passed",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "boolean",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "docs_checked",
+                "displayName": "docs_checked",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "boolean",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "website_checked",
+                "displayName": "website_checked",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "boolean",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "dev_plan_complete",
+                "displayName": "dev_plan_complete",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "boolean",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "assets_ready",
+                "displayName": "assets_ready",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "boolean",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "outcome",
+                "displayName": "outcome",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "blockers",
+                "displayName": "blockers",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "checked_at",
+                "displayName": "checked_at",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "dateTime",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "source",
+                "displayName": "source",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              }
+            ]
+          },
+          "options": {}
+        },
+        "onError": "continueErrorOutput"
+      },
+      {
+        "id": "9d8552b8-1cd6-4054-9a5f-b4c27e72fd8c",
+        "name": "Respond Gate Result",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.5,
+        "position": [
+          896,
+          0
+        ],
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ { gate_id: $(\"Evaluate Release Gate\").item.json.gate_id, version: $(\"Evaluate Release Gate\").item.json.version, outcome: $(\"Evaluate Release Gate\").item.json.outcome, blockers: $(\"Evaluate Release Gate\").item.json.blockers ? $(\"Evaluate Release Gate\").item.json.blockers.split(\",\") : [] } }}",
+          "options": {
+            "responseCode": 200
+          }
+        }
+      },
+      {
+        "id": "b8a2d5e0-42fb-449c-a8b9-5074ac0a3c7e",
+        "name": "Respond Internal Error",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.5,
+        "position": [
+          896,
+          192
+        ],
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": {
+            "error": "internal_error",
+            "message": "Failed to persist release gate result"
+          },
+          "options": {
+            "responseCode": 500
+          }
+        }
+      },
+      {
+        "id": "8c0b99b7-b6bc-4147-b71b-0ca59cc7cd19",
+        "name": "Respond Validation Error",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.5,
+        "position": [
+          448,
+          288
+        ],
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": {
+            "error": "validation_error",
+            "message": "Required: version, commit_sha and boolean ci_passed/tests_passed/docs_checked/website_checked/dev_plan_complete/assets_ready"
+          },
+          "options": {
+            "responseCode": 400
+          }
+        }
+      },
+      {
+        "id": "150e0abc-5248-4409-ae36-fbfacdd45766",
+        "name": "Record Release Gate Event",
+        "type": "n8n-nodes-base.dataTable",
+        "typeVersion": 1.1,
+        "position": [
+          896,
+          64
+        ],
+        "parameters": {
+          "resource": "row",
+          "operation": "upsert",
+          "dataTableId": {
+            "__rl": true,
+            "mode": "name",
+            "value": "work_events"
+          },
+          "matchType": "allConditions",
+          "filters": {
+            "conditions": [
+              {
+                "keyName": "event_id",
+                "condition": "eq",
+                "keyValue": "={{ 'release.gate:' + $(\"Evaluate Release Gate\").item.json.gate_id }}"
+              }
+            ]
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "event_id": "={{ 'release.gate:' + $(\"Evaluate Release Gate\").item.json.gate_id }}",
+              "occurred_at": "={{ $(\"Evaluate Release Gate\").item.json.checked_at }}",
+              "source": "n8n:release-gate",
+              "project": "ServerFS_MCP",
+              "category": "release.gate.evaluated",
+              "title": "={{ 'ServerFS ' + $(\"Evaluate Release Gate\").item.json.version + ' release gate: ' + $(\"Evaluate Release Gate\").item.json.outcome }}",
+              "description": "={{ $(\"Evaluate Release Gate\").item.json.blockers ? 'Blocked by: ' + $(\"Evaluate Release Gate\").item.json.blockers : 'All explicit release-readiness checks passed' }}",
+              "status": "={{ $(\"Evaluate Release Gate\").item.json.outcome }}",
+              "url": "",
+              "metadata_object": "={{ ({ version: $(\"Evaluate Release Gate\").item.json.version, commit_sha: $(\"Evaluate Release Gate\").item.json.commit_sha, blockers: $(\"Evaluate Release Gate\").item.json.blockers }).toJsonString() }}",
+              "correlation_id": "={{ 'release:' + $(\"Evaluate Release Gate\").item.json.gate_id }}"
+            },
+            "schema": [
+              {
+                "id": "event_id",
+                "displayName": "event_id",
+                "required": false,
+                "defaultMatch": true,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "occurred_at",
+                "displayName": "occurred_at",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "dateTime",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "source",
+                "displayName": "source",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "project",
+                "displayName": "project",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "category",
+                "displayName": "category",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "title",
+                "displayName": "title",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "description",
+                "displayName": "description",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "status",
+                "displayName": "status",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "url",
+                "displayName": "url",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "metadata_object",
+                "displayName": "metadata_object",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "correlation_id",
+                "displayName": "correlation_id",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              }
+            ]
+          },
+          "options": {}
+        },
+        "onError": "continueErrorOutput"
+      },
+      {
+        "id": "9a63e2ae-1be6-4213-917f-b7067e485579",
+        "name": "Keep Passed Release Gates",
+        "type": "n8n-nodes-base.filter",
+        "typeVersion": 2.4,
+        "position": [
+          1120,
+          256
+        ],
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict"
+            },
+            "conditions": [
+              {
+                "leftValue": "={{ $('Evaluate Release Gate').item.json.outcome }}",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals"
+                },
+                "rightValue": "pass"
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {
+            "ignoreCase": false
+          }
+        }
+      },
+      {
+        "id": "6ac7bf8e-a2e2-4c1a-be45-83543882bd78",
+        "name": "Prepare Release Review AI Work",
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.5,
+        "position": [
+          1344,
+          256
+        ],
+        "parameters": {
+          "mode": "manual",
+          "assignments": {
+            "assignments": [
+              {
+                "id": "work-id",
+                "name": "work_id",
+                "type": "string",
+                "value": "={{ 'release_review:' + $('Evaluate Release Gate').item.json.gate_id }}"
+              },
+              {
+                "id": "kind",
+                "name": "kind",
+                "type": "string",
+                "value": "release_review"
+              },
+              {
+                "id": "priority",
+                "name": "priority",
+                "type": "number",
+                "value": 1
+              },
+              {
+                "id": "source-event-id",
+                "name": "source_event_id",
+                "type": "string",
+                "value": "={{ 'release.review.requested:' + $('Evaluate Release Gate').item.json.gate_id }}"
+              },
+              {
+                "id": "correlation-id",
+                "name": "correlation_id",
+                "type": "string",
+                "value": "={{ 'release:' + $('Evaluate Release Gate').item.json.gate_id }}"
+              },
+              {
+                "id": "project",
+                "name": "project",
+                "type": "string",
+                "value": "ServerFS_MCP"
+              },
+              {
+                "id": "input-ref",
+                "name": "input_ref",
+                "type": "string",
+                "value": "={{ 'https://github.com/NTLx/ServerFS_MCP/commit/' + $('Evaluate Release Gate').item.json.commit_sha }}"
+              },
+              {
+                "id": "summary",
+                "name": "summary",
+                "type": "string",
+                "value": "={{ 'Perform semantic release review for ServerFS ' + $('Evaluate Release Gate').item.json.version + ' at ' + $('Evaluate Release Gate').item.json.commit_sha + ' after all deterministic readiness checks passed.' }}"
+              },
+              {
+                "id": "not-before",
+                "name": "not_before",
+                "type": "string",
+                "value": "={{ $now.toISO() }}"
+              },
+              {
+                "id": "deadline",
+                "name": "deadline",
+                "type": "string",
+                "value": ""
+              },
+              {
+                "id": "event-id",
+                "name": "event_id",
+                "type": "string",
+                "value": "={{ 'release.review.requested:' + $('Evaluate Release Gate').item.json.gate_id }}"
+              },
+              {
+                "id": "event-time",
+                "name": "event_occurred_at",
+                "type": "string",
+                "value": "={{ $now.toISO() }}"
+              },
+              {
+                "id": "event-source",
+                "name": "event_source",
+                "type": "string",
+                "value": "n8n:release-gate"
+              },
+              {
+                "id": "event-category",
+                "name": "event_category",
+                "type": "string",
+                "value": "release.review.requested"
+              },
+              {
+                "id": "event-title",
+                "name": "event_title",
+                "type": "string",
+                "value": "={{ 'Semantic release review requested for ' + $('Evaluate Release Gate').item.json.version }}"
+              },
+              {
+                "id": "event-description",
+                "name": "event_description",
+                "type": "string",
+                "value": "All explicit deterministic release-readiness checks passed; ChatGPT should now review semantic readiness without publishing the release."
+              },
+              {
+                "id": "event-status",
+                "name": "event_status",
+                "type": "string",
+                "value": "pending"
+              },
+              {
+                "id": "event-url",
+                "name": "event_url",
+                "type": "string",
+                "value": "={{ 'https://github.com/NTLx/ServerFS_MCP/commit/' + $('Evaluate Release Gate').item.json.commit_sha }}"
+              },
+              {
+                "id": "event-metadata",
+                "name": "event_metadata_object",
+                "type": "string",
+                "value": "={{ ({ version: $('Evaluate Release Gate').item.json.version, commit_sha: $('Evaluate Release Gate').item.json.commit_sha, gate_id: $('Evaluate Release Gate').item.json.gate_id }).toJsonString() }}"
+              }
+            ]
+          },
+          "includeOtherFields": false,
+          "options": {}
+        }
+      },
+      {
+        "id": "60495fa9-a436-48f2-bb33-c2e02d90e12c",
+        "name": "Enqueue Release Review AI Work",
+        "type": "n8n-nodes-base.executeWorkflow",
+        "typeVersion": 1.4,
+        "position": [
+          1568,
+          256
+        ],
+        "parameters": {
+          "source": "database",
+          "workflowId": {
+            "__rl": true,
+            "mode": "id",
+            "value": "oe8KZW4nLbYUUDzA"
+          },
+          "workflowInputs": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "work_id": "={{ $json.work_id }}",
+              "kind": "={{ $json.kind }}",
+              "priority": "={{ $json.priority }}",
+              "source_event_id": "={{ $json.source_event_id }}",
+              "correlation_id": "={{ $json.correlation_id }}",
+              "project": "={{ $json.project }}",
+              "input_ref": "={{ $json.input_ref }}",
+              "summary": "={{ $json.summary }}",
+              "not_before": "={{ $json.not_before }}",
+              "deadline": "={{ $json.deadline }}",
+              "event_id": "={{ $json.event_id }}",
+              "event_occurred_at": "={{ $json.event_occurred_at }}",
+              "event_source": "={{ $json.event_source }}",
+              "event_category": "={{ $json.event_category }}",
+              "event_title": "={{ $json.event_title }}",
+              "event_description": "={{ $json.event_description }}",
+              "event_status": "={{ $json.event_status }}",
+              "event_url": "={{ $json.event_url }}",
+              "event_metadata_object": "={{ $json.event_metadata_object }}"
+            },
+            "schema": [
+              {
+                "id": "work_id",
+                "displayName": "work_id",
+                "type": "string"
+              },
+              {
+                "id": "kind",
+                "displayName": "kind",
+                "type": "string"
+              },
+              {
+                "id": "priority",
+                "displayName": "priority",
+                "type": "number"
+              },
+              {
+                "id": "source_event_id",
+                "displayName": "source_event_id",
+                "type": "string"
+              },
+              {
+                "id": "correlation_id",
+                "displayName": "correlation_id",
+                "type": "string"
+              },
+              {
+                "id": "project",
+                "displayName": "project",
+                "type": "string"
+              },
+              {
+                "id": "input_ref",
+                "displayName": "input_ref",
+                "type": "string"
+              },
+              {
+                "id": "summary",
+                "displayName": "summary",
+                "type": "string"
+              },
+              {
+                "id": "not_before",
+                "displayName": "not_before",
+                "type": "string"
+              },
+              {
+                "id": "deadline",
+                "displayName": "deadline",
+                "type": "string"
+              },
+              {
+                "id": "event_id",
+                "displayName": "event_id",
+                "type": "string"
+              },
+              {
+                "id": "event_occurred_at",
+                "displayName": "event_occurred_at",
+                "type": "string"
+              },
+              {
+                "id": "event_source",
+                "displayName": "event_source",
+                "type": "string"
+              },
+              {
+                "id": "event_category",
+                "displayName": "event_category",
+                "type": "string"
+              },
+              {
+                "id": "event_title",
+                "displayName": "event_title",
+                "type": "string"
+              },
+              {
+                "id": "event_description",
+                "displayName": "event_description",
+                "type": "string"
+              },
+              {
+                "id": "event_status",
+                "displayName": "event_status",
+                "type": "string"
+              },
+              {
+                "id": "event_url",
+                "displayName": "event_url",
+                "type": "string"
+              },
+              {
+                "id": "event_metadata_object",
+                "displayName": "event_metadata_object",
+                "type": "string"
+              }
+            ]
+          },
+          "mode": "each",
+          "options": {
+            "waitForSubWorkflow": true
+          }
+        },
+        "onError": "continueRegularOutput"
+      }
+    ],
+    "connections": {
+      "Receive Release Gate": {
+        "main": [
+          [
+            {
+              "node": "Validate Gate Contract",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Validate Gate Contract": {
+        "main": [
+          [
+            {
+              "node": "Evaluate Release Gate",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Respond Validation Error",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Evaluate Release Gate": {
+        "main": [
+          [
+            {
+              "node": "Upsert Release Gate",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Upsert Release Gate": {
+        "main": [
+          [
+            {
+              "node": "Record Release Gate Event",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Respond Internal Error",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Record Release Gate Event": {
+        "main": [
+          [
+            {
+              "node": "Respond Gate Result",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Keep Passed Release Gates",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Respond Gate Result",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Keep Passed Release Gates": {
+        "main": [
+          [
+            {
+              "node": "Prepare Release Review AI Work",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prepare Release Review AI Work": {
+        "main": [
+          [
+            {
+              "node": "Enqueue Release Review AI Work",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "nodeGroups": [
+      {
+        "id": "9307e875-c85b-4e38-9aa8-517ffc95f8eb",
+        "name": "Evaluate and persist release readiness",
+        "nodeIds": [
+          "37a9d6bb-6b1a-4464-97be-87727168f540",
+          "2fb79e71-9ad2-4331-8054-cfc6831e4291",
+          "150e0abc-5248-4409-ae36-fbfacdd45766",
+          "b8a2d5e0-42fb-449c-a8b9-5074ac0a3c7e"
+        ],
+        "description": "Reduce explicit evidence to pass/blocked, persist the state and event, and terminate with a 5xx response if persistence itself fails."
+      },
+      {
+        "id": "2e891717-395c-4bd9-a98e-ebdbd25e7b0d",
+        "name": "Semantic release review producer",
+        "nodeIds": [
+          "9a63e2ae-1be6-4213-917f-b7067e485579",
+          "6ac7bf8e-a2e2-4c1a-be45-83543882bd78",
+          "60495fa9-a436-48f2-bb33-c2e02d90e12c"
+        ],
+        "description": "Only after deterministic readiness passes, enqueue one semantic ChatGPT release review; formal release remains a human checkpoint."
+      }
+    ],
+    "authors": "Administrator NTLx (via MCP)",
+    "name": "Finalize release workflow grouping",
+    "description": "Include the persistence error responder inside the reducer stage so the group has a valid single external exit while preserving the semantic review producer as a separate stage.",
+    "autosaved": false,
+    "createdAt": "2026-10-22T16:22:40.901Z",
+    "updatedAt": "2026-10-22T16:22:40.901Z"
+  }
+}
