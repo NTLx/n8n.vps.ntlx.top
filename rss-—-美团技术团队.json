@@ -1,0 +1,384 @@
+{
+  "id": "VkUwJFzS4yjkcDI3",
+  "name": "RSS — 美团技术团队",
+  "active": true,
+  "activeVersionId": "6b07f539-7089-454c-a3a8-63250c52f82d",
+  "createdAt": "2026-10-22T16:05:26.133Z",
+  "updatedAt": "2026-10-22T16:37:17.230Z",
+  "isArchived": false,
+  "versionId": "6b07f539-7089-454c-a3a8-63250c52f82d",
+  "triggerCount": 1,
+  "nodes": [
+    {
+      "id": "065d0202-aa70-4b30-8651-d2a08a80740a",
+      "name": "RSS Feed",
+      "type": "n8n-nodes-base.rssFeedReadTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyDay",
+              "hour": 8,
+              "minute": 30
+            }
+          ]
+        },
+        "feedUrl": "https://tech.meituan.com/feed/"
+      },
+      "retryOnFail": true,
+      "waitBetweenTries": 5000
+    },
+    {
+      "id": "58c3ea27-f828-4a18-bdc1-882d38373ef8",
+      "name": "Package RSS item",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        260,
+        0
+      ],
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "source-name",
+              "name": "source_name",
+              "value": "美团技术团队",
+              "type": "string"
+            },
+            {
+              "id": "feed-url",
+              "name": "feed_url",
+              "value": "https://tech.meituan.com/feed/",
+              "type": "string"
+            },
+            {
+              "id": "item",
+              "name": "item",
+              "value": "={{ $json }}",
+              "type": "object"
+            }
+          ]
+        },
+        "includeOtherFields": false,
+        "options": {}
+      }
+    },
+    {
+      "id": "dddaf587-8131-4db4-b4a0-4e9c8075eced",
+      "name": "Store RSS item",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        520,
+        0
+      ],
+      "parameters": {
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "NnjbcdgnIOzxky13"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "source_name": "={{ $json.source_name }}",
+            "feed_url": "={{ $json.feed_url }}",
+            "item": "={{ $json.item }}"
+          },
+          "schema": [
+            {
+              "id": "source_name",
+              "displayName": "source_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "feed_url",
+              "displayName": "feed_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "item",
+              "displayName": "item",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "object",
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "mode": "each",
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      }
+    }
+  ],
+  "connections": {
+    "RSS Feed": {
+      "main": [
+        [
+          {
+            "node": "Package RSS item",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Package RSS item": {
+      "main": [
+        [
+          {
+            "node": "Store RSS item",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [
+    {
+      "id": "d42a424e-6f90-413c-8048-e43830ebea9a",
+      "name": "RSS ingress",
+      "nodeIds": [
+        "58c3ea27-f828-4a18-bdc1-882d38373ef8",
+        "dddaf587-8131-4db4-b4a0-4e9c8075eced"
+      ],
+      "description": "Attach source metadata and hand each feed item to the shared RSS processor."
+    }
+  ],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true,
+    "timezone": "Asia/Shanghai",
+    "saveExecutionProgress": false,
+    "saveManualExecutions": false,
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "none",
+    "timeSavedPerExecution": 60,
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "3LE3BnPfHSuIZCVR"
+  },
+  "staticData": {
+    "node:RSS Feed": {}
+  },
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [
+    {
+      "id": "4l8F0YrAzc1V3KcA",
+      "name": "rss-ingress",
+      "createdAt": "2026-10-22T16:01:09.325Z",
+      "updatedAt": "2026-10-22T16:01:09.325Z"
+    },
+    {
+      "id": "twNsKNALbdWLw0Ox",
+      "name": "automation",
+      "createdAt": "2026-10-22T08:25:54.546Z",
+      "updatedAt": "2026-10-22T08:25:54.546Z"
+    },
+    {
+      "id": "ADAZhgvX1et8NkUZ",
+      "name": "rss",
+      "createdAt": "2026-10-22T09:19:50.833Z",
+      "updatedAt": "2026-10-22T09:19:50.833Z"
+    }
+  ],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "VkUwJFzS4yjkcDI3",
+      "projectId": "cNMj0K6AdJmi0OAZ",
+      "createdAt": "2026-10-22T16:05:26.133Z",
+      "updatedAt": "2026-10-22T16:05:26.133Z"
+    }
+  ],
+  "activeVersion": {
+    "versionId": "6b07f539-7089-454c-a3a8-63250c52f82d",
+    "workflowId": "VkUwJFzS4yjkcDI3",
+    "nodes": [
+      {
+        "id": "065d0202-aa70-4b30-8651-d2a08a80740a",
+        "name": "RSS Feed",
+        "type": "n8n-nodes-base.rssFeedReadTrigger",
+        "typeVersion": 1,
+        "position": [
+          0,
+          0
+        ],
+        "parameters": {
+          "pollTimes": {
+            "item": [
+              {
+                "mode": "everyDay",
+                "hour": 8,
+                "minute": 30
+              }
+            ]
+          },
+          "feedUrl": "https://tech.meituan.com/feed/"
+        },
+        "retryOnFail": true,
+        "waitBetweenTries": 5000
+      },
+      {
+        "id": "58c3ea27-f828-4a18-bdc1-882d38373ef8",
+        "name": "Package RSS item",
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.5,
+        "position": [
+          260,
+          0
+        ],
+        "parameters": {
+          "mode": "manual",
+          "assignments": {
+            "assignments": [
+              {
+                "id": "source-name",
+                "name": "source_name",
+                "value": "美团技术团队",
+                "type": "string"
+              },
+              {
+                "id": "feed-url",
+                "name": "feed_url",
+                "value": "https://tech.meituan.com/feed/",
+                "type": "string"
+              },
+              {
+                "id": "item",
+                "name": "item",
+                "value": "={{ $json }}",
+                "type": "object"
+              }
+            ]
+          },
+          "includeOtherFields": false,
+          "options": {}
+        }
+      },
+      {
+        "id": "dddaf587-8131-4db4-b4a0-4e9c8075eced",
+        "name": "Store RSS item",
+        "type": "n8n-nodes-base.executeWorkflow",
+        "typeVersion": 1.3,
+        "position": [
+          520,
+          0
+        ],
+        "parameters": {
+          "source": "database",
+          "workflowId": {
+            "__rl": true,
+            "mode": "id",
+            "value": "NnjbcdgnIOzxky13"
+          },
+          "workflowInputs": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "source_name": "={{ $json.source_name }}",
+              "feed_url": "={{ $json.feed_url }}",
+              "item": "={{ $json.item }}"
+            },
+            "schema": [
+              {
+                "id": "source_name",
+                "displayName": "source_name",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "feed_url",
+                "displayName": "feed_url",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "item",
+                "displayName": "item",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "object",
+                "canBeUsedToMatch": true
+              }
+            ]
+          },
+          "mode": "each",
+          "options": {
+            "waitForSubWorkflow": true
+          }
+        }
+      }
+    ],
+    "connections": {
+      "RSS Feed": {
+        "main": [
+          [
+            {
+              "node": "Package RSS item",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Package RSS item": {
+        "main": [
+          [
+            {
+              "node": "Store RSS item",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "nodeGroups": [
+      {
+        "id": "d42a424e-6f90-413c-8048-e43830ebea9a",
+        "name": "RSS ingress",
+        "nodeIds": [
+          "58c3ea27-f828-4a18-bdc1-882d38373ef8",
+          "dddaf587-8131-4db4-b4a0-4e9c8075eced"
+        ],
+        "description": "Attach source metadata and hand each feed item to the shared RSS processor."
+      }
+    ],
+    "authors": "Administrator NTLx (via MCP)",
+    "name": "Align RSS daily ingestion",
+    "description": "Keep the existing staggered daily RSS schedule, delegate to Store RSS intelligence item, and add workflow-level production error handling.",
+    "autosaved": false,
+    "createdAt": "2026-10-22T16:37:17.233Z",
+    "updatedAt": "2026-10-22T16:37:17.233Z"
+  }
+}
