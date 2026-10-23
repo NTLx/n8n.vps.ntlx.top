@@ -2,11 +2,11 @@
   "id": "2PfYPC9DpC8XdniY",
   "name": "Auto-Backup n8n Workflows to GitHub (Optimized)",
   "active": true,
-  "activeVersionId": "88095526-bb7a-48df-a2f6-16e67c332a8f",
+  "activeVersionId": "7dcfc1ae-2ed3-479d-9099-b619dc1bbf7a",
   "createdAt": "2026-02-13T02:34:23.915Z",
-  "updatedAt": "2026-10-22T05:30:42.707Z",
+  "updatedAt": "2026-10-22T16:28:10.660Z",
   "isArchived": false,
-  "versionId": "88095526-bb7a-48df-a2f6-16e67c332a8f",
+  "versionId": "7dcfc1ae-2ed3-479d-9099-b619dc1bbf7a",
   "triggerCount": 1,
   "nodes": [
     {
@@ -322,6 +322,68 @@
         1040,
         -160
       ]
+    },
+    {
+      "id": "ad46407c-c7ff-4eab-8322-da2320923c91",
+      "name": "Record Backup Heartbeat",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        352,
+        224
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "upsert",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "automation_heartbeats"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "monitor_key",
+              "condition": "eq",
+              "keyValue": "n8n_workflow_backup"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "monitor_key": "n8n_workflow_backup",
+            "workflow_id": "2PfYPC9DpC8XdniY",
+            "workflow_name": "Auto-Backup n8n Workflows to GitHub (Optimized)",
+            "last_seen_at": "={{ $now.toISO() }}",
+            "next_expected_at": "={{ $now.setZone('Asia/Shanghai').plus({ days: 1 }).set({ hour: 9, minute: 0, second: 0, millisecond: 0 }).toISO() }}",
+            "grace_minutes": 15,
+            "priority": 2
+          }
+        },
+        "options": {}
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "aded6e19-00b4-4561-a21f-25cba823c20f",
+      "name": "Start Backup Sync",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        208,
+        448
+      ],
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": []
+        },
+        "includeOtherFields": true,
+        "include": "all",
+        "options": {}
+      }
     }
   ],
   "connections": {
@@ -329,12 +391,12 @@
       "main": [
         [
           {
-            "node": "Fetch GitHub Files",
+            "node": "Record Backup Heartbeat",
             "type": "main",
             "index": 0
           },
           {
-            "node": "Fetch Local Workflows",
+            "node": "Start Backup Sync",
             "type": "main",
             "index": 0
           }
@@ -427,9 +489,44 @@
           }
         ]
       ]
+    },
+    "Start Backup Sync": {
+      "main": [
+        [
+          {
+            "node": "Fetch GitHub Files",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Fetch Local Workflows",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
-  "nodeGroups": [],
+  "nodeGroups": [
+    {
+      "id": "a571a5eb-b314-4206-ba4d-3a090345ac46",
+      "name": "Backup sync",
+      "nodeIds": [
+        "aded6e19-00b4-4561-a21f-25cba823c20f",
+        "18400406-3aa9-41c8-ae03-0c1365d5ec5e",
+        "c3a3b921-16a9-4ebf-a8d2-8e4da2a2c1c0",
+        "2859291e-a991-4950-9603-465130e13453",
+        "be4a7802-157e-4cf2-80a6-f3d11aa7f318",
+        "ad477cfb-8ee5-4433-b3f3-94fd860033d6",
+        "a41140ed-8d54-485b-b196-8504eed136ff",
+        "d096615f-5c6d-41db-81a8-2f2951c58e5d",
+        "223abb2e-1d0a-4b87-bcfe-f98f26bde11c",
+        "2ef2ef1c-4093-470c-a549-cbbc45c093f4",
+        "06710739-d176-4507-b146-30680bf9d860"
+      ],
+      "description": "Fetch local and remote workflow state, compute content-level create/update/delete actions, and apply only the required GitHub writes."
+    }
+  ],
   "settings": {
     "executionOrder": "v1",
     "saveDataErrorExecution": "all",
@@ -459,7 +556,32 @@
     "aiBuilderAssisted": true,
     "builderVariant": "mcp"
   },
-  "tags": [],
+  "tags": [
+    {
+      "id": "Kmfi1DI0MjIRkwfZ",
+      "name": "deadman-heartbeat",
+      "createdAt": "2026-10-22T16:25:50.145Z",
+      "updatedAt": "2026-10-22T16:25:50.145Z"
+    },
+    {
+      "id": "YwjTMUhE83IXTCRg",
+      "name": "monitoring",
+      "createdAt": "2026-10-22T08:38:34.124Z",
+      "updatedAt": "2026-10-22T08:38:34.124Z"
+    },
+    {
+      "id": "TYFpbWmNPKLsGMbA",
+      "name": "backup",
+      "createdAt": "2026-10-22T16:25:58.846Z",
+      "updatedAt": "2026-10-22T16:25:58.846Z"
+    },
+    {
+      "id": "twNsKNALbdWLw0Ox",
+      "name": "automation",
+      "createdAt": "2026-10-22T08:25:54.546Z",
+      "updatedAt": "2026-10-22T08:25:54.546Z"
+    }
+  ],
   "shared": [
     {
       "role": "workflow:owner",
@@ -470,7 +592,7 @@
     }
   ],
   "activeVersion": {
-    "versionId": "88095526-bb7a-48df-a2f6-16e67c332a8f",
+    "versionId": "7dcfc1ae-2ed3-479d-9099-b619dc1bbf7a",
     "workflowId": "2PfYPC9DpC8XdniY",
     "nodes": [
       {
@@ -786,6 +908,68 @@
           1040,
           -160
         ]
+      },
+      {
+        "id": "ad46407c-c7ff-4eab-8322-da2320923c91",
+        "name": "Record Backup Heartbeat",
+        "type": "n8n-nodes-base.dataTable",
+        "typeVersion": 1.1,
+        "position": [
+          352,
+          224
+        ],
+        "parameters": {
+          "resource": "row",
+          "operation": "upsert",
+          "dataTableId": {
+            "__rl": true,
+            "mode": "name",
+            "value": "automation_heartbeats"
+          },
+          "matchType": "allConditions",
+          "filters": {
+            "conditions": [
+              {
+                "keyName": "monitor_key",
+                "condition": "eq",
+                "keyValue": "n8n_workflow_backup"
+              }
+            ]
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "monitor_key": "n8n_workflow_backup",
+              "workflow_id": "2PfYPC9DpC8XdniY",
+              "workflow_name": "Auto-Backup n8n Workflows to GitHub (Optimized)",
+              "last_seen_at": "={{ $now.toISO() }}",
+              "next_expected_at": "={{ $now.setZone('Asia/Shanghai').plus({ days: 1 }).set({ hour: 9, minute: 0, second: 0, millisecond: 0 }).toISO() }}",
+              "grace_minutes": 15,
+              "priority": 2
+            }
+          },
+          "options": {}
+        },
+        "onError": "continueRegularOutput"
+      },
+      {
+        "id": "aded6e19-00b4-4561-a21f-25cba823c20f",
+        "name": "Start Backup Sync",
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.5,
+        "position": [
+          208,
+          448
+        ],
+        "parameters": {
+          "mode": "manual",
+          "assignments": {
+            "assignments": []
+          },
+          "includeOtherFields": true,
+          "include": "all",
+          "options": {}
+        }
       }
     ],
     "connections": {
@@ -793,12 +977,12 @@
         "main": [
           [
             {
-              "node": "Fetch GitHub Files",
+              "node": "Record Backup Heartbeat",
               "type": "main",
               "index": 0
             },
             {
-              "node": "Fetch Local Workflows",
+              "node": "Start Backup Sync",
               "type": "main",
               "index": 0
             }
@@ -891,14 +1075,49 @@
             }
           ]
         ]
+      },
+      "Start Backup Sync": {
+        "main": [
+          [
+            {
+              "node": "Fetch GitHub Files",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Fetch Local Workflows",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
       }
     },
-    "nodeGroups": [],
+    "nodeGroups": [
+      {
+        "id": "a571a5eb-b314-4206-ba4d-3a090345ac46",
+        "name": "Backup sync",
+        "nodeIds": [
+          "aded6e19-00b4-4561-a21f-25cba823c20f",
+          "18400406-3aa9-41c8-ae03-0c1365d5ec5e",
+          "c3a3b921-16a9-4ebf-a8d2-8e4da2a2c1c0",
+          "2859291e-a991-4950-9603-465130e13453",
+          "be4a7802-157e-4cf2-80a6-f3d11aa7f318",
+          "ad477cfb-8ee5-4433-b3f3-94fd860033d6",
+          "a41140ed-8d54-485b-b196-8504eed136ff",
+          "d096615f-5c6d-41db-81a8-2f2951c58e5d",
+          "223abb2e-1d0a-4b87-bcfe-f98f26bde11c",
+          "2ef2ef1c-4093-470c-a549-cbbc45c093f4",
+          "06710739-d176-4507-b146-30680bf9d860"
+        ],
+        "description": "Fetch local and remote workflow state, compute content-level create/update/delete actions, and apply only the required GitHub writes."
+      }
+    ],
     "authors": "Administrator NTLx (via MCP)",
-    "name": "True incremental GitHub backup",
-    "description": "Fix backup churn by comparing each local workflow's computed Git blob SHA against the SHA returned by GitHub. Unchanged workflows are skipped. Add filename collision protection, explicitly set Asia/Shanghai timezone, and update workflow notes to match real behavior.",
+    "name": "Group backup sync stage",
+    "description": "Add one deterministic fan-out entry node so the complete GitHub backup sync can be collapsed as a valid single-entry stage, leaving the deadman heartbeat as an independent non-blocking branch.",
     "autosaved": false,
-    "createdAt": "2026-10-22T05:30:42.728Z",
-    "updatedAt": "2026-10-22T05:30:42.728Z"
+    "createdAt": "2026-10-22T16:28:10.663Z",
+    "updatedAt": "2026-10-22T16:28:10.663Z"
   }
 }
