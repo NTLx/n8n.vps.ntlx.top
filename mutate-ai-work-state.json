@@ -1,0 +1,1576 @@
+{
+  "id": "WgqmfMMeWpddtv4l",
+  "name": "Mutate AI work state",
+  "active": true,
+  "activeVersionId": "49e87cc2-c15f-4431-8a74-888807333037",
+  "createdAt": "2026-10-22T15:35:37.439Z",
+  "updatedAt": "2026-10-22T15:35:47.888Z",
+  "isArchived": false,
+  "versionId": "49e87cc2-c15f-4431-8a74-888807333037",
+  "triggerCount": 5,
+  "nodes": [
+    {
+      "id": "0174053f-2594-4919-bcbf-c5cb9413bf81",
+      "name": "Claim AI Work",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.2,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "internal/ai-work/claim",
+        "authentication": "headerAuth",
+        "responseMode": "lastNode",
+        "options": {
+          "responseCode": {
+            "values": {
+              "responseCode": 200
+            }
+          }
+        }
+      },
+      "webhookId": "b8fafed4-7702-4cd2-b765-5bbd67dfc0b2",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "RvmfH6qWSIUABPQO",
+          "name": "n8n Webhook（Bearer Auth）"
+        }
+      }
+    },
+    {
+      "id": "241ff859-38ec-472f-99cc-d5c025f11ab9",
+      "name": "Apply Claim",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        224,
+        0
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "ai_work_queue"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "work_id",
+              "condition": "eq",
+              "keyValue": "={{ $('Claim AI Work').item.json.body.work_id }}"
+            },
+            {
+              "keyName": "status",
+              "condition": "eq",
+              "keyValue": "pending"
+            },
+            {
+              "keyName": "not_before",
+              "condition": "lte",
+              "keyValue": "={{ $now.toISO() }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "status": "processing",
+            "claimed_by": "={{ $('Claim AI Work').item.json.body.claimed_by || 'chatgpt-dispatcher' }}",
+            "claimed_at": "={{ $now.toISO() }}",
+            "lease_until": "={{ $now.plus({ minutes: 90 }).toISO() }}",
+            "attempt_count": "={{ Number($('Claim AI Work').item.json.body.attempt_count || 0) + 1 }}",
+            "last_error": ""
+          },
+          "schema": [
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "claimed_by",
+              "displayName": "claimed_by",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "claimed_at",
+              "displayName": "claimed_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "lease_until",
+              "displayName": "lease_until",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "attempt_count",
+              "displayName": "attempt_count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "last_error",
+              "displayName": "last_error",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "d13ae6a7-f534-4439-a58c-2c6620c2620a",
+      "name": "Complete AI Work",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.2,
+      "position": [
+        0,
+        224
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "internal/ai-work/complete",
+        "authentication": "headerAuth",
+        "responseMode": "lastNode",
+        "options": {
+          "responseCode": {
+            "values": {
+              "responseCode": 200
+            }
+          }
+        }
+      },
+      "webhookId": "768f4baa-72bf-447b-82ed-cbbcf8f143fa",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "RvmfH6qWSIUABPQO",
+          "name": "n8n Webhook（Bearer Auth）"
+        }
+      }
+    },
+    {
+      "id": "1bbdc914-d6b0-4cf4-a084-89ad06b1853b",
+      "name": "Apply Complete",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        224,
+        224
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "ai_work_queue"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "work_id",
+              "condition": "eq",
+              "keyValue": "={{ $('Complete AI Work').item.json.body.work_id }}"
+            },
+            {
+              "keyName": "status",
+              "condition": "eq",
+              "keyValue": "processing"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "status": "completed",
+            "result_ref": "={{ $('Complete AI Work').item.json.body.result_ref || '' }}",
+            "result_summary": "={{ $('Complete AI Work').item.json.body.result_summary || '' }}",
+            "completed_at": "={{ $now.toISO() }}",
+            "claimed_by": "",
+            "claimed_at": null,
+            "lease_until": null,
+            "last_error": ""
+          },
+          "schema": [
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "result_ref",
+              "displayName": "result_ref",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "result_summary",
+              "displayName": "result_summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "completed_at",
+              "displayName": "completed_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "claimed_by",
+              "displayName": "claimed_by",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "claimed_at",
+              "displayName": "claimed_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "lease_until",
+              "displayName": "lease_until",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "last_error",
+              "displayName": "last_error",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "b767fe94-9591-4aa5-85a5-ce0953f313c6",
+      "name": "Defer AI Work",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.2,
+      "position": [
+        0,
+        448
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "internal/ai-work/defer",
+        "authentication": "headerAuth",
+        "responseMode": "lastNode",
+        "options": {
+          "responseCode": {
+            "values": {
+              "responseCode": 200
+            }
+          }
+        }
+      },
+      "webhookId": "87647049-f331-4c51-81a7-47f8d82da9c9",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "RvmfH6qWSIUABPQO",
+          "name": "n8n Webhook（Bearer Auth）"
+        }
+      }
+    },
+    {
+      "id": "cae41e03-adcf-440f-b43c-5d3b16ec50bd",
+      "name": "Apply Defer",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        224,
+        448
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "ai_work_queue"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "work_id",
+              "condition": "eq",
+              "keyValue": "={{ $('Defer AI Work').item.json.body.work_id }}"
+            },
+            {
+              "keyName": "status",
+              "condition": "eq",
+              "keyValue": "processing"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "status": "pending",
+            "not_before": "={{ $('Defer AI Work').item.json.body.not_before }}",
+            "result_ref": "={{ $('Defer AI Work').item.json.body.result_ref || '' }}",
+            "result_summary": "={{ $('Defer AI Work').item.json.body.reason || '' }}",
+            "claimed_by": "",
+            "claimed_at": null,
+            "lease_until": null
+          },
+          "schema": [
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "not_before",
+              "displayName": "not_before",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "result_ref",
+              "displayName": "result_ref",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "result_summary",
+              "displayName": "result_summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "claimed_by",
+              "displayName": "claimed_by",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "claimed_at",
+              "displayName": "claimed_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "lease_until",
+              "displayName": "lease_until",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "30a5fefa-f278-4a7d-937a-1c64611eea4a",
+      "name": "Fail AI Work",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.2,
+      "position": [
+        0,
+        672
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "internal/ai-work/fail",
+        "authentication": "headerAuth",
+        "responseMode": "lastNode",
+        "options": {
+          "responseCode": {
+            "values": {
+              "responseCode": 200
+            }
+          }
+        }
+      },
+      "webhookId": "248aa7e1-0f13-4293-b994-d98f2fd04c36",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "RvmfH6qWSIUABPQO",
+          "name": "n8n Webhook（Bearer Auth）"
+        }
+      }
+    },
+    {
+      "id": "0379e47a-280c-4ebf-8ca6-4b72d65842ac",
+      "name": "Apply Fail",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        224,
+        672
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "ai_work_queue"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "work_id",
+              "condition": "eq",
+              "keyValue": "={{ $('Fail AI Work').item.json.body.work_id }}"
+            },
+            {
+              "keyName": "status",
+              "condition": "eq",
+              "keyValue": "processing"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "status": "failed",
+            "last_error": "={{ $('Fail AI Work').item.json.body.error || '' }}",
+            "completed_at": "={{ $now.toISO() }}",
+            "claimed_by": "",
+            "claimed_at": null,
+            "lease_until": null
+          },
+          "schema": [
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "last_error",
+              "displayName": "last_error",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "completed_at",
+              "displayName": "completed_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "claimed_by",
+              "displayName": "claimed_by",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "claimed_at",
+              "displayName": "claimed_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "lease_until",
+              "displayName": "lease_until",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "4f67320c-e7f4-4288-9aea-fc9b9209eb7c",
+      "name": "Block AI Work",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.2,
+      "position": [
+        0,
+        896
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "internal/ai-work/block",
+        "authentication": "headerAuth",
+        "responseMode": "lastNode",
+        "options": {
+          "responseCode": {
+            "values": {
+              "responseCode": 200
+            }
+          }
+        }
+      },
+      "webhookId": "e84dab0c-ad3c-4d2b-ab9f-3c38fc6f915f",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "RvmfH6qWSIUABPQO",
+          "name": "n8n Webhook（Bearer Auth）"
+        }
+      }
+    },
+    {
+      "id": "42c43a67-1fa1-4c07-a98f-482510920a8d",
+      "name": "Apply Block",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        224,
+        896
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "ai_work_queue"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "work_id",
+              "condition": "eq",
+              "keyValue": "={{ $('Block AI Work').item.json.body.work_id }}"
+            },
+            {
+              "keyName": "status",
+              "condition": "eq",
+              "keyValue": "processing"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "status": "blocked",
+            "last_error": "={{ $('Block AI Work').item.json.body.reason || '' }}",
+            "completed_at": "={{ $now.toISO() }}",
+            "claimed_by": "",
+            "claimed_at": null,
+            "lease_until": null
+          },
+          "schema": [
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "last_error",
+              "displayName": "last_error",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "completed_at",
+              "displayName": "completed_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "claimed_by",
+              "displayName": "claimed_by",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "claimed_at",
+              "displayName": "claimed_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "lease_until",
+              "displayName": "lease_until",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "options": {}
+      }
+    }
+  ],
+  "connections": {
+    "Claim AI Work": {
+      "main": [
+        [
+          {
+            "node": "Apply Claim",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Complete AI Work": {
+      "main": [
+        [
+          {
+            "node": "Apply Complete",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Defer AI Work": {
+      "main": [
+        [
+          {
+            "node": "Apply Defer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fail AI Work": {
+      "main": [
+        [
+          {
+            "node": "Apply Fail",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Block AI Work": {
+      "main": [
+        [
+          {
+            "node": "Apply Block",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true,
+    "errorWorkflow": "3LE3BnPfHSuIZCVR",
+    "timezone": "Asia/Shanghai",
+    "saveExecutionProgress": false,
+    "saveManualExecutions": false,
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "none"
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [
+    {
+      "id": "SvzA8xykOpMtvbwk",
+      "name": "ai-work",
+      "createdAt": "2026-10-22T09:12:58.488Z",
+      "updatedAt": "2026-10-22T09:12:58.488Z"
+    },
+    {
+      "id": "twNsKNALbdWLw0Ox",
+      "name": "automation",
+      "createdAt": "2026-10-22T08:25:54.546Z",
+      "updatedAt": "2026-10-22T08:25:54.546Z"
+    },
+    {
+      "id": "Yf0sE6r3CHF6WaAZ",
+      "name": "state-machine",
+      "createdAt": "2026-10-22T15:35:47.857Z",
+      "updatedAt": "2026-10-22T15:35:47.857Z"
+    }
+  ],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "WgqmfMMeWpddtv4l",
+      "projectId": "cNMj0K6AdJmi0OAZ",
+      "createdAt": "2026-10-22T15:35:37.439Z",
+      "updatedAt": "2026-10-22T15:35:37.439Z"
+    }
+  ],
+  "activeVersion": {
+    "versionId": "49e87cc2-c15f-4431-8a74-888807333037",
+    "workflowId": "WgqmfMMeWpddtv4l",
+    "nodes": [
+      {
+        "id": "0174053f-2594-4919-bcbf-c5cb9413bf81",
+        "name": "Claim AI Work",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.2,
+        "position": [
+          0,
+          0
+        ],
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "internal/ai-work/claim",
+          "authentication": "headerAuth",
+          "responseMode": "lastNode",
+          "options": {
+            "responseCode": {
+              "values": {
+                "responseCode": 200
+              }
+            }
+          }
+        },
+        "webhookId": "b8fafed4-7702-4cd2-b765-5bbd67dfc0b2",
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "RvmfH6qWSIUABPQO",
+            "name": "n8n Webhook（Bearer Auth）"
+          }
+        }
+      },
+      {
+        "id": "241ff859-38ec-472f-99cc-d5c025f11ab9",
+        "name": "Apply Claim",
+        "type": "n8n-nodes-base.dataTable",
+        "typeVersion": 1.1,
+        "position": [
+          224,
+          0
+        ],
+        "parameters": {
+          "resource": "row",
+          "operation": "update",
+          "dataTableId": {
+            "__rl": true,
+            "mode": "name",
+            "value": "ai_work_queue"
+          },
+          "matchType": "allConditions",
+          "filters": {
+            "conditions": [
+              {
+                "keyName": "work_id",
+                "condition": "eq",
+                "keyValue": "={{ $('Claim AI Work').item.json.body.work_id }}"
+              },
+              {
+                "keyName": "status",
+                "condition": "eq",
+                "keyValue": "pending"
+              },
+              {
+                "keyName": "not_before",
+                "condition": "lte",
+                "keyValue": "={{ $now.toISO() }}"
+              }
+            ]
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "status": "processing",
+              "claimed_by": "={{ $('Claim AI Work').item.json.body.claimed_by || 'chatgpt-dispatcher' }}",
+              "claimed_at": "={{ $now.toISO() }}",
+              "lease_until": "={{ $now.plus({ minutes: 90 }).toISO() }}",
+              "attempt_count": "={{ Number($('Claim AI Work').item.json.body.attempt_count || 0) + 1 }}",
+              "last_error": ""
+            },
+            "schema": [
+              {
+                "id": "status",
+                "displayName": "status",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "claimed_by",
+                "displayName": "claimed_by",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "claimed_at",
+                "displayName": "claimed_at",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "dateTime",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "lease_until",
+                "displayName": "lease_until",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "dateTime",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "attempt_count",
+                "displayName": "attempt_count",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "number",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "last_error",
+                "displayName": "last_error",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              }
+            ]
+          },
+          "options": {}
+        }
+      },
+      {
+        "id": "d13ae6a7-f534-4439-a58c-2c6620c2620a",
+        "name": "Complete AI Work",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.2,
+        "position": [
+          0,
+          224
+        ],
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "internal/ai-work/complete",
+          "authentication": "headerAuth",
+          "responseMode": "lastNode",
+          "options": {
+            "responseCode": {
+              "values": {
+                "responseCode": 200
+              }
+            }
+          }
+        },
+        "webhookId": "768f4baa-72bf-447b-82ed-cbbcf8f143fa",
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "RvmfH6qWSIUABPQO",
+            "name": "n8n Webhook（Bearer Auth）"
+          }
+        }
+      },
+      {
+        "id": "1bbdc914-d6b0-4cf4-a084-89ad06b1853b",
+        "name": "Apply Complete",
+        "type": "n8n-nodes-base.dataTable",
+        "typeVersion": 1.1,
+        "position": [
+          224,
+          224
+        ],
+        "parameters": {
+          "resource": "row",
+          "operation": "update",
+          "dataTableId": {
+            "__rl": true,
+            "mode": "name",
+            "value": "ai_work_queue"
+          },
+          "matchType": "allConditions",
+          "filters": {
+            "conditions": [
+              {
+                "keyName": "work_id",
+                "condition": "eq",
+                "keyValue": "={{ $('Complete AI Work').item.json.body.work_id }}"
+              },
+              {
+                "keyName": "status",
+                "condition": "eq",
+                "keyValue": "processing"
+              }
+            ]
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "status": "completed",
+              "result_ref": "={{ $('Complete AI Work').item.json.body.result_ref || '' }}",
+              "result_summary": "={{ $('Complete AI Work').item.json.body.result_summary || '' }}",
+              "completed_at": "={{ $now.toISO() }}",
+              "claimed_by": "",
+              "claimed_at": null,
+              "lease_until": null,
+              "last_error": ""
+            },
+            "schema": [
+              {
+                "id": "status",
+                "displayName": "status",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "result_ref",
+                "displayName": "result_ref",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "result_summary",
+                "displayName": "result_summary",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "completed_at",
+                "displayName": "completed_at",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "dateTime",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "claimed_by",
+                "displayName": "claimed_by",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "claimed_at",
+                "displayName": "claimed_at",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "dateTime",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "lease_until",
+                "displayName": "lease_until",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "dateTime",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "last_error",
+                "displayName": "last_error",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              }
+            ]
+          },
+          "options": {}
+        }
+      },
+      {
+        "id": "b767fe94-9591-4aa5-85a5-ce0953f313c6",
+        "name": "Defer AI Work",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.2,
+        "position": [
+          0,
+          448
+        ],
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "internal/ai-work/defer",
+          "authentication": "headerAuth",
+          "responseMode": "lastNode",
+          "options": {
+            "responseCode": {
+              "values": {
+                "responseCode": 200
+              }
+            }
+          }
+        },
+        "webhookId": "87647049-f331-4c51-81a7-47f8d82da9c9",
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "RvmfH6qWSIUABPQO",
+            "name": "n8n Webhook（Bearer Auth）"
+          }
+        }
+      },
+      {
+        "id": "cae41e03-adcf-440f-b43c-5d3b16ec50bd",
+        "name": "Apply Defer",
+        "type": "n8n-nodes-base.dataTable",
+        "typeVersion": 1.1,
+        "position": [
+          224,
+          448
+        ],
+        "parameters": {
+          "resource": "row",
+          "operation": "update",
+          "dataTableId": {
+            "__rl": true,
+            "mode": "name",
+            "value": "ai_work_queue"
+          },
+          "matchType": "allConditions",
+          "filters": {
+            "conditions": [
+              {
+                "keyName": "work_id",
+                "condition": "eq",
+                "keyValue": "={{ $('Defer AI Work').item.json.body.work_id }}"
+              },
+              {
+                "keyName": "status",
+                "condition": "eq",
+                "keyValue": "processing"
+              }
+            ]
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "status": "pending",
+              "not_before": "={{ $('Defer AI Work').item.json.body.not_before }}",
+              "result_ref": "={{ $('Defer AI Work').item.json.body.result_ref || '' }}",
+              "result_summary": "={{ $('Defer AI Work').item.json.body.reason || '' }}",
+              "claimed_by": "",
+              "claimed_at": null,
+              "lease_until": null
+            },
+            "schema": [
+              {
+                "id": "status",
+                "displayName": "status",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "not_before",
+                "displayName": "not_before",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "dateTime",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "result_ref",
+                "displayName": "result_ref",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "result_summary",
+                "displayName": "result_summary",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "claimed_by",
+                "displayName": "claimed_by",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "claimed_at",
+                "displayName": "claimed_at",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "dateTime",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "lease_until",
+                "displayName": "lease_until",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "dateTime",
+                "canBeUsedToMatch": true
+              }
+            ]
+          },
+          "options": {}
+        }
+      },
+      {
+        "id": "30a5fefa-f278-4a7d-937a-1c64611eea4a",
+        "name": "Fail AI Work",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.2,
+        "position": [
+          0,
+          672
+        ],
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "internal/ai-work/fail",
+          "authentication": "headerAuth",
+          "responseMode": "lastNode",
+          "options": {
+            "responseCode": {
+              "values": {
+                "responseCode": 200
+              }
+            }
+          }
+        },
+        "webhookId": "248aa7e1-0f13-4293-b994-d98f2fd04c36",
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "RvmfH6qWSIUABPQO",
+            "name": "n8n Webhook（Bearer Auth）"
+          }
+        }
+      },
+      {
+        "id": "0379e47a-280c-4ebf-8ca6-4b72d65842ac",
+        "name": "Apply Fail",
+        "type": "n8n-nodes-base.dataTable",
+        "typeVersion": 1.1,
+        "position": [
+          224,
+          672
+        ],
+        "parameters": {
+          "resource": "row",
+          "operation": "update",
+          "dataTableId": {
+            "__rl": true,
+            "mode": "name",
+            "value": "ai_work_queue"
+          },
+          "matchType": "allConditions",
+          "filters": {
+            "conditions": [
+              {
+                "keyName": "work_id",
+                "condition": "eq",
+                "keyValue": "={{ $('Fail AI Work').item.json.body.work_id }}"
+              },
+              {
+                "keyName": "status",
+                "condition": "eq",
+                "keyValue": "processing"
+              }
+            ]
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "status": "failed",
+              "last_error": "={{ $('Fail AI Work').item.json.body.error || '' }}",
+              "completed_at": "={{ $now.toISO() }}",
+              "claimed_by": "",
+              "claimed_at": null,
+              "lease_until": null
+            },
+            "schema": [
+              {
+                "id": "status",
+                "displayName": "status",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "last_error",
+                "displayName": "last_error",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "completed_at",
+                "displayName": "completed_at",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "dateTime",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "claimed_by",
+                "displayName": "claimed_by",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "claimed_at",
+                "displayName": "claimed_at",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "dateTime",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "lease_until",
+                "displayName": "lease_until",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "dateTime",
+                "canBeUsedToMatch": true
+              }
+            ]
+          },
+          "options": {}
+        }
+      },
+      {
+        "id": "4f67320c-e7f4-4288-9aea-fc9b9209eb7c",
+        "name": "Block AI Work",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.2,
+        "position": [
+          0,
+          896
+        ],
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "internal/ai-work/block",
+          "authentication": "headerAuth",
+          "responseMode": "lastNode",
+          "options": {
+            "responseCode": {
+              "values": {
+                "responseCode": 200
+              }
+            }
+          }
+        },
+        "webhookId": "e84dab0c-ad3c-4d2b-ab9f-3c38fc6f915f",
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "RvmfH6qWSIUABPQO",
+            "name": "n8n Webhook（Bearer Auth）"
+          }
+        }
+      },
+      {
+        "id": "42c43a67-1fa1-4c07-a98f-482510920a8d",
+        "name": "Apply Block",
+        "type": "n8n-nodes-base.dataTable",
+        "typeVersion": 1.1,
+        "position": [
+          224,
+          896
+        ],
+        "parameters": {
+          "resource": "row",
+          "operation": "update",
+          "dataTableId": {
+            "__rl": true,
+            "mode": "name",
+            "value": "ai_work_queue"
+          },
+          "matchType": "allConditions",
+          "filters": {
+            "conditions": [
+              {
+                "keyName": "work_id",
+                "condition": "eq",
+                "keyValue": "={{ $('Block AI Work').item.json.body.work_id }}"
+              },
+              {
+                "keyName": "status",
+                "condition": "eq",
+                "keyValue": "processing"
+              }
+            ]
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "status": "blocked",
+              "last_error": "={{ $('Block AI Work').item.json.body.reason || '' }}",
+              "completed_at": "={{ $now.toISO() }}",
+              "claimed_by": "",
+              "claimed_at": null,
+              "lease_until": null
+            },
+            "schema": [
+              {
+                "id": "status",
+                "displayName": "status",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "last_error",
+                "displayName": "last_error",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "completed_at",
+                "displayName": "completed_at",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "dateTime",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "claimed_by",
+                "displayName": "claimed_by",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "claimed_at",
+                "displayName": "claimed_at",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "dateTime",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "lease_until",
+                "displayName": "lease_until",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "dateTime",
+                "canBeUsedToMatch": true
+              }
+            ]
+          },
+          "options": {}
+        }
+      }
+    ],
+    "connections": {
+      "Claim AI Work": {
+        "main": [
+          [
+            {
+              "node": "Apply Claim",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Complete AI Work": {
+        "main": [
+          [
+            {
+              "node": "Apply Complete",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Defer AI Work": {
+        "main": [
+          [
+            {
+              "node": "Apply Defer",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Fail AI Work": {
+        "main": [
+          [
+            {
+              "node": "Apply Fail",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Block AI Work": {
+        "main": [
+          [
+            {
+              "node": "Apply Block",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "nodeGroups": [],
+    "authors": "Administrator NTLx (via MCP)",
+    "name": "Initial direct n8n-VPS state bridge",
+    "description": "Replaces the retired Automation Runtime MCP with bearer-protected webhook branches that n8n-VPS.execute_workflow can invoke internally for durable AI work state transitions.",
+    "autosaved": false,
+    "createdAt": "2026-10-22T15:35:37.439Z",
+    "updatedAt": "2026-10-22T15:35:37.439Z"
+  }
+}
