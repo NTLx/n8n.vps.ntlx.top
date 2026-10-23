@@ -1,0 +1,487 @@
+{
+  "id": "hxqiKIiZT1szW0t0",
+  "name": "Claim RSS intelligence digest",
+  "active": true,
+  "activeVersionId": "b7582284-deb3-46dd-a6e9-36260356cab6",
+  "createdAt": "2026-10-22T16:46:10.383Z",
+  "updatedAt": "2026-10-22T16:46:18.464Z",
+  "isArchived": false,
+  "versionId": "b7582284-deb3-46dd-a6e9-36260356cab6",
+  "triggerCount": 1,
+  "nodes": [
+    {
+      "id": "2659bf1a-ef1b-449c-9c73-415bd80f4672",
+      "name": "Claim RSS Digest",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.2,
+      "position": [
+        0,
+        96
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "internal/rss-intelligence/claim",
+        "authentication": "headerAuth",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "webhookId": "42fc475c-692d-4909-8d12-6f5647f09a7e",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "RvmfH6qWSIUABPQO",
+          "name": "n8n Webhook（Bearer Auth）"
+        }
+      }
+    },
+    {
+      "id": "fda86f0a-8397-470e-bc55-cc05f8e272f3",
+      "name": "Validate Digest Contract",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.4,
+      "position": [
+        224,
+        96
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.body?.digest_id ? 'valid' : 'invalid' }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              },
+              "rightValue": "valid"
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {
+          "ignoreCase": false
+        }
+      }
+    },
+    {
+      "id": "3518ae9d-3405-48d5-ab95-2ff074b91f46",
+      "name": "Claim RSS Items",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        448,
+        0
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "rss_intelligence_items"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "status",
+              "condition": "neq",
+              "keyValue": "processed"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "status": "processing",
+            "digest_id": "={{ $('Claim RSS Digest').item.json.body.digest_id }}",
+            "processed_at": null
+          },
+          "schema": [
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "digest_id",
+              "displayName": "digest_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "processed_at",
+              "displayName": "processed_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "id": "1ec29666-81e6-4d53-85ab-ae85d389f4c3",
+      "name": "Respond Success",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        672,
+        0
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { ok: true, digest_id: $('Claim RSS Digest').item.json.body.digest_id } }}",
+        "options": {
+          "responseCode": 200
+        }
+      }
+    },
+    {
+      "id": "4287cb10-97ec-413f-ba28-59436511a120",
+      "name": "Respond Validation Error",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        448,
+        192
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": {
+          "error": "validation_error",
+          "message": "Required field: digest_id"
+        },
+        "options": {
+          "responseCode": 400
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Claim RSS Digest": {
+      "main": [
+        [
+          {
+            "node": "Validate Digest Contract",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Digest Contract": {
+      "main": [
+        [
+          {
+            "node": "Claim RSS Items",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Validation Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Claim RSS Items": {
+      "main": [
+        [
+          {
+            "node": "Respond Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true,
+    "errorWorkflow": "3LE3BnPfHSuIZCVR",
+    "timezone": "Asia/Shanghai",
+    "saveExecutionProgress": false,
+    "saveManualExecutions": false,
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "none",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [
+    {
+      "id": "Yf0sE6r3CHF6WaAZ",
+      "name": "state-machine",
+      "createdAt": "2026-10-22T15:35:47.857Z",
+      "updatedAt": "2026-10-22T15:35:47.857Z"
+    },
+    {
+      "id": "ADAZhgvX1et8NkUZ",
+      "name": "rss",
+      "createdAt": "2026-10-22T09:19:50.833Z",
+      "updatedAt": "2026-10-22T09:19:50.833Z"
+    },
+    {
+      "id": "x886jREZRoLp3jh7",
+      "name": "daily-batch",
+      "createdAt": "2026-10-22T16:43:13.435Z",
+      "updatedAt": "2026-10-22T16:43:13.435Z"
+    },
+    {
+      "id": "twNsKNALbdWLw0Ox",
+      "name": "automation",
+      "createdAt": "2026-10-22T08:25:54.546Z",
+      "updatedAt": "2026-10-22T08:25:54.546Z"
+    }
+  ],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "hxqiKIiZT1szW0t0",
+      "projectId": "cNMj0K6AdJmi0OAZ",
+      "createdAt": "2026-10-22T16:46:10.383Z",
+      "updatedAt": "2026-10-22T16:46:10.383Z"
+    }
+  ],
+  "activeVersion": {
+    "versionId": "b7582284-deb3-46dd-a6e9-36260356cab6",
+    "workflowId": "hxqiKIiZT1szW0t0",
+    "nodes": [
+      {
+        "id": "2659bf1a-ef1b-449c-9c73-415bd80f4672",
+        "name": "Claim RSS Digest",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.2,
+        "position": [
+          0,
+          96
+        ],
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "internal/rss-intelligence/claim",
+          "authentication": "headerAuth",
+          "responseMode": "responseNode",
+          "options": {}
+        },
+        "webhookId": "42fc475c-692d-4909-8d12-6f5647f09a7e",
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "RvmfH6qWSIUABPQO",
+            "name": "n8n Webhook（Bearer Auth）"
+          }
+        }
+      },
+      {
+        "id": "fda86f0a-8397-470e-bc55-cc05f8e272f3",
+        "name": "Validate Digest Contract",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.4,
+        "position": [
+          224,
+          96
+        ],
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict"
+            },
+            "conditions": [
+              {
+                "leftValue": "={{ $json.body?.digest_id ? 'valid' : 'invalid' }}",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals"
+                },
+                "rightValue": "valid"
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {
+            "ignoreCase": false
+          }
+        }
+      },
+      {
+        "id": "3518ae9d-3405-48d5-ab95-2ff074b91f46",
+        "name": "Claim RSS Items",
+        "type": "n8n-nodes-base.dataTable",
+        "typeVersion": 1.1,
+        "position": [
+          448,
+          0
+        ],
+        "parameters": {
+          "resource": "row",
+          "operation": "update",
+          "dataTableId": {
+            "__rl": true,
+            "mode": "name",
+            "value": "rss_intelligence_items"
+          },
+          "matchType": "allConditions",
+          "filters": {
+            "conditions": [
+              {
+                "keyName": "status",
+                "condition": "neq",
+                "keyValue": "processed"
+              }
+            ]
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "status": "processing",
+              "digest_id": "={{ $('Claim RSS Digest').item.json.body.digest_id }}",
+              "processed_at": null
+            },
+            "schema": [
+              {
+                "id": "status",
+                "displayName": "status",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "digest_id",
+                "displayName": "digest_id",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "processed_at",
+                "displayName": "processed_at",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "dateTime",
+                "canBeUsedToMatch": true
+              }
+            ]
+          },
+          "options": {}
+        },
+        "alwaysOutputData": true
+      },
+      {
+        "id": "1ec29666-81e6-4d53-85ab-ae85d389f4c3",
+        "name": "Respond Success",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.5,
+        "position": [
+          672,
+          0
+        ],
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ { ok: true, digest_id: $('Claim RSS Digest').item.json.body.digest_id } }}",
+          "options": {
+            "responseCode": 200
+          }
+        }
+      },
+      {
+        "id": "4287cb10-97ec-413f-ba28-59436511a120",
+        "name": "Respond Validation Error",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.5,
+        "position": [
+          448,
+          192
+        ],
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": {
+            "error": "validation_error",
+            "message": "Required field: digest_id"
+          },
+          "options": {
+            "responseCode": 400
+          }
+        }
+      }
+    ],
+    "connections": {
+      "Claim RSS Digest": {
+        "main": [
+          [
+            {
+              "node": "Validate Digest Contract",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Validate Digest Contract": {
+        "main": [
+          [
+            {
+              "node": "Claim RSS Items",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Respond Validation Error",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Claim RSS Items": {
+        "main": [
+          [
+            {
+              "node": "Respond Success",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "nodeGroups": [],
+    "authors": "Administrator NTLx (via MCP)",
+    "name": "Initial RSS digest claim contract",
+    "description": "Adds an authenticated claim step so the daily ChatGPT RSS worker freezes a stable batch before analysis. Any non-processed leftovers are reclaimed into the current digest for recovery.",
+    "autosaved": false,
+    "createdAt": "2026-10-22T16:46:10.383Z",
+    "updatedAt": "2026-10-22T16:46:10.383Z"
+  }
+}
