@@ -1,0 +1,386 @@
+{
+  "id": "1KpPfMSBzIdfLG8U",
+  "name": "RSS — Simon Willison Weblog",
+  "active": true,
+  "activeVersionId": "c48ca963-2e66-446b-9483-262a30fc6686",
+  "createdAt": "2026-10-22T16:06:26.519Z",
+  "updatedAt": "2026-10-22T16:37:27.924Z",
+  "isArchived": false,
+  "versionId": "c48ca963-2e66-446b-9483-262a30fc6686",
+  "triggerCount": 1,
+  "nodes": [
+    {
+      "id": "e438936c-b35b-4610-ab80-897fdc27e64b",
+      "name": "RSS Feed",
+      "type": "n8n-nodes-base.rssFeedReadTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyDay",
+              "hour": 8,
+              "minute": 25
+            }
+          ]
+        },
+        "feedUrl": "https://simonwillison.net/atom/everything/"
+      },
+      "retryOnFail": true,
+      "waitBetweenTries": 5000
+    },
+    {
+      "id": "f3083f4e-9c9b-4ff7-b730-c202a804db3f",
+      "name": "Package RSS item",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        260,
+        0
+      ],
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "source-name",
+              "name": "source_name",
+              "value": "Simon Willison Weblog",
+              "type": "string"
+            },
+            {
+              "id": "feed-url",
+              "name": "feed_url",
+              "value": "https://simonwillison.net/atom/everything/",
+              "type": "string"
+            },
+            {
+              "id": "item",
+              "name": "item",
+              "value": "={{ $json }}",
+              "type": "object"
+            }
+          ]
+        },
+        "includeOtherFields": false,
+        "options": {}
+      }
+    },
+    {
+      "id": "af46d7cd-6eda-4f3d-b376-7605bb28df00",
+      "name": "Store RSS item",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        520,
+        0
+      ],
+      "parameters": {
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "NnjbcdgnIOzxky13"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "source_name": "={{ $json.source_name }}",
+            "feed_url": "={{ $json.feed_url }}",
+            "item": "={{ $json.item }}"
+          },
+          "schema": [
+            {
+              "id": "source_name",
+              "displayName": "source_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "feed_url",
+              "displayName": "feed_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "item",
+              "displayName": "item",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "object",
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "mode": "each",
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      }
+    }
+  ],
+  "connections": {
+    "RSS Feed": {
+      "main": [
+        [
+          {
+            "node": "Package RSS item",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Package RSS item": {
+      "main": [
+        [
+          {
+            "node": "Store RSS item",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [
+    {
+      "id": "f0d20ad0-8d0c-421e-bf8d-8ad190eea990",
+      "name": "RSS ingress",
+      "nodeIds": [
+        "f3083f4e-9c9b-4ff7-b730-c202a804db3f",
+        "af46d7cd-6eda-4f3d-b376-7605bb28df00"
+      ],
+      "description": "Attach source metadata and hand each feed item to the shared RSS processor."
+    }
+  ],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true,
+    "timezone": "Asia/Shanghai",
+    "saveExecutionProgress": false,
+    "saveManualExecutions": false,
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "none",
+    "timeSavedPerExecution": 60,
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "3LE3BnPfHSuIZCVR"
+  },
+  "staticData": {
+    "node:RSS Feed": {
+      "lastItemDate": "2026-10-22T19:42:26.000Z"
+    }
+  },
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [
+    {
+      "id": "ADAZhgvX1et8NkUZ",
+      "name": "rss",
+      "createdAt": "2026-10-22T09:19:50.833Z",
+      "updatedAt": "2026-10-22T09:19:50.833Z"
+    },
+    {
+      "id": "twNsKNALbdWLw0Ox",
+      "name": "automation",
+      "createdAt": "2026-10-22T08:25:54.546Z",
+      "updatedAt": "2026-10-22T08:25:54.546Z"
+    },
+    {
+      "id": "4l8F0YrAzc1V3KcA",
+      "name": "rss-ingress",
+      "createdAt": "2026-10-22T16:01:09.325Z",
+      "updatedAt": "2026-10-22T16:01:09.325Z"
+    }
+  ],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "1KpPfMSBzIdfLG8U",
+      "projectId": "cNMj0K6AdJmi0OAZ",
+      "createdAt": "2026-10-22T16:06:26.519Z",
+      "updatedAt": "2026-10-22T16:06:26.519Z"
+    }
+  ],
+  "activeVersion": {
+    "versionId": "c48ca963-2e66-446b-9483-262a30fc6686",
+    "workflowId": "1KpPfMSBzIdfLG8U",
+    "nodes": [
+      {
+        "id": "e438936c-b35b-4610-ab80-897fdc27e64b",
+        "name": "RSS Feed",
+        "type": "n8n-nodes-base.rssFeedReadTrigger",
+        "typeVersion": 1,
+        "position": [
+          0,
+          0
+        ],
+        "parameters": {
+          "pollTimes": {
+            "item": [
+              {
+                "mode": "everyDay",
+                "hour": 8,
+                "minute": 25
+              }
+            ]
+          },
+          "feedUrl": "https://simonwillison.net/atom/everything/"
+        },
+        "retryOnFail": true,
+        "waitBetweenTries": 5000
+      },
+      {
+        "id": "f3083f4e-9c9b-4ff7-b730-c202a804db3f",
+        "name": "Package RSS item",
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.5,
+        "position": [
+          260,
+          0
+        ],
+        "parameters": {
+          "mode": "manual",
+          "assignments": {
+            "assignments": [
+              {
+                "id": "source-name",
+                "name": "source_name",
+                "value": "Simon Willison Weblog",
+                "type": "string"
+              },
+              {
+                "id": "feed-url",
+                "name": "feed_url",
+                "value": "https://simonwillison.net/atom/everything/",
+                "type": "string"
+              },
+              {
+                "id": "item",
+                "name": "item",
+                "value": "={{ $json }}",
+                "type": "object"
+              }
+            ]
+          },
+          "includeOtherFields": false,
+          "options": {}
+        }
+      },
+      {
+        "id": "af46d7cd-6eda-4f3d-b376-7605bb28df00",
+        "name": "Store RSS item",
+        "type": "n8n-nodes-base.executeWorkflow",
+        "typeVersion": 1.3,
+        "position": [
+          520,
+          0
+        ],
+        "parameters": {
+          "source": "database",
+          "workflowId": {
+            "__rl": true,
+            "mode": "id",
+            "value": "NnjbcdgnIOzxky13"
+          },
+          "workflowInputs": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "source_name": "={{ $json.source_name }}",
+              "feed_url": "={{ $json.feed_url }}",
+              "item": "={{ $json.item }}"
+            },
+            "schema": [
+              {
+                "id": "source_name",
+                "displayName": "source_name",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "feed_url",
+                "displayName": "feed_url",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "item",
+                "displayName": "item",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "object",
+                "canBeUsedToMatch": true
+              }
+            ]
+          },
+          "mode": "each",
+          "options": {
+            "waitForSubWorkflow": true
+          }
+        }
+      }
+    ],
+    "connections": {
+      "RSS Feed": {
+        "main": [
+          [
+            {
+              "node": "Package RSS item",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Package RSS item": {
+        "main": [
+          [
+            {
+              "node": "Store RSS item",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "nodeGroups": [
+      {
+        "id": "f0d20ad0-8d0c-421e-bf8d-8ad190eea990",
+        "name": "RSS ingress",
+        "nodeIds": [
+          "f3083f4e-9c9b-4ff7-b730-c202a804db3f",
+          "af46d7cd-6eda-4f3d-b376-7605bb28df00"
+        ],
+        "description": "Attach source metadata and hand each feed item to the shared RSS processor."
+      }
+    ],
+    "authors": "Administrator NTLx (via MCP)",
+    "name": "Align RSS daily ingestion",
+    "description": "Keep the existing staggered daily RSS schedule, delegate to Store RSS intelligence item, and add workflow-level production error handling.",
+    "autosaved": false,
+    "createdAt": "2026-10-22T16:37:27.928Z",
+    "updatedAt": "2026-10-22T16:37:27.928Z"
+  }
+}
