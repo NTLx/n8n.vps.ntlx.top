@@ -1,0 +1,199 @@
+{
+  "id": "S51SK01cWtySHu2A",
+  "name": "Cleanup architecture acceptance data",
+  "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-10-22T09:25:57.016Z",
+  "updatedAt": "2026-10-22T09:26:23.128Z",
+  "isArchived": true,
+  "versionId": "933e4755-e0bc-4161-aced-b4329c4dd1a1",
+  "triggerCount": 0,
+  "nodes": [
+    {
+      "id": "6453af36-49c8-45fa-835f-321e29c30121",
+      "name": "Cleanup Acceptance Data",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        192
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "927c7624-4bf6-4dc5-a6b4-24c38402f25a",
+      "name": "Delete Acceptance AI Work",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        224,
+        0
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "deleteRows",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "ai_work_queue"
+        },
+        "matchType": "anyCondition",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "work_id",
+              "condition": "eq",
+              "keyValue": "wiki_compile:https://example.com/architecture-acceptance"
+            },
+            {
+              "keyName": "work_id",
+              "condition": "eq",
+              "keyValue": "ci_triage:check_run:9990001:2026-10-22T09:20:00Z"
+            },
+            {
+              "keyName": "work_id",
+              "condition": "eq",
+              "keyValue": "rss_review:https://example.com/rss-architecture-acceptance"
+            },
+            {
+              "keyName": "work_id",
+              "condition": "eq",
+              "keyValue": "test:expired-lease:architecture"
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "b8c606b8-f944-4588-831d-f7025bba312f",
+      "name": "Delete Acceptance Events",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        224,
+        192
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "deleteRows",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "work_events"
+        },
+        "matchType": "anyCondition",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "event_id",
+              "condition": "eq",
+              "keyValue": "wiki.url.submitted:https://example.com/architecture-acceptance"
+            },
+            {
+              "keyName": "event_id",
+              "condition": "eq",
+              "keyValue": "check_run:9990001:2026-10-22T09:20:00Z"
+            },
+            {
+              "keyName": "event_id",
+              "condition": "eq",
+              "keyValue": "rss.article.discovered:https://example.com/rss-architecture-acceptance"
+            },
+            {
+              "keyName": "event_id",
+              "condition": "eq",
+              "keyValue": "test:architecture:event"
+            },
+            {
+              "keyName": "event_id",
+              "condition": "eq",
+              "keyValue": "release.gate:v9.9.9-acceptance:acceptance-sha"
+            },
+            {
+              "keyName": "event_id",
+              "condition": "eq",
+              "keyValue": "ai_work.lease_recovered:test:expired-lease:architecture:2026-10-22T08:00:00.000Z"
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "087d3277-eab6-4e62-9e59-c8d283787bf3",
+      "name": "Delete Acceptance Release Gate",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        224,
+        384
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "deleteRows",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "release_gates"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "gate_id",
+              "condition": "eq",
+              "keyValue": "v9.9.9-acceptance:acceptance-sha"
+            }
+          ]
+        },
+        "options": {}
+      }
+    }
+  ],
+  "connections": {
+    "Cleanup Acceptance Data": {
+      "main": [
+        [
+          {
+            "node": "Delete Acceptance AI Work",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Delete Acceptance Events",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Delete Acceptance Release Gate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "S51SK01cWtySHu2A",
+      "projectId": "cNMj0K6AdJmi0OAZ",
+      "createdAt": "2026-10-22T09:25:57.016Z",
+      "updatedAt": "2026-10-22T09:25:57.016Z"
+    }
+  ],
+  "activeVersion": null
+}
