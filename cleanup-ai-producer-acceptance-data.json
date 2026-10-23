@@ -1,0 +1,286 @@
+{
+  "id": "vNj5qg7Q2stCVUuL",
+  "name": "Cleanup AI producer acceptance data",
+  "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-10-22T16:32:33.655Z",
+  "updatedAt": "2026-10-22T16:32:50.177Z",
+  "isArchived": true,
+  "versionId": "c2aef5a0-73e7-4242-81bc-6caba2cb3d83",
+  "triggerCount": 0,
+  "nodes": [
+    {
+      "id": "83509abd-4542-43b5-977f-80a5e275ddc4",
+      "name": "Run Cleanup",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "19e42623-b884-4cdc-a2a1-b81fa7954ebd",
+      "name": "Delete Acceptance AI Work",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        300,
+        -200
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "deleteRows",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "ai_work_queue"
+        },
+        "matchType": "anyCondition",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "7"
+            },
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "8"
+            },
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "9"
+            },
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "10"
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "a7febbbc-d490-459a-9b3e-7fe4d23f2883",
+      "name": "Delete Acceptance Events",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        300,
+        -80
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "deleteRows",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "work_events"
+        },
+        "matchType": "anyCondition",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "11"
+            },
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "12"
+            },
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "13"
+            },
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "14"
+            },
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "15"
+            },
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "16"
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "0bc046fb-eccd-4ecc-82f8-3a26e5637176",
+      "name": "Delete Acceptance Release Gates",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        300,
+        40
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "deleteRows",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "release_gates"
+        },
+        "matchType": "anyCondition",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "3"
+            },
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "4"
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "0437a06b-353c-4707-8df6-5e76c9b3d441",
+      "name": "Delete Acceptance Heartbeat",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        300,
+        160
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "deleteRows",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "automation_heartbeats"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "monitor_key",
+              "condition": "eq",
+              "keyValue": "acceptance_deadman"
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "f266fd92-b6bb-429f-ac31-379b18ce8693",
+      "name": "Correct Backup Heartbeat Baseline",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        300,
+        280
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "upsert",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "automation_heartbeats"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "monitor_key",
+              "condition": "eq",
+              "keyValue": "n8n_workflow_backup"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "monitor_key": "n8n_workflow_backup",
+            "workflow_id": "2PfYPC9DpC8XdniY",
+            "workflow_name": "Auto-Backup n8n Workflows to GitHub (Optimized)",
+            "last_seen_at": "2026-10-22T16:28:30.842Z",
+            "next_expected_at": "2026-10-23T01:00:00.000Z",
+            "grace_minutes": 15,
+            "priority": 2
+          }
+        },
+        "options": {}
+      }
+    }
+  ],
+  "connections": {
+    "Run Cleanup": {
+      "main": [
+        [
+          {
+            "node": "Delete Acceptance AI Work",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Delete Acceptance Events",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Delete Acceptance Release Gates",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Delete Acceptance Heartbeat",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Correct Backup Heartbeat Baseline",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "vNj5qg7Q2stCVUuL",
+      "projectId": "cNMj0K6AdJmi0OAZ",
+      "createdAt": "2026-10-22T16:32:33.655Z",
+      "updatedAt": "2026-10-22T16:32:33.655Z"
+    }
+  ],
+  "activeVersion": null
+}
