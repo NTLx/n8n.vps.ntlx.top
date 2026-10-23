@@ -1,0 +1,922 @@
+{
+  "id": "zXbT3Tu742HrSlM6",
+  "name": "Critical scheduled workflow deadman",
+  "active": true,
+  "activeVersionId": "aed98a40-c4e4-4ac4-98af-0b400ee9b075",
+  "createdAt": "2026-10-22T16:27:29.521Z",
+  "updatedAt": "2026-10-22T16:27:37.237Z",
+  "isArchived": false,
+  "versionId": "aed98a40-c4e4-4ac4-98af-0b400ee9b075",
+  "triggerCount": 1,
+  "nodes": [
+    {
+      "id": "5624a17e-c0c2-45c8-8c82-133fa4441c7a",
+      "name": "Every Hour at :20",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 1,
+              "triggerAtMinute": 20
+            }
+          ]
+        },
+        "misfirePolicy": "coalesce",
+        "misfireGraceSeconds": 3600
+      }
+    },
+    {
+      "id": "46454697-940d-4e55-8bc9-a9aa2619536f",
+      "name": "Get Monitored Heartbeats",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        280,
+        0
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "automation_heartbeats"
+        },
+        "returnAll": true,
+        "orderBy": true,
+        "orderByColumn": "next_expected_at",
+        "orderByDirection": "ASC"
+      }
+    },
+    {
+      "id": "b01df7c1-7c07-4cb9-a78a-98382d774fa3",
+      "name": "Keep Missed Heartbeats",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.4,
+      "position": [
+        560,
+        0
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.next_expected_at && $now.toMillis() > (new Date($json.next_expected_at).getTime() + Number($json.grace_minutes || 0) * 60000) ? 'missed' : 'ok' }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              },
+              "rightValue": "missed"
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {
+          "ignoreCase": false
+        }
+      }
+    },
+    {
+      "id": "c620869d-c1c8-42f5-8697-baa28b86fb3a",
+      "name": "Prepare Deadman AI Work",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        840,
+        0
+      ],
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "work-id",
+              "name": "work_id",
+              "type": "string",
+              "value": "={{ 'automation_deadman:' + $json.monitor_key + ':' + $json.next_expected_at }}"
+            },
+            {
+              "id": "kind",
+              "name": "kind",
+              "type": "string",
+              "value": "automation_deadman_triage"
+            },
+            {
+              "id": "priority",
+              "name": "priority",
+              "type": "number",
+              "value": "={{ $json.priority }}"
+            },
+            {
+              "id": "source-event-id",
+              "name": "source_event_id",
+              "type": "string",
+              "value": "={{ 'automation.deadman.missed:' + $json.monitor_key + ':' + $json.next_expected_at }}"
+            },
+            {
+              "id": "correlation-id",
+              "name": "correlation_id",
+              "type": "string",
+              "value": "={{ 'automation-deadman:' + $json.monitor_key + ':' + $json.next_expected_at }}"
+            },
+            {
+              "id": "project",
+              "name": "project",
+              "type": "string",
+              "value": "n8n-vps"
+            },
+            {
+              "id": "input-ref",
+              "name": "input_ref",
+              "type": "string",
+              "value": "={{ 'https://n8n.vps.ntlx.top/workflow/' + $json.workflow_id }}"
+            },
+            {
+              "id": "summary",
+              "name": "summary",
+              "type": "string",
+              "value": "={{ 'Investigate missed schedule heartbeat for ' + $json.workflow_name + '. Last seen: ' + ($json.last_seen_at || 'never') + '; expected by: ' + $json.next_expected_at + '; grace: ' + $json.grace_minutes + ' minutes.' }}"
+            },
+            {
+              "id": "not-before",
+              "name": "not_before",
+              "type": "string",
+              "value": "={{ $now.toISO() }}"
+            },
+            {
+              "id": "deadline",
+              "name": "deadline",
+              "type": "string",
+              "value": ""
+            },
+            {
+              "id": "event-id",
+              "name": "event_id",
+              "type": "string",
+              "value": "={{ 'automation.deadman.missed:' + $json.monitor_key + ':' + $json.next_expected_at }}"
+            },
+            {
+              "id": "event-time",
+              "name": "event_occurred_at",
+              "type": "string",
+              "value": "={{ $now.toISO() }}"
+            },
+            {
+              "id": "event-source",
+              "name": "event_source",
+              "type": "string",
+              "value": "n8n:deadman"
+            },
+            {
+              "id": "event-category",
+              "name": "event_category",
+              "type": "string",
+              "value": "automation.deadman.missed"
+            },
+            {
+              "id": "event-title",
+              "name": "event_title",
+              "type": "string",
+              "value": "={{ 'Scheduled heartbeat missed: ' + $json.workflow_name }}"
+            },
+            {
+              "id": "event-description",
+              "name": "event_description",
+              "type": "string",
+              "value": "={{ 'No schedule heartbeat was observed by ' + $json.next_expected_at + ' plus a ' + $json.grace_minutes + '-minute grace window. Last seen: ' + ($json.last_seen_at || 'never') + '.' }}"
+            },
+            {
+              "id": "event-status",
+              "name": "event_status",
+              "type": "string",
+              "value": "missed"
+            },
+            {
+              "id": "event-url",
+              "name": "event_url",
+              "type": "string",
+              "value": "={{ 'https://n8n.vps.ntlx.top/workflow/' + $json.workflow_id }}"
+            },
+            {
+              "id": "event-meta",
+              "name": "event_metadata_object",
+              "type": "string",
+              "value": "={{ ({ monitor_key: $json.monitor_key, workflow_id: $json.workflow_id, workflow_name: $json.workflow_name, last_seen_at: $json.last_seen_at, next_expected_at: $json.next_expected_at, grace_minutes: $json.grace_minutes }).toJsonString() }}"
+            }
+          ]
+        },
+        "includeOtherFields": false,
+        "options": {}
+      }
+    },
+    {
+      "id": "4b5bbbc3-fd8f-4ad1-8730-5c8d0dca137e",
+      "name": "Enqueue Deadman AI Work",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.4,
+      "position": [
+        1120,
+        0
+      ],
+      "parameters": {
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "oe8KZW4nLbYUUDzA"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "work_id": "={{ $json.work_id }}",
+            "kind": "={{ $json.kind }}",
+            "priority": "={{ $json.priority }}",
+            "source_event_id": "={{ $json.source_event_id }}",
+            "correlation_id": "={{ $json.correlation_id }}",
+            "project": "={{ $json.project }}",
+            "input_ref": "={{ $json.input_ref }}",
+            "summary": "={{ $json.summary }}",
+            "not_before": "={{ $json.not_before }}",
+            "deadline": "={{ $json.deadline }}",
+            "event_id": "={{ $json.event_id }}",
+            "event_occurred_at": "={{ $json.event_occurred_at }}",
+            "event_source": "={{ $json.event_source }}",
+            "event_category": "={{ $json.event_category }}",
+            "event_title": "={{ $json.event_title }}",
+            "event_description": "={{ $json.event_description }}",
+            "event_status": "={{ $json.event_status }}",
+            "event_url": "={{ $json.event_url }}",
+            "event_metadata_object": "={{ $json.event_metadata_object }}"
+          },
+          "schema": [
+            {
+              "id": "work_id",
+              "displayName": "work_id",
+              "type": "string"
+            },
+            {
+              "id": "kind",
+              "displayName": "kind",
+              "type": "string"
+            },
+            {
+              "id": "priority",
+              "displayName": "priority",
+              "type": "number"
+            },
+            {
+              "id": "source_event_id",
+              "displayName": "source_event_id",
+              "type": "string"
+            },
+            {
+              "id": "correlation_id",
+              "displayName": "correlation_id",
+              "type": "string"
+            },
+            {
+              "id": "project",
+              "displayName": "project",
+              "type": "string"
+            },
+            {
+              "id": "input_ref",
+              "displayName": "input_ref",
+              "type": "string"
+            },
+            {
+              "id": "summary",
+              "displayName": "summary",
+              "type": "string"
+            },
+            {
+              "id": "not_before",
+              "displayName": "not_before",
+              "type": "string"
+            },
+            {
+              "id": "deadline",
+              "displayName": "deadline",
+              "type": "string"
+            },
+            {
+              "id": "event_id",
+              "displayName": "event_id",
+              "type": "string"
+            },
+            {
+              "id": "event_occurred_at",
+              "displayName": "event_occurred_at",
+              "type": "string"
+            },
+            {
+              "id": "event_source",
+              "displayName": "event_source",
+              "type": "string"
+            },
+            {
+              "id": "event_category",
+              "displayName": "event_category",
+              "type": "string"
+            },
+            {
+              "id": "event_title",
+              "displayName": "event_title",
+              "type": "string"
+            },
+            {
+              "id": "event_description",
+              "displayName": "event_description",
+              "type": "string"
+            },
+            {
+              "id": "event_status",
+              "displayName": "event_status",
+              "type": "string"
+            },
+            {
+              "id": "event_url",
+              "displayName": "event_url",
+              "type": "string"
+            },
+            {
+              "id": "event_metadata_object",
+              "displayName": "event_metadata_object",
+              "type": "string"
+            }
+          ]
+        },
+        "mode": "each",
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "onError": "continueRegularOutput"
+    }
+  ],
+  "connections": {
+    "Every Hour at :20": {
+      "main": [
+        [
+          {
+            "node": "Get Monitored Heartbeats",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Monitored Heartbeats": {
+      "main": [
+        [
+          {
+            "node": "Keep Missed Heartbeats",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Keep Missed Heartbeats": {
+      "main": [
+        [
+          {
+            "node": "Prepare Deadman AI Work",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Deadman AI Work": {
+      "main": [
+        [
+          {
+            "node": "Enqueue Deadman AI Work",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [
+    {
+      "id": "fe19f813-701a-41ff-a501-ea87ccd69a5d",
+      "name": "Detect missed scheduled heartbeats",
+      "nodeIds": [
+        "46454697-940d-4e55-8bc9-a9aa2619536f",
+        "b01df7c1-7c07-4cb9-a78a-98382d774fa3",
+        "c620869d-c1c8-42f5-8697-baa28b86fb3a",
+        "4b5bbbc3-fd8f-4ad1-8730-5c8d0dca137e"
+      ],
+      "description": "Read monitored schedule heartbeats, keep only overdue entries, and enqueue one idempotent AI triage work item per missed expected run."
+    }
+  ],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true,
+    "errorWorkflow": "3LE3BnPfHSuIZCVR",
+    "timezone": "Asia/Shanghai",
+    "saveExecutionProgress": false,
+    "saveManualExecutions": false,
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "none",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "staticData": {
+    "node:Every Hour at :20": {
+      "recurrenceRules": [
+        null
+      ],
+      "recurrenceRuleSignatures": [
+        null
+      ]
+    }
+  },
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [
+    {
+      "id": "oohNAesAevHoxzJB",
+      "name": "deadman",
+      "createdAt": "2026-10-22T16:27:37.208Z",
+      "updatedAt": "2026-10-22T16:27:37.208Z"
+    },
+    {
+      "id": "BlGRvaSWqnmTk53i",
+      "name": "event-producer",
+      "createdAt": "2026-10-22T09:14:35.370Z",
+      "updatedAt": "2026-10-22T09:14:35.370Z"
+    },
+    {
+      "id": "YwjTMUhE83IXTCRg",
+      "name": "monitoring",
+      "createdAt": "2026-10-22T08:38:34.124Z",
+      "updatedAt": "2026-10-22T08:38:34.124Z"
+    },
+    {
+      "id": "twNsKNALbdWLw0Ox",
+      "name": "automation",
+      "createdAt": "2026-10-22T08:25:54.546Z",
+      "updatedAt": "2026-10-22T08:25:54.546Z"
+    },
+    {
+      "id": "9jw9Bhya2Ylf8E4D",
+      "name": "ai-work-producer",
+      "createdAt": "2026-10-22T09:14:35.367Z",
+      "updatedAt": "2026-10-22T09:14:35.367Z"
+    }
+  ],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "zXbT3Tu742HrSlM6",
+      "projectId": "cNMj0K6AdJmi0OAZ",
+      "createdAt": "2026-10-22T16:27:29.521Z",
+      "updatedAt": "2026-10-22T16:27:29.521Z"
+    }
+  ],
+  "activeVersion": {
+    "versionId": "aed98a40-c4e4-4ac4-98af-0b400ee9b075",
+    "workflowId": "zXbT3Tu742HrSlM6",
+    "nodes": [
+      {
+        "id": "5624a17e-c0c2-45c8-8c82-133fa4441c7a",
+        "name": "Every Hour at :20",
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.4,
+        "position": [
+          0,
+          0
+        ],
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "hours",
+                "hoursInterval": 1,
+                "triggerAtMinute": 20
+              }
+            ]
+          },
+          "misfirePolicy": "coalesce",
+          "misfireGraceSeconds": 3600
+        }
+      },
+      {
+        "id": "46454697-940d-4e55-8bc9-a9aa2619536f",
+        "name": "Get Monitored Heartbeats",
+        "type": "n8n-nodes-base.dataTable",
+        "typeVersion": 1.1,
+        "position": [
+          280,
+          0
+        ],
+        "parameters": {
+          "resource": "row",
+          "operation": "get",
+          "dataTableId": {
+            "__rl": true,
+            "mode": "name",
+            "value": "automation_heartbeats"
+          },
+          "returnAll": true,
+          "orderBy": true,
+          "orderByColumn": "next_expected_at",
+          "orderByDirection": "ASC"
+        }
+      },
+      {
+        "id": "b01df7c1-7c07-4cb9-a78a-98382d774fa3",
+        "name": "Keep Missed Heartbeats",
+        "type": "n8n-nodes-base.filter",
+        "typeVersion": 2.4,
+        "position": [
+          560,
+          0
+        ],
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict"
+            },
+            "conditions": [
+              {
+                "leftValue": "={{ $json.next_expected_at && $now.toMillis() > (new Date($json.next_expected_at).getTime() + Number($json.grace_minutes || 0) * 60000) ? 'missed' : 'ok' }}",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals"
+                },
+                "rightValue": "missed"
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {
+            "ignoreCase": false
+          }
+        }
+      },
+      {
+        "id": "c620869d-c1c8-42f5-8697-baa28b86fb3a",
+        "name": "Prepare Deadman AI Work",
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.5,
+        "position": [
+          840,
+          0
+        ],
+        "parameters": {
+          "mode": "manual",
+          "assignments": {
+            "assignments": [
+              {
+                "id": "work-id",
+                "name": "work_id",
+                "type": "string",
+                "value": "={{ 'automation_deadman:' + $json.monitor_key + ':' + $json.next_expected_at }}"
+              },
+              {
+                "id": "kind",
+                "name": "kind",
+                "type": "string",
+                "value": "automation_deadman_triage"
+              },
+              {
+                "id": "priority",
+                "name": "priority",
+                "type": "number",
+                "value": "={{ $json.priority }}"
+              },
+              {
+                "id": "source-event-id",
+                "name": "source_event_id",
+                "type": "string",
+                "value": "={{ 'automation.deadman.missed:' + $json.monitor_key + ':' + $json.next_expected_at }}"
+              },
+              {
+                "id": "correlation-id",
+                "name": "correlation_id",
+                "type": "string",
+                "value": "={{ 'automation-deadman:' + $json.monitor_key + ':' + $json.next_expected_at }}"
+              },
+              {
+                "id": "project",
+                "name": "project",
+                "type": "string",
+                "value": "n8n-vps"
+              },
+              {
+                "id": "input-ref",
+                "name": "input_ref",
+                "type": "string",
+                "value": "={{ 'https://n8n.vps.ntlx.top/workflow/' + $json.workflow_id }}"
+              },
+              {
+                "id": "summary",
+                "name": "summary",
+                "type": "string",
+                "value": "={{ 'Investigate missed schedule heartbeat for ' + $json.workflow_name + '. Last seen: ' + ($json.last_seen_at || 'never') + '; expected by: ' + $json.next_expected_at + '; grace: ' + $json.grace_minutes + ' minutes.' }}"
+              },
+              {
+                "id": "not-before",
+                "name": "not_before",
+                "type": "string",
+                "value": "={{ $now.toISO() }}"
+              },
+              {
+                "id": "deadline",
+                "name": "deadline",
+                "type": "string",
+                "value": ""
+              },
+              {
+                "id": "event-id",
+                "name": "event_id",
+                "type": "string",
+                "value": "={{ 'automation.deadman.missed:' + $json.monitor_key + ':' + $json.next_expected_at }}"
+              },
+              {
+                "id": "event-time",
+                "name": "event_occurred_at",
+                "type": "string",
+                "value": "={{ $now.toISO() }}"
+              },
+              {
+                "id": "event-source",
+                "name": "event_source",
+                "type": "string",
+                "value": "n8n:deadman"
+              },
+              {
+                "id": "event-category",
+                "name": "event_category",
+                "type": "string",
+                "value": "automation.deadman.missed"
+              },
+              {
+                "id": "event-title",
+                "name": "event_title",
+                "type": "string",
+                "value": "={{ 'Scheduled heartbeat missed: ' + $json.workflow_name }}"
+              },
+              {
+                "id": "event-description",
+                "name": "event_description",
+                "type": "string",
+                "value": "={{ 'No schedule heartbeat was observed by ' + $json.next_expected_at + ' plus a ' + $json.grace_minutes + '-minute grace window. Last seen: ' + ($json.last_seen_at || 'never') + '.' }}"
+              },
+              {
+                "id": "event-status",
+                "name": "event_status",
+                "type": "string",
+                "value": "missed"
+              },
+              {
+                "id": "event-url",
+                "name": "event_url",
+                "type": "string",
+                "value": "={{ 'https://n8n.vps.ntlx.top/workflow/' + $json.workflow_id }}"
+              },
+              {
+                "id": "event-meta",
+                "name": "event_metadata_object",
+                "type": "string",
+                "value": "={{ ({ monitor_key: $json.monitor_key, workflow_id: $json.workflow_id, workflow_name: $json.workflow_name, last_seen_at: $json.last_seen_at, next_expected_at: $json.next_expected_at, grace_minutes: $json.grace_minutes }).toJsonString() }}"
+              }
+            ]
+          },
+          "includeOtherFields": false,
+          "options": {}
+        }
+      },
+      {
+        "id": "4b5bbbc3-fd8f-4ad1-8730-5c8d0dca137e",
+        "name": "Enqueue Deadman AI Work",
+        "type": "n8n-nodes-base.executeWorkflow",
+        "typeVersion": 1.4,
+        "position": [
+          1120,
+          0
+        ],
+        "parameters": {
+          "source": "database",
+          "workflowId": {
+            "__rl": true,
+            "mode": "id",
+            "value": "oe8KZW4nLbYUUDzA"
+          },
+          "workflowInputs": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "work_id": "={{ $json.work_id }}",
+              "kind": "={{ $json.kind }}",
+              "priority": "={{ $json.priority }}",
+              "source_event_id": "={{ $json.source_event_id }}",
+              "correlation_id": "={{ $json.correlation_id }}",
+              "project": "={{ $json.project }}",
+              "input_ref": "={{ $json.input_ref }}",
+              "summary": "={{ $json.summary }}",
+              "not_before": "={{ $json.not_before }}",
+              "deadline": "={{ $json.deadline }}",
+              "event_id": "={{ $json.event_id }}",
+              "event_occurred_at": "={{ $json.event_occurred_at }}",
+              "event_source": "={{ $json.event_source }}",
+              "event_category": "={{ $json.event_category }}",
+              "event_title": "={{ $json.event_title }}",
+              "event_description": "={{ $json.event_description }}",
+              "event_status": "={{ $json.event_status }}",
+              "event_url": "={{ $json.event_url }}",
+              "event_metadata_object": "={{ $json.event_metadata_object }}"
+            },
+            "schema": [
+              {
+                "id": "work_id",
+                "displayName": "work_id",
+                "type": "string"
+              },
+              {
+                "id": "kind",
+                "displayName": "kind",
+                "type": "string"
+              },
+              {
+                "id": "priority",
+                "displayName": "priority",
+                "type": "number"
+              },
+              {
+                "id": "source_event_id",
+                "displayName": "source_event_id",
+                "type": "string"
+              },
+              {
+                "id": "correlation_id",
+                "displayName": "correlation_id",
+                "type": "string"
+              },
+              {
+                "id": "project",
+                "displayName": "project",
+                "type": "string"
+              },
+              {
+                "id": "input_ref",
+                "displayName": "input_ref",
+                "type": "string"
+              },
+              {
+                "id": "summary",
+                "displayName": "summary",
+                "type": "string"
+              },
+              {
+                "id": "not_before",
+                "displayName": "not_before",
+                "type": "string"
+              },
+              {
+                "id": "deadline",
+                "displayName": "deadline",
+                "type": "string"
+              },
+              {
+                "id": "event_id",
+                "displayName": "event_id",
+                "type": "string"
+              },
+              {
+                "id": "event_occurred_at",
+                "displayName": "event_occurred_at",
+                "type": "string"
+              },
+              {
+                "id": "event_source",
+                "displayName": "event_source",
+                "type": "string"
+              },
+              {
+                "id": "event_category",
+                "displayName": "event_category",
+                "type": "string"
+              },
+              {
+                "id": "event_title",
+                "displayName": "event_title",
+                "type": "string"
+              },
+              {
+                "id": "event_description",
+                "displayName": "event_description",
+                "type": "string"
+              },
+              {
+                "id": "event_status",
+                "displayName": "event_status",
+                "type": "string"
+              },
+              {
+                "id": "event_url",
+                "displayName": "event_url",
+                "type": "string"
+              },
+              {
+                "id": "event_metadata_object",
+                "displayName": "event_metadata_object",
+                "type": "string"
+              }
+            ]
+          },
+          "mode": "each",
+          "options": {
+            "waitForSubWorkflow": true
+          }
+        },
+        "onError": "continueRegularOutput"
+      }
+    ],
+    "connections": {
+      "Every Hour at :20": {
+        "main": [
+          [
+            {
+              "node": "Get Monitored Heartbeats",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get Monitored Heartbeats": {
+        "main": [
+          [
+            {
+              "node": "Keep Missed Heartbeats",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Keep Missed Heartbeats": {
+        "main": [
+          [
+            {
+              "node": "Prepare Deadman AI Work",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prepare Deadman AI Work": {
+        "main": [
+          [
+            {
+              "node": "Enqueue Deadman AI Work",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "nodeGroups": [
+      {
+        "id": "fe19f813-701a-41ff-a501-ea87ccd69a5d",
+        "name": "Detect missed scheduled heartbeats",
+        "nodeIds": [
+          "46454697-940d-4e55-8bc9-a9aa2619536f",
+          "b01df7c1-7c07-4cb9-a78a-98382d774fa3",
+          "c620869d-c1c8-42f5-8697-baa28b86fb3a",
+          "4b5bbbc3-fd8f-4ad1-8730-5c8d0dca137e"
+        ],
+        "description": "Read monitored schedule heartbeats, keep only overdue entries, and enqueue one idempotent AI triage work item per missed expected run."
+      }
+    ],
+    "authors": "Administrator NTLx (via MCP)",
+    "name": "Initial critical schedule deadman",
+    "description": "Monitors only explicitly registered fixed-cadence workflows via automation_heartbeats; overdue heartbeats are deduplicated into automation_deadman_triage without LLM logic.",
+    "autosaved": false,
+    "createdAt": "2026-10-22T16:27:29.521Z",
+    "updatedAt": "2026-10-22T16:27:29.521Z"
+  }
+}
