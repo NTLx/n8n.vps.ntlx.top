@@ -1,0 +1,1516 @@
+{
+  "id": "HLq8BghNz9CTjkZi",
+  "name": "Capture Wiki ingest request",
+  "active": true,
+  "activeVersionId": "c05b409c-4b50-4417-9ac5-5538573052c7",
+  "createdAt": "2026-10-22T08:33:43.403Z",
+  "updatedAt": "2026-10-22T09:16:16.823Z",
+  "isArchived": false,
+  "versionId": "c05b409c-4b50-4417-9ac5-5538573052c7",
+  "triggerCount": 1,
+  "nodes": [
+    {
+      "id": "23c50a9b-5b4d-4ee9-b74a-dcd286cce46f",
+      "name": "Receive Wiki URL",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.2,
+      "position": [
+        0,
+        272
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "llm-wiki/ingest",
+        "authentication": "headerAuth",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "webhookId": "398db25d-45f6-48fb-836c-f3c81dd911d2",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "RvmfH6qWSIUABPQO",
+          "name": "n8n Webhook（Bearer Auth）"
+        }
+      }
+    },
+    {
+      "id": "eaba87c5-426e-4a8d-b022-c850ae4b7ae3",
+      "name": "Validate URL Contract",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.4,
+      "position": [
+        224,
+        272
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ typeof $json.body?.url === 'string' && /^https?:\\/\\/\\S+$/i.test($json.body.url.trim()) ? 'valid' : 'invalid' }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              },
+              "rightValue": "valid"
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {
+          "ignoreCase": false
+        }
+      }
+    },
+    {
+      "id": "eb0a4e03-3876-4292-a8a7-3acd72380d2b",
+      "name": "Normalize Wiki Work",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        448,
+        176
+      ],
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "work-id",
+              "name": "work_id",
+              "value": "={{ 'wiki_compile:' + $(\"Receive Wiki URL\").item.json.body.url.trim() }}",
+              "type": "string"
+            },
+            {
+              "id": "event-id",
+              "name": "event_id",
+              "value": "={{ 'wiki.url.submitted:' + $(\"Receive Wiki URL\").item.json.body.url.trim() }}",
+              "type": "string"
+            },
+            {
+              "id": "correlation-id",
+              "name": "correlation_id",
+              "value": "={{ 'wiki_compile:' + $(\"Receive Wiki URL\").item.json.body.url.trim() }}",
+              "type": "string"
+            },
+            {
+              "id": "url",
+              "name": "input_ref",
+              "value": "={{ $(\"Receive Wiki URL\").item.json.body.url.trim() }}",
+              "type": "string"
+            },
+            {
+              "id": "summary",
+              "name": "summary",
+              "value": "={{ $(\"Receive Wiki URL\").item.json.body.notes ? 'Compile into LLM Wiki: ' + $(\"Receive Wiki URL\").item.json.body.notes : 'Compile URL into LLM Wiki' }}",
+              "type": "string"
+            },
+            {
+              "id": "source",
+              "name": "source",
+              "value": "={{ $(\"Receive Wiki URL\").item.json.body.source ?? 'manual_or_agent' }}",
+              "type": "string"
+            },
+            {
+              "id": "not-before",
+              "name": "not_before",
+              "value": "={{ $now.toISO() }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": false,
+        "options": {}
+      }
+    },
+    {
+      "id": "7509eb5d-4bfd-478a-bdb2-b1950d88527b",
+      "name": "Find Existing AI Work",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        672,
+        176
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "ai_work_queue"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "work_id",
+              "condition": "eq",
+              "keyValue": "={{ $(\"Normalize Wiki Work\").item.json.work_id }}"
+            }
+          ]
+        },
+        "returnAll": false,
+        "limit": 1
+      },
+      "alwaysOutputData": true,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "id": "e3030efe-b4ec-4ef0-a378-5789f4a5acc4",
+      "name": "AI Work Already Exists?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.4,
+      "position": [
+        896,
+        96
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.id ? 'exists' : 'new' }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              },
+              "rightValue": "exists"
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {
+          "ignoreCase": false
+        }
+      }
+    },
+    {
+      "id": "10eb64ca-d56d-4997-98fb-7f63fb7c31c3",
+      "name": "Respond Duplicate",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1120,
+        0
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { queued: false, duplicate: true, work_id: $(\"Normalize Wiki Work\").item.json.work_id, url: $(\"Normalize Wiki Work\").item.json.input_ref, status: $json.status ?? 'unknown' } }}",
+        "options": {
+          "responseCode": 200
+        }
+      }
+    },
+    {
+      "id": "01014ea7-b7f6-4cb5-93ed-c156539c77d4",
+      "name": "Insert Pending AI Work",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        1120,
+        192
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "insert",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "ai_work_queue"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "work_id": "={{ $(\"Normalize Wiki Work\").item.json.work_id }}",
+            "kind": "wiki_compile",
+            "status": "pending",
+            "priority": 2,
+            "source_event_id": "={{ $(\"Normalize Wiki Work\").item.json.event_id }}",
+            "correlation_id": "={{ $(\"Normalize Wiki Work\").item.json.correlation_id }}",
+            "project": "agentic-work-atlas",
+            "input_ref": "={{ $(\"Normalize Wiki Work\").item.json.input_ref }}",
+            "summary": "={{ $(\"Normalize Wiki Work\").item.json.summary }}",
+            "not_before": "={{ $(\"Normalize Wiki Work\").item.json.not_before }}",
+            "claimed_by": "",
+            "attempt_count": 0,
+            "result_ref": "",
+            "result_summary": "",
+            "last_error": ""
+          },
+          "schema": [
+            {
+              "id": "work_id",
+              "displayName": "work_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "kind",
+              "displayName": "kind",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "priority",
+              "displayName": "priority",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "source_event_id",
+              "displayName": "source_event_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "correlation_id",
+              "displayName": "correlation_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "project",
+              "displayName": "project",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "input_ref",
+              "displayName": "input_ref",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "summary",
+              "displayName": "summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "not_before",
+              "displayName": "not_before",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "claimed_by",
+              "displayName": "claimed_by",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "attempt_count",
+              "displayName": "attempt_count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "result_ref",
+              "displayName": "result_ref",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "result_summary",
+              "displayName": "result_summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "last_error",
+              "displayName": "last_error",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "id": "41b5d6d8-56c5-4740-88d1-212ebceb6b40",
+      "name": "Respond Queued",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1344,
+        144
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { queued: true, duplicate: false, work_id: $(\"Normalize Wiki Work\").item.json.work_id, kind: 'wiki_compile', url: $(\"Normalize Wiki Work\").item.json.input_ref, status: 'pending' } }}",
+        "options": {
+          "responseCode": 202
+        }
+      }
+    },
+    {
+      "id": "9e9bdf4a-42f2-4716-9f9e-23f90df33f35",
+      "name": "Respond Internal Error",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1344,
+        368
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": {
+          "error": "internal_error",
+          "message": "Failed to query or persist AI work"
+        },
+        "options": {
+          "responseCode": 500
+        }
+      }
+    },
+    {
+      "id": "937d5877-f6a8-4197-a825-eb2d4e7cbf7d",
+      "name": "Respond Validation Error",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        448,
+        368
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": {
+          "error": "validation_error",
+          "message": "Required field url must be a non-empty http(s) URL"
+        },
+        "options": {
+          "responseCode": 400
+        }
+      }
+    },
+    {
+      "id": "c5feaadf-edb5-4b48-8732-8d58237b99c2",
+      "name": "Record Wiki Intake Event",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        1360,
+        128
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "upsert",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "work_events"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "event_id",
+              "condition": "eq",
+              "keyValue": "={{ $(\"Normalize Wiki Work\").item.json.event_id }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "event_id": "={{ $(\"Normalize Wiki Work\").item.json.event_id }}",
+            "occurred_at": "={{ $now.toISO() }}",
+            "source": "n8n:wiki-ingest",
+            "project": "agentic-work-atlas",
+            "category": "wiki.url.submitted",
+            "title": "Wiki URL submitted",
+            "description": "={{ $(\"Normalize Wiki Work\").item.json.summary }}",
+            "status": "pending",
+            "url": "={{ $(\"Normalize Wiki Work\").item.json.input_ref }}",
+            "metadata_object": "={{ ({ source: $(\"Normalize Wiki Work\").item.json.source }).toJsonString() }}",
+            "correlation_id": "={{ $(\"Normalize Wiki Work\").item.json.correlation_id }}"
+          },
+          "schema": [
+            {
+              "id": "event_id",
+              "displayName": "event_id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "occurred_at",
+              "displayName": "occurred_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "source",
+              "displayName": "source",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "project",
+              "displayName": "project",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "category",
+              "displayName": "category",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "title",
+              "displayName": "title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "description",
+              "displayName": "description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "url",
+              "displayName": "url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "metadata_object",
+              "displayName": "metadata_object",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "correlation_id",
+              "displayName": "correlation_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "disabled": false,
+      "onError": "continueErrorOutput"
+    }
+  ],
+  "connections": {
+    "Receive Wiki URL": {
+      "main": [
+        [
+          {
+            "node": "Validate URL Contract",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate URL Contract": {
+      "main": [
+        [
+          {
+            "node": "Normalize Wiki Work",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Validation Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Wiki Work": {
+      "main": [
+        [
+          {
+            "node": "Find Existing AI Work",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find Existing AI Work": {
+      "main": [
+        [
+          {
+            "node": "AI Work Already Exists?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Internal Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Work Already Exists?": {
+      "main": [
+        [
+          {
+            "node": "Respond Duplicate",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Insert Pending AI Work",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert Pending AI Work": {
+      "main": [
+        [
+          {
+            "node": "Record Wiki Intake Event",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Internal Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Record Wiki Intake Event": {
+      "main": [
+        [
+          {
+            "node": "Respond Queued",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Queued",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [
+    {
+      "id": "9f57bafa-98c3-42a7-bb2d-b5e6088e86c2",
+      "name": "Queue valid wiki work",
+      "nodeIds": [
+        "eb0a4e03-3876-4292-a8a7-3acd72380d2b",
+        "7509eb5d-4bfd-478a-bdb2-b1950d88527b",
+        "e3030efe-b4ec-4ef0-a378-5789f4a5acc4",
+        "10eb64ca-d56d-4997-98fb-7f63fb7c31c3",
+        "01014ea7-b7f6-4cb5-93ed-c156539c77d4",
+        "c5feaadf-edb5-4b48-8732-8d58237b99c2",
+        "41b5d6d8-56c5-4740-88d1-212ebceb6b40",
+        "9e9bdf4a-42f2-4716-9f9e-23f90df33f35"
+      ],
+      "description": "Normalize and deduplicate a valid URL, queue only new ChatGPT work, record the event, and return deterministic API responses."
+    }
+  ],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true,
+    "errorWorkflow": "3LE3BnPfHSuIZCVR",
+    "timezone": "Asia/Shanghai",
+    "saveExecutionProgress": false,
+    "saveManualExecutions": false,
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "none",
+    "timeSavedPerExecution": 2,
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [
+    {
+      "id": "9jw9Bhya2Ylf8E4D",
+      "name": "ai-work-producer",
+      "createdAt": "2026-10-22T09:14:35.367Z",
+      "updatedAt": "2026-10-22T09:14:35.367Z"
+    },
+    {
+      "id": "twNsKNALbdWLw0Ox",
+      "name": "automation",
+      "createdAt": "2026-10-22T08:25:54.546Z",
+      "updatedAt": "2026-10-22T08:25:54.546Z"
+    },
+    {
+      "id": "N6trNzlMuM25fapz",
+      "name": "llm-wiki",
+      "createdAt": "2026-10-22T08:33:58.714Z",
+      "updatedAt": "2026-10-22T08:33:58.714Z"
+    },
+    {
+      "id": "QUEcxtEgx4nSQEgH",
+      "name": "ingest",
+      "createdAt": "2026-10-22T08:33:58.717Z",
+      "updatedAt": "2026-10-22T08:33:58.717Z"
+    },
+    {
+      "id": "BlGRvaSWqnmTk53i",
+      "name": "event-producer",
+      "createdAt": "2026-10-22T09:14:35.370Z",
+      "updatedAt": "2026-10-22T09:14:35.370Z"
+    }
+  ],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "HLq8BghNz9CTjkZi",
+      "projectId": "cNMj0K6AdJmi0OAZ",
+      "createdAt": "2026-10-22T08:33:43.403Z",
+      "updatedAt": "2026-10-22T08:33:43.403Z"
+    }
+  ],
+  "activeVersion": {
+    "versionId": "c05b409c-4b50-4417-9ac5-5538573052c7",
+    "workflowId": "HLq8BghNz9CTjkZi",
+    "nodes": [
+      {
+        "id": "23c50a9b-5b4d-4ee9-b74a-dcd286cce46f",
+        "name": "Receive Wiki URL",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.2,
+        "position": [
+          0,
+          272
+        ],
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "llm-wiki/ingest",
+          "authentication": "headerAuth",
+          "responseMode": "responseNode",
+          "options": {}
+        },
+        "webhookId": "398db25d-45f6-48fb-836c-f3c81dd911d2",
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "RvmfH6qWSIUABPQO",
+            "name": "n8n Webhook（Bearer Auth）"
+          }
+        }
+      },
+      {
+        "id": "eaba87c5-426e-4a8d-b022-c850ae4b7ae3",
+        "name": "Validate URL Contract",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.4,
+        "position": [
+          224,
+          272
+        ],
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict"
+            },
+            "conditions": [
+              {
+                "leftValue": "={{ typeof $json.body?.url === 'string' && /^https?:\\/\\/\\S+$/i.test($json.body.url.trim()) ? 'valid' : 'invalid' }}",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals"
+                },
+                "rightValue": "valid"
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {
+            "ignoreCase": false
+          }
+        }
+      },
+      {
+        "id": "eb0a4e03-3876-4292-a8a7-3acd72380d2b",
+        "name": "Normalize Wiki Work",
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.5,
+        "position": [
+          448,
+          176
+        ],
+        "parameters": {
+          "mode": "manual",
+          "assignments": {
+            "assignments": [
+              {
+                "id": "work-id",
+                "name": "work_id",
+                "value": "={{ 'wiki_compile:' + $(\"Receive Wiki URL\").item.json.body.url.trim() }}",
+                "type": "string"
+              },
+              {
+                "id": "event-id",
+                "name": "event_id",
+                "value": "={{ 'wiki.url.submitted:' + $(\"Receive Wiki URL\").item.json.body.url.trim() }}",
+                "type": "string"
+              },
+              {
+                "id": "correlation-id",
+                "name": "correlation_id",
+                "value": "={{ 'wiki_compile:' + $(\"Receive Wiki URL\").item.json.body.url.trim() }}",
+                "type": "string"
+              },
+              {
+                "id": "url",
+                "name": "input_ref",
+                "value": "={{ $(\"Receive Wiki URL\").item.json.body.url.trim() }}",
+                "type": "string"
+              },
+              {
+                "id": "summary",
+                "name": "summary",
+                "value": "={{ $(\"Receive Wiki URL\").item.json.body.notes ? 'Compile into LLM Wiki: ' + $(\"Receive Wiki URL\").item.json.body.notes : 'Compile URL into LLM Wiki' }}",
+                "type": "string"
+              },
+              {
+                "id": "source",
+                "name": "source",
+                "value": "={{ $(\"Receive Wiki URL\").item.json.body.source ?? 'manual_or_agent' }}",
+                "type": "string"
+              },
+              {
+                "id": "not-before",
+                "name": "not_before",
+                "value": "={{ $now.toISO() }}",
+                "type": "string"
+              }
+            ]
+          },
+          "includeOtherFields": false,
+          "options": {}
+        }
+      },
+      {
+        "id": "7509eb5d-4bfd-478a-bdb2-b1950d88527b",
+        "name": "Find Existing AI Work",
+        "type": "n8n-nodes-base.dataTable",
+        "typeVersion": 1.1,
+        "position": [
+          672,
+          176
+        ],
+        "parameters": {
+          "resource": "row",
+          "operation": "get",
+          "dataTableId": {
+            "__rl": true,
+            "mode": "name",
+            "value": "ai_work_queue"
+          },
+          "matchType": "allConditions",
+          "filters": {
+            "conditions": [
+              {
+                "keyName": "work_id",
+                "condition": "eq",
+                "keyValue": "={{ $(\"Normalize Wiki Work\").item.json.work_id }}"
+              }
+            ]
+          },
+          "returnAll": false,
+          "limit": 1
+        },
+        "alwaysOutputData": true,
+        "onError": "continueErrorOutput"
+      },
+      {
+        "id": "e3030efe-b4ec-4ef0-a378-5789f4a5acc4",
+        "name": "AI Work Already Exists?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.4,
+        "position": [
+          896,
+          96
+        ],
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict"
+            },
+            "conditions": [
+              {
+                "leftValue": "={{ $json.id ? 'exists' : 'new' }}",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals"
+                },
+                "rightValue": "exists"
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {
+            "ignoreCase": false
+          }
+        }
+      },
+      {
+        "id": "10eb64ca-d56d-4997-98fb-7f63fb7c31c3",
+        "name": "Respond Duplicate",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.5,
+        "position": [
+          1120,
+          0
+        ],
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ { queued: false, duplicate: true, work_id: $(\"Normalize Wiki Work\").item.json.work_id, url: $(\"Normalize Wiki Work\").item.json.input_ref, status: $json.status ?? 'unknown' } }}",
+          "options": {
+            "responseCode": 200
+          }
+        }
+      },
+      {
+        "id": "01014ea7-b7f6-4cb5-93ed-c156539c77d4",
+        "name": "Insert Pending AI Work",
+        "type": "n8n-nodes-base.dataTable",
+        "typeVersion": 1.1,
+        "position": [
+          1120,
+          192
+        ],
+        "parameters": {
+          "resource": "row",
+          "operation": "insert",
+          "dataTableId": {
+            "__rl": true,
+            "mode": "name",
+            "value": "ai_work_queue"
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "work_id": "={{ $(\"Normalize Wiki Work\").item.json.work_id }}",
+              "kind": "wiki_compile",
+              "status": "pending",
+              "priority": 2,
+              "source_event_id": "={{ $(\"Normalize Wiki Work\").item.json.event_id }}",
+              "correlation_id": "={{ $(\"Normalize Wiki Work\").item.json.correlation_id }}",
+              "project": "agentic-work-atlas",
+              "input_ref": "={{ $(\"Normalize Wiki Work\").item.json.input_ref }}",
+              "summary": "={{ $(\"Normalize Wiki Work\").item.json.summary }}",
+              "not_before": "={{ $(\"Normalize Wiki Work\").item.json.not_before }}",
+              "claimed_by": "",
+              "attempt_count": 0,
+              "result_ref": "",
+              "result_summary": "",
+              "last_error": ""
+            },
+            "schema": [
+              {
+                "id": "work_id",
+                "displayName": "work_id",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "kind",
+                "displayName": "kind",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "status",
+                "displayName": "status",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "priority",
+                "displayName": "priority",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "number",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "source_event_id",
+                "displayName": "source_event_id",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "correlation_id",
+                "displayName": "correlation_id",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "project",
+                "displayName": "project",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "input_ref",
+                "displayName": "input_ref",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "summary",
+                "displayName": "summary",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "not_before",
+                "displayName": "not_before",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "dateTime",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "claimed_by",
+                "displayName": "claimed_by",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "attempt_count",
+                "displayName": "attempt_count",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "number",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "result_ref",
+                "displayName": "result_ref",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "result_summary",
+                "displayName": "result_summary",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "last_error",
+                "displayName": "last_error",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              }
+            ]
+          },
+          "options": {}
+        },
+        "onError": "continueErrorOutput"
+      },
+      {
+        "id": "41b5d6d8-56c5-4740-88d1-212ebceb6b40",
+        "name": "Respond Queued",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.5,
+        "position": [
+          1344,
+          144
+        ],
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ { queued: true, duplicate: false, work_id: $(\"Normalize Wiki Work\").item.json.work_id, kind: 'wiki_compile', url: $(\"Normalize Wiki Work\").item.json.input_ref, status: 'pending' } }}",
+          "options": {
+            "responseCode": 202
+          }
+        }
+      },
+      {
+        "id": "9e9bdf4a-42f2-4716-9f9e-23f90df33f35",
+        "name": "Respond Internal Error",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.5,
+        "position": [
+          1344,
+          368
+        ],
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": {
+            "error": "internal_error",
+            "message": "Failed to query or persist AI work"
+          },
+          "options": {
+            "responseCode": 500
+          }
+        }
+      },
+      {
+        "id": "937d5877-f6a8-4197-a825-eb2d4e7cbf7d",
+        "name": "Respond Validation Error",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.5,
+        "position": [
+          448,
+          368
+        ],
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": {
+            "error": "validation_error",
+            "message": "Required field url must be a non-empty http(s) URL"
+          },
+          "options": {
+            "responseCode": 400
+          }
+        }
+      },
+      {
+        "id": "c5feaadf-edb5-4b48-8732-8d58237b99c2",
+        "name": "Record Wiki Intake Event",
+        "type": "n8n-nodes-base.dataTable",
+        "typeVersion": 1.1,
+        "position": [
+          1360,
+          128
+        ],
+        "parameters": {
+          "resource": "row",
+          "operation": "upsert",
+          "dataTableId": {
+            "__rl": true,
+            "mode": "name",
+            "value": "work_events"
+          },
+          "matchType": "allConditions",
+          "filters": {
+            "conditions": [
+              {
+                "keyName": "event_id",
+                "condition": "eq",
+                "keyValue": "={{ $(\"Normalize Wiki Work\").item.json.event_id }}"
+              }
+            ]
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "event_id": "={{ $(\"Normalize Wiki Work\").item.json.event_id }}",
+              "occurred_at": "={{ $now.toISO() }}",
+              "source": "n8n:wiki-ingest",
+              "project": "agentic-work-atlas",
+              "category": "wiki.url.submitted",
+              "title": "Wiki URL submitted",
+              "description": "={{ $(\"Normalize Wiki Work\").item.json.summary }}",
+              "status": "pending",
+              "url": "={{ $(\"Normalize Wiki Work\").item.json.input_ref }}",
+              "metadata_object": "={{ ({ source: $(\"Normalize Wiki Work\").item.json.source }).toJsonString() }}",
+              "correlation_id": "={{ $(\"Normalize Wiki Work\").item.json.correlation_id }}"
+            },
+            "schema": [
+              {
+                "id": "event_id",
+                "displayName": "event_id",
+                "required": false,
+                "defaultMatch": true,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "occurred_at",
+                "displayName": "occurred_at",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "dateTime",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "source",
+                "displayName": "source",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "project",
+                "displayName": "project",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "category",
+                "displayName": "category",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "title",
+                "displayName": "title",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "description",
+                "displayName": "description",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "status",
+                "displayName": "status",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "url",
+                "displayName": "url",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "metadata_object",
+                "displayName": "metadata_object",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "correlation_id",
+                "displayName": "correlation_id",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              }
+            ]
+          },
+          "options": {}
+        },
+        "disabled": false,
+        "onError": "continueErrorOutput"
+      }
+    ],
+    "connections": {
+      "Receive Wiki URL": {
+        "main": [
+          [
+            {
+              "node": "Validate URL Contract",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Validate URL Contract": {
+        "main": [
+          [
+            {
+              "node": "Normalize Wiki Work",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Respond Validation Error",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Normalize Wiki Work": {
+        "main": [
+          [
+            {
+              "node": "Find Existing AI Work",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Find Existing AI Work": {
+        "main": [
+          [
+            {
+              "node": "AI Work Already Exists?",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Respond Internal Error",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "AI Work Already Exists?": {
+        "main": [
+          [
+            {
+              "node": "Respond Duplicate",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Insert Pending AI Work",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Insert Pending AI Work": {
+        "main": [
+          [
+            {
+              "node": "Record Wiki Intake Event",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Respond Internal Error",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Record Wiki Intake Event": {
+        "main": [
+          [
+            {
+              "node": "Respond Queued",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Respond Queued",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "nodeGroups": [
+      {
+        "id": "9f57bafa-98c3-42a7-bb2d-b5e6088e86c2",
+        "name": "Queue valid wiki work",
+        "nodeIds": [
+          "eb0a4e03-3876-4292-a8a7-3acd72380d2b",
+          "7509eb5d-4bfd-478a-bdb2-b1950d88527b",
+          "e3030efe-b4ec-4ef0-a378-5789f4a5acc4",
+          "10eb64ca-d56d-4997-98fb-7f63fb7c31c3",
+          "01014ea7-b7f6-4cb5-93ed-c156539c77d4",
+          "c5feaadf-edb5-4b48-8732-8d58237b99c2",
+          "41b5d6d8-56c5-4740-88d1-212ebceb6b40",
+          "9e9bdf4a-42f2-4716-9f9e-23f90df33f35"
+        ],
+        "description": "Normalize and deduplicate a valid URL, queue only new ChatGPT work, record the event, and return deterministic API responses."
+      }
+    ],
+    "authors": "Administrator NTLx (via MCP)",
+    "name": "Group Wiki queue stage",
+    "description": "Restores a single-entry processing group after the queue migration so the workflow remains readable without changing execution semantics.",
+    "autosaved": false,
+    "createdAt": "2026-10-22T09:16:16.827Z",
+    "updatedAt": "2026-10-22T09:16:16.827Z"
+  }
+}
