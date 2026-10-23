@@ -1,0 +1,224 @@
+{
+  "id": "H7Sr7hiIMtkmHEti",
+  "name": "TMP Cleanup acceptance rows",
+  "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-10-22T08:40:28.623Z",
+  "updatedAt": "2026-10-22T08:41:05.970Z",
+  "isArchived": true,
+  "versionId": "a0dd51df-0bef-4969-adec-d66749f52fa8",
+  "triggerCount": 0,
+  "nodes": [
+    {
+      "id": "e721900b-9616-406f-a9d9-66894be92ef8",
+      "name": "Cleanup Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 0 1 1 *"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "c8703265-c940-4edc-88af-5cff55958b6f",
+      "name": "Delete Work Event Test",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        224,
+        0
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "deleteRows",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "work_events"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "event_id",
+              "condition": "eq",
+              "keyValue": "test:work-event-ledger:001"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "id": "752ed0e1-e4b7-4ca5-964f-8dd04145483c",
+      "name": "Delete Release Gate Test",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        448,
+        0
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "deleteRows",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "release_gates"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "gate_id",
+              "condition": "eq",
+              "keyValue": "test-v0.22.0:testabc123"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "id": "51c6a446-bacc-401b-bcb7-7298a17b73fa",
+      "name": "Delete Wiki Intake Test",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        672,
+        0
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "deleteRows",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "wiki_ingest_requests"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "submitted_url",
+              "condition": "eq",
+              "keyValue": "https://example.com/n8n-acceptance/llm-wiki-url-intake-001"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "id": "76d130e0-3b01-4081-b30b-18d5e7ae494a",
+      "name": "Delete CI Triage Test",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        896,
+        0
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "deleteRows",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "ci_failure_events"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "event_id",
+              "condition": "eq",
+              "keyValue": "check_run:999001:2026-10-22T08:40:00Z"
+            }
+          ]
+        },
+        "options": {}
+      }
+    }
+  ],
+  "connections": {
+    "Cleanup Trigger": {
+      "main": [
+        [
+          {
+            "node": "Delete Work Event Test",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete Work Event Test": {
+      "main": [
+        [
+          {
+            "node": "Delete Release Gate Test",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete Release Gate Test": {
+      "main": [
+        [
+          {
+            "node": "Delete Wiki Intake Test",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete Wiki Intake Test": {
+      "main": [
+        [
+          {
+            "node": "Delete CI Triage Test",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "H7Sr7hiIMtkmHEti",
+      "projectId": "cNMj0K6AdJmi0OAZ",
+      "createdAt": "2026-10-22T08:40:28.623Z",
+      "updatedAt": "2026-10-22T08:40:28.623Z"
+    }
+  ],
+  "activeVersion": null
+}
