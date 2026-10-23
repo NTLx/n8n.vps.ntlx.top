@@ -1,0 +1,1298 @@
+{
+  "id": "8E2fWpTJgVyuIxFe",
+  "name": "Capture RSS intelligence work",
+  "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-02-28T07:42:26.118Z",
+  "updatedAt": "2026-10-22T16:10:35.730Z",
+  "isArchived": true,
+  "versionId": "0d7b2dac-7882-4f4d-9828-29693c3f9b28",
+  "triggerCount": 19,
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "hour": 8,
+              "minute": 20
+            }
+          ]
+        },
+        "feedUrl": "https://deepmind.com/blog/feed/basic/"
+      },
+      "type": "n8n-nodes-base.rssFeedReadTrigger",
+      "typeVersion": 1,
+      "position": [
+        -560,
+        288
+      ],
+      "id": "da8c02c5-0f03-42fd-8fdb-74a0f5389f2c",
+      "name": "Google DeepMind Blog",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "hour": 8,
+              "minute": 19
+            }
+          ]
+        },
+        "feedUrl": "https://baoyu.io/feed.xml"
+      },
+      "type": "n8n-nodes-base.rssFeedReadTrigger",
+      "typeVersion": 1,
+      "position": [
+        -560,
+        144
+      ],
+      "id": "c7e685b9-b444-4f20-a78a-39873fb91a0c",
+      "name": "宝玉的分享",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "hour": 8,
+              "minute": 21
+            }
+          ]
+        },
+        "feedUrl": "https://github.blog/feed/"
+      },
+      "type": "n8n-nodes-base.rssFeedReadTrigger",
+      "typeVersion": 1,
+      "position": [
+        -560,
+        432
+      ],
+      "id": "b9d29779-5fd6-4635-89fd-6a74e86c223f",
+      "name": "The GitHub Blog",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "hour": 8,
+              "minute": 23
+            }
+          ]
+        },
+        "feedUrl": "https://martinfowler.com/feed.atom"
+      },
+      "type": "n8n-nodes-base.rssFeedReadTrigger",
+      "typeVersion": 1,
+      "position": [
+        -304,
+        -288
+      ],
+      "id": "a99daad1-b6be-44d1-8d90-9dc9ed97fe78",
+      "name": "Martin Fowler",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "hour": 8,
+              "minute": 24
+            }
+          ]
+        },
+        "feedUrl": "https://blog.bytebytego.com/feed"
+      },
+      "type": "n8n-nodes-base.rssFeedReadTrigger",
+      "typeVersion": 1,
+      "position": [
+        -304,
+        -144
+      ],
+      "id": "a308a10a-2380-4bec-b07a-f887c4262753",
+      "name": "ByteByteGo Newsletter",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "hour": 8,
+              "minute": 27
+            }
+          ]
+        },
+        "feedUrl": "http://www.aaronsw.com/2002/feeds/pgessays.rss"
+      },
+      "type": "n8n-nodes-base.rssFeedReadTrigger",
+      "typeVersion": 1,
+      "position": [
+        -304,
+        288
+      ],
+      "id": "d884e31c-4674-4b96-8b18-6789e368a3df",
+      "name": "paulgraham.com",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "hour": 8,
+              "minute": 29
+            }
+          ]
+        },
+        "feedUrl": "https://gwern.substack.com/feed"
+      },
+      "type": "n8n-nodes-base.rssFeedReadTrigger",
+      "typeVersion": 1,
+      "position": [
+        -304,
+        432
+      ],
+      "id": "9681b3aa-5361-46ee-a7f5-4a91a17d9714",
+      "name": "gwern.net",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "hour": 8,
+              "minute": 30
+            }
+          ]
+        },
+        "feedUrl": "https://tech.meituan.com/feed/"
+      },
+      "type": "n8n-nodes-base.rssFeedReadTrigger",
+      "typeVersion": 1,
+      "position": [
+        -48,
+        -432
+      ],
+      "id": "974b14b8-c936-496a-b95a-77e4e73198c2",
+      "name": "美团技术团队",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "hour": 8,
+              "minute": 31
+            }
+          ]
+        },
+        "feedUrl": "https://kill-the-newsletter.com/feeds/wg6i0vmxjfxnonldi7vy.xml"
+      },
+      "type": "n8n-nodes-base.rssFeedReadTrigger",
+      "typeVersion": 1,
+      "position": [
+        -304,
+        -432
+      ],
+      "id": "06fefec0-2daa-41f3-8cb7-a66bb7521b08",
+      "name": "BestBlogs.dev",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "hour": 8,
+              "minute": 25
+            }
+          ]
+        },
+        "feedUrl": "https://simonwillison.net/atom/everything/"
+      },
+      "type": "n8n-nodes-base.rssFeedReadTrigger",
+      "typeVersion": 1,
+      "position": [
+        -304,
+        0
+      ],
+      "id": "f61ea680-06af-4ecf-ae3d-7b68227b8d14",
+      "name": "Simon Willison Weblog",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "hour": 8,
+              "minute": 17
+            }
+          ]
+        },
+        "feedUrl": "https://sspai.com/feed"
+      },
+      "type": "n8n-nodes-base.rssFeedReadTrigger",
+      "typeVersion": 1,
+      "position": [
+        -560,
+        -144
+      ],
+      "id": "5cc4b6d2-83f2-4342-9cfb-e5bb8fee8e59",
+      "name": "少数派",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "hour": 8,
+              "minute": 15
+            }
+          ]
+        },
+        "feedUrl": "http://feeds.feedburner.com/ruanyifeng"
+      },
+      "type": "n8n-nodes-base.rssFeedReadTrigger",
+      "typeVersion": 1,
+      "position": [
+        -560,
+        -432
+      ],
+      "id": "e8faa302-5698-4c64-87bd-8936a0d5a086",
+      "name": "阮一峰的网络日志",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "hour": 8,
+              "minute": 16
+            }
+          ]
+        },
+        "feedUrl": "https://www.qbitai.com/feed"
+      },
+      "type": "n8n-nodes-base.rssFeedReadTrigger",
+      "typeVersion": 1,
+      "position": [
+        -560,
+        -288
+      ],
+      "id": "1bab6bd9-8dba-4fc1-b3d6-2b958f5cf811",
+      "name": "量子位",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "hour": 8,
+              "minute": 26
+            }
+          ]
+        },
+        "feedUrl": "https://www.langchain.com/blog/rss.xml"
+      },
+      "type": "n8n-nodes-base.rssFeedReadTrigger",
+      "typeVersion": 1,
+      "position": [
+        -304,
+        144
+      ],
+      "id": "9fff42ab-65da-4bdc-9e2e-53bb7eb6d8fb",
+      "name": "LangChain"
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "hour": 8,
+              "minute": 31
+            }
+          ]
+        },
+        "feedUrl": "https://vercel.com/atom"
+      },
+      "type": "n8n-nodes-base.rssFeedReadTrigger",
+      "typeVersion": 1,
+      "position": [
+        -48,
+        -288
+      ],
+      "id": "bf255a92-f884-422f-aeb5-13fa210d7dc1",
+      "name": "Vercel News",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "hour": 8,
+              "minute": 22
+            }
+          ]
+        },
+        "feedUrl": "https://huggingface.co/blog/feed.xml"
+      },
+      "type": "n8n-nodes-base.rssFeedReadTrigger",
+      "typeVersion": 1,
+      "position": [
+        -48,
+        -144
+      ],
+      "id": "c97c77d0-bdb5-4211-81a7-6052d5ded8f5",
+      "name": "Hugging Face Blog"
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "hour": 8,
+              "minute": 15
+            }
+          ]
+        },
+        "feedUrl": "https://blog.google/rss/"
+      },
+      "type": "n8n-nodes-base.rssFeedReadTrigger",
+      "typeVersion": 1,
+      "position": [
+        -48,
+        0
+      ],
+      "id": "db7be539-d26f-45cc-a33d-1b4eeae32340",
+      "name": "Blog.Google",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "hour": 8,
+              "minute": 16
+            }
+          ]
+        },
+        "feedUrl": "https://blog.palantir.com/feed"
+      },
+      "type": "n8n-nodes-base.rssFeedReadTrigger",
+      "typeVersion": 1,
+      "position": [
+        -48,
+        144
+      ],
+      "id": "1f8436af-fc33-4f91-8509-dce00b767e6b",
+      "name": "Palantir",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "hour": 8,
+              "minute": 18
+            }
+          ]
+        },
+        "feedUrl": "https://blog.modelcontextprotocol.io/index.xml"
+      },
+      "type": "n8n-nodes-base.rssFeedReadTrigger",
+      "typeVersion": 1,
+      "position": [
+        -560,
+        0
+      ],
+      "id": "ed973ca5-9dab-4c98-8d41-4cd42767e631",
+      "name": "MCP Blog",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000
+    },
+    {
+      "id": "7315924a-7255-490e-ac8f-b22717dddcc5",
+      "name": "Normalize RSS Work",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        240,
+        0
+      ],
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "input-ref",
+              "name": "input_ref",
+              "value": "={{ String($json.link ?? $json.guid ?? '').trim() }}",
+              "type": "string"
+            },
+            {
+              "id": "title",
+              "name": "title",
+              "value": "={{ $json.title ?? 'RSS article' }}",
+              "type": "string"
+            },
+            {
+              "id": "work-id",
+              "name": "work_id",
+              "value": "={{ 'rss_review:' + String($json.link ?? $json.guid ?? '').trim() }}",
+              "type": "string"
+            },
+            {
+              "id": "event-id",
+              "name": "event_id",
+              "value": "={{ 'rss.article.discovered:' + String($json.link ?? $json.guid ?? '').trim() }}",
+              "type": "string"
+            },
+            {
+              "id": "correlation-id",
+              "name": "correlation_id",
+              "value": "={{ 'rss_review:' + String($json.link ?? $json.guid ?? '').trim() }}",
+              "type": "string"
+            },
+            {
+              "id": "summary",
+              "name": "summary",
+              "value": "={{ 'Review RSS article: ' + ($json.title ?? 'Untitled') }}",
+              "type": "string"
+            },
+            {
+              "id": "published",
+              "name": "published_at",
+              "value": "={{ $json.isoDate ?? $json.pubDate ?? '' }}",
+              "type": "string"
+            },
+            {
+              "id": "author",
+              "name": "author",
+              "value": "={{ $json.creator ?? $json.author ?? '' }}",
+              "type": "string"
+            },
+            {
+              "id": "not-before",
+              "name": "not_before",
+              "value": "={{ $now.toISO() }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": false,
+        "options": {}
+      }
+    },
+    {
+      "id": "d3f81119-9d4f-43a8-b91d-4b1275978052",
+      "name": "Has RSS Reference?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.4,
+      "position": [
+        464,
+        0
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $(\"Normalize RSS Work\").item.json.input_ref }}",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty"
+              },
+              "rightValue": ""
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {
+          "ignoreCase": false
+        }
+      }
+    },
+    {
+      "id": "bcf14d4a-5112-482c-8233-dd2e2f9e1444",
+      "name": "Only New RSS Work",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        688,
+        -64
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "rowNotExists",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "ai_work_queue"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "work_id",
+              "keyValue": "={{ $(\"Normalize RSS Work\").item.json.work_id }}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "83a56f5b-ec3f-4737-b5e8-d7411e129178",
+      "name": "Insert RSS Review Work",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        912,
+        -64
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "insert",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "ai_work_queue"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "work_id": "={{ $(\"Normalize RSS Work\").item.json.work_id }}",
+            "kind": "rss_review",
+            "status": "pending",
+            "priority": 3,
+            "source_event_id": "={{ $(\"Normalize RSS Work\").item.json.event_id }}",
+            "correlation_id": "={{ $(\"Normalize RSS Work\").item.json.correlation_id }}",
+            "project": "tech-intelligence",
+            "input_ref": "={{ $(\"Normalize RSS Work\").item.json.input_ref }}",
+            "summary": "={{ $(\"Normalize RSS Work\").item.json.summary }}",
+            "not_before": "={{ $(\"Normalize RSS Work\").item.json.not_before }}",
+            "claimed_by": "",
+            "attempt_count": 0,
+            "result_ref": "",
+            "result_summary": "",
+            "last_error": ""
+          },
+          "schema": [
+            {
+              "id": "work_id",
+              "displayName": "work_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "kind",
+              "displayName": "kind",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "priority",
+              "displayName": "priority",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "source_event_id",
+              "displayName": "source_event_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "correlation_id",
+              "displayName": "correlation_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "project",
+              "displayName": "project",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "input_ref",
+              "displayName": "input_ref",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "summary",
+              "displayName": "summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "not_before",
+              "displayName": "not_before",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "claimed_by",
+              "displayName": "claimed_by",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "attempt_count",
+              "displayName": "attempt_count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "result_ref",
+              "displayName": "result_ref",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "result_summary",
+              "displayName": "result_summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "last_error",
+              "displayName": "last_error",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "d03ef984-f2c5-4372-be09-bcc9b6b67be8",
+      "name": "Record RSS Discovery Event",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        1136,
+        -64
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "upsert",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "work_events"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "event_id",
+              "condition": "eq",
+              "keyValue": "={{ $(\"Normalize RSS Work\").item.json.event_id }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "event_id": "={{ $(\"Normalize RSS Work\").item.json.event_id }}",
+            "occurred_at": "={{ $now.toISO() }}",
+            "source": "n8n:rss",
+            "project": "tech-intelligence",
+            "category": "rss.article.discovered",
+            "title": "={{ $(\"Normalize RSS Work\").item.json.title }}",
+            "description": "={{ $(\"Normalize RSS Work\").item.json.summary }}",
+            "status": "pending",
+            "url": "={{ $(\"Normalize RSS Work\").item.json.input_ref }}",
+            "metadata_object": "={{ ({ published_at: $(\"Normalize RSS Work\").item.json.published_at, author: $(\"Normalize RSS Work\").item.json.author }).toJsonString() }}",
+            "correlation_id": "={{ $(\"Normalize RSS Work\").item.json.correlation_id }}"
+          },
+          "schema": [
+            {
+              "id": "event_id",
+              "displayName": "event_id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "occurred_at",
+              "displayName": "occurred_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "source",
+              "displayName": "source",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "project",
+              "displayName": "project",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "category",
+              "displayName": "category",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "title",
+              "displayName": "title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "description",
+              "displayName": "description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "url",
+              "displayName": "url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "metadata_object",
+              "displayName": "metadata_object",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "correlation_id",
+              "displayName": "correlation_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "options": {}
+      }
+    }
+  ],
+  "connections": {
+    "Google DeepMind Blog": {
+      "main": [
+        [
+          {
+            "node": "Normalize RSS Work",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "宝玉的分享": {
+      "main": [
+        [
+          {
+            "node": "Normalize RSS Work",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "The GitHub Blog": {
+      "main": [
+        [
+          {
+            "node": "Normalize RSS Work",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Martin Fowler": {
+      "main": [
+        [
+          {
+            "node": "Normalize RSS Work",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ByteByteGo Newsletter": {
+      "main": [
+        [
+          {
+            "node": "Normalize RSS Work",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "paulgraham.com": {
+      "main": [
+        [
+          {
+            "node": "Normalize RSS Work",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "gwern.net": {
+      "main": [
+        [
+          {
+            "node": "Normalize RSS Work",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "美团技术团队": {
+      "main": [
+        [
+          {
+            "node": "Normalize RSS Work",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "BestBlogs.dev": {
+      "main": [
+        [
+          {
+            "node": "Normalize RSS Work",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simon Willison Weblog": {
+      "main": [
+        [
+          {
+            "node": "Normalize RSS Work",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "少数派": {
+      "main": [
+        [
+          {
+            "node": "Normalize RSS Work",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "阮一峰的网络日志": {
+      "main": [
+        [
+          {
+            "node": "Normalize RSS Work",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "量子位": {
+      "main": [
+        [
+          {
+            "node": "Normalize RSS Work",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LangChain": {
+      "main": [
+        [
+          {
+            "node": "Normalize RSS Work",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Vercel News": {
+      "main": [
+        [
+          {
+            "node": "Normalize RSS Work",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Hugging Face Blog": {
+      "main": [
+        [
+          {
+            "node": "Normalize RSS Work",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Blog.Google": {
+      "main": [
+        [
+          {
+            "node": "Normalize RSS Work",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Palantir": {
+      "main": [
+        [
+          {
+            "node": "Normalize RSS Work",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MCP Blog": {
+      "main": [
+        [
+          {
+            "node": "Normalize RSS Work",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize RSS Work": {
+      "main": [
+        [
+          {
+            "node": "Has RSS Reference?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has RSS Reference?": {
+      "main": [
+        [
+          {
+            "node": "Only New RSS Work",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Only New RSS Work": {
+      "main": [
+        [
+          {
+            "node": "Insert RSS Review Work",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert RSS Review Work": {
+      "main": [
+        [
+          {
+            "node": "Record RSS Discovery Event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [
+    {
+      "id": "7c07a333-924d-4f96-970d-67f4fdf77570",
+      "name": "Queue RSS intelligence work",
+      "nodeIds": [
+        "7315924a-7255-490e-ac8f-b22717dddcc5",
+        "d3f81119-9d4f-43a8-b91d-4b1275978052",
+        "bcf14d4a-5112-482c-8233-dd2e2f9e1444",
+        "83a56f5b-ec3f-4737-b5e8-d7411e129178",
+        "d03ef984-f2c5-4372-be09-bcc9b6b67be8"
+      ],
+      "description": "Normalize discovered feed items, drop items without references, deduplicate, queue ChatGPT review, and record the discovery event."
+    }
+  ],
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": true,
+    "timeSavedMode": "fixed",
+    "errorWorkflow": "3LE3BnPfHSuIZCVR",
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "none",
+    "saveExecutionProgress": false,
+    "saveManualExecutions": false,
+    "callerPolicy": "workflowsFromSameOwner",
+    "timeSavedPerExecution": 240,
+    "timezone": "Asia/Shanghai"
+  },
+  "staticData": {
+    "node:阮一峰的网络日志": {
+      "lastItemDate": "2026-10-16T00:02:56.000Z"
+    },
+    "node:Google DeepMind Blog": {
+      "lastItemDate": "2026-10-15T16:08:03.000Z"
+    },
+    "node:量子位（QbitAI）": {
+      "lastItemDate": "2026-05-11T10:18:49.000Z"
+    },
+    "node:少数派": {
+      "lastItemDate": "2026-10-21T09:00:00.000Z"
+    },
+    "node:爱范儿": {
+      "lastItemDate": "2026-08-05T09:15:23.000Z"
+    },
+    "node:宝玉的分享": {
+      "lastItemDate": "2026-10-20T00:00:00.000Z"
+    },
+    "node:The GitHub Blog": {
+      "lastItemDate": "2026-10-21T16:00:00.000Z"
+    },
+    "node:Hugging Face Blog": {
+      "lastItemDate": "2026-10-21T18:26:30.000Z"
+    },
+    "node:Martin Fowler": {
+      "lastItemDate": "2026-10-21T10:51:00.000Z"
+    },
+    "node:ByteByteGo Newsletter": {
+      "lastItemDate": "2026-10-21T15:31:08.000Z"
+    },
+    "node:Simon Willison's Weblog": {
+      "lastItemDate": "2026-05-11T23:58:55.000Z"
+    },
+    "node:LangChain Blog": {
+      "lastItemDate": "2026-04-11T14:52:02.000Z"
+    },
+    "node:paulgraham.com": {},
+    "node:Vercel News": {
+      "lastItemDate": "2026-10-21T17:00:00.000Z"
+    },
+    "node:gwern.net": {
+      "lastItemDate": "2021-06-11T14:16:22.000Z"
+    },
+    "node:美团技术团队": {},
+    "node:BestBlogs.dev": {
+      "lastItemDate": "2026-10-16T08:42:37.195Z"
+    },
+    "node:Simon Willison Weblog": {
+      "lastItemDate": "2026-10-21T18:41:53.000Z"
+    },
+    "node:量子位": {
+      "lastItemDate": "2026-10-21T02:37:39.000Z"
+    },
+    "node:LangChain": {
+      "lastItemDate": "2026-10-19T16:44:34.000Z"
+    },
+    "node:Anthropic Engineering": {
+      "lastItemDate": "2025-11-24T00:00:00.000Z"
+    },
+    "node:Blog.Google": {
+      "lastItemDate": "2026-10-21T14:00:00.000Z"
+    },
+    "node:Palantir": {
+      "lastItemDate": "2026-10-02T20:28:41.000Z"
+    },
+    "node:MCP Blog": {
+      "lastItemDate": "2026-08-22T09:00:00.000Z"
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [
+    {
+      "id": "9jw9Bhya2Ylf8E4D",
+      "name": "ai-work-producer",
+      "createdAt": "2026-10-22T09:14:35.367Z",
+      "updatedAt": "2026-10-22T09:14:35.367Z"
+    },
+    {
+      "id": "twNsKNALbdWLw0Ox",
+      "name": "automation",
+      "createdAt": "2026-10-22T08:25:54.546Z",
+      "updatedAt": "2026-10-22T08:25:54.546Z"
+    },
+    {
+      "id": "BlGRvaSWqnmTk53i",
+      "name": "event-producer",
+      "createdAt": "2026-10-22T09:14:35.370Z",
+      "updatedAt": "2026-10-22T09:14:35.370Z"
+    },
+    {
+      "id": "ADAZhgvX1et8NkUZ",
+      "name": "rss",
+      "createdAt": "2026-10-22T09:19:50.833Z",
+      "updatedAt": "2026-10-22T09:19:50.833Z"
+    }
+  ],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "8E2fWpTJgVyuIxFe",
+      "projectId": "cNMj0K6AdJmi0OAZ",
+      "createdAt": "2026-02-28T07:42:26.118Z",
+      "updatedAt": "2026-02-28T07:42:26.118Z"
+    }
+  ],
+  "activeVersion": null
+}
