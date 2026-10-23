@@ -4,9 +4,9 @@
   "active": false,
   "activeVersionId": null,
   "createdAt": "2026-02-23T09:05:50.718Z",
-  "updatedAt": "2026-02-28T07:40:36.571Z",
-  "isArchived": false,
-  "versionId": "08d0230e-6a84-4d7c-93f3-67b334f6f7a2",
+  "updatedAt": "2026-10-22T16:19:29.991Z",
+  "isArchived": true,
+  "versionId": "6bcaa44e-61e3-493a-8d53-9e07800dafab",
   "triggerCount": 1,
   "nodes": [
     {
@@ -197,7 +197,7 @@
   "nodeGroups": [],
   "settings": {
     "callerPolicy": "workflowsFromSameOwner",
-    "availableInMCP": false,
+    "availableInMCP": true,
     "timeSavedMode": "fixed",
     "errorWorkflow": "3LE3BnPfHSuIZCVR",
     "saveDataErrorExecution": "all",
