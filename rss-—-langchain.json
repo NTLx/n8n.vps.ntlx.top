@@ -1,0 +1,386 @@
+{
+  "id": "Pl0sav8dUwhP5xpo",
+  "name": "RSS — LangChain",
+  "active": true,
+  "activeVersionId": "4f973315-d15f-4fa9-9cfb-b5ae669c7c98",
+  "createdAt": "2026-10-22T16:07:48.900Z",
+  "updatedAt": "2026-10-22T16:37:43.879Z",
+  "isArchived": false,
+  "versionId": "4f973315-d15f-4fa9-9cfb-b5ae669c7c98",
+  "triggerCount": 1,
+  "nodes": [
+    {
+      "id": "4491aec3-9f10-4e16-a243-50d4e343efb7",
+      "name": "RSS Feed",
+      "type": "n8n-nodes-base.rssFeedReadTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyDay",
+              "hour": 8,
+              "minute": 26
+            }
+          ]
+        },
+        "feedUrl": "https://www.langchain.com/blog/rss.xml"
+      },
+      "retryOnFail": true,
+      "waitBetweenTries": 5000
+    },
+    {
+      "id": "060c41a7-2248-463f-8ad9-d6543aa359e6",
+      "name": "Package RSS item",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        260,
+        0
+      ],
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "source-name",
+              "name": "source_name",
+              "value": "LangChain",
+              "type": "string"
+            },
+            {
+              "id": "feed-url",
+              "name": "feed_url",
+              "value": "https://www.langchain.com/blog/rss.xml",
+              "type": "string"
+            },
+            {
+              "id": "item",
+              "name": "item",
+              "value": "={{ $json }}",
+              "type": "object"
+            }
+          ]
+        },
+        "includeOtherFields": false,
+        "options": {}
+      }
+    },
+    {
+      "id": "406148b1-0349-4d4a-974c-616b809c1e5c",
+      "name": "Store RSS item",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        520,
+        0
+      ],
+      "parameters": {
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "NnjbcdgnIOzxky13"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "source_name": "={{ $json.source_name }}",
+            "feed_url": "={{ $json.feed_url }}",
+            "item": "={{ $json.item }}"
+          },
+          "schema": [
+            {
+              "id": "source_name",
+              "displayName": "source_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "feed_url",
+              "displayName": "feed_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "item",
+              "displayName": "item",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "object",
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "mode": "each",
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      }
+    }
+  ],
+  "connections": {
+    "RSS Feed": {
+      "main": [
+        [
+          {
+            "node": "Package RSS item",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Package RSS item": {
+      "main": [
+        [
+          {
+            "node": "Store RSS item",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [
+    {
+      "id": "0d7d0299-5c9e-4e30-952b-56f3b00c22dc",
+      "name": "RSS ingress",
+      "nodeIds": [
+        "060c41a7-2248-463f-8ad9-d6543aa359e6",
+        "406148b1-0349-4d4a-974c-616b809c1e5c"
+      ],
+      "description": "Attach source metadata and hand each feed item to the shared RSS processor."
+    }
+  ],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true,
+    "timezone": "Asia/Shanghai",
+    "saveExecutionProgress": false,
+    "saveManualExecutions": false,
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "none",
+    "timeSavedPerExecution": 60,
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "3LE3BnPfHSuIZCVR"
+  },
+  "staticData": {
+    "node:RSS Feed": {
+      "lastItemDate": "2026-10-22T13:09:40.000Z"
+    }
+  },
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [
+    {
+      "id": "twNsKNALbdWLw0Ox",
+      "name": "automation",
+      "createdAt": "2026-10-22T08:25:54.546Z",
+      "updatedAt": "2026-10-22T08:25:54.546Z"
+    },
+    {
+      "id": "ADAZhgvX1et8NkUZ",
+      "name": "rss",
+      "createdAt": "2026-10-22T09:19:50.833Z",
+      "updatedAt": "2026-10-22T09:19:50.833Z"
+    },
+    {
+      "id": "4l8F0YrAzc1V3KcA",
+      "name": "rss-ingress",
+      "createdAt": "2026-10-22T16:01:09.325Z",
+      "updatedAt": "2026-10-22T16:01:09.325Z"
+    }
+  ],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "Pl0sav8dUwhP5xpo",
+      "projectId": "cNMj0K6AdJmi0OAZ",
+      "createdAt": "2026-10-22T16:07:48.900Z",
+      "updatedAt": "2026-10-22T16:07:48.900Z"
+    }
+  ],
+  "activeVersion": {
+    "versionId": "4f973315-d15f-4fa9-9cfb-b5ae669c7c98",
+    "workflowId": "Pl0sav8dUwhP5xpo",
+    "nodes": [
+      {
+        "id": "4491aec3-9f10-4e16-a243-50d4e343efb7",
+        "name": "RSS Feed",
+        "type": "n8n-nodes-base.rssFeedReadTrigger",
+        "typeVersion": 1,
+        "position": [
+          0,
+          0
+        ],
+        "parameters": {
+          "pollTimes": {
+            "item": [
+              {
+                "mode": "everyDay",
+                "hour": 8,
+                "minute": 26
+              }
+            ]
+          },
+          "feedUrl": "https://www.langchain.com/blog/rss.xml"
+        },
+        "retryOnFail": true,
+        "waitBetweenTries": 5000
+      },
+      {
+        "id": "060c41a7-2248-463f-8ad9-d6543aa359e6",
+        "name": "Package RSS item",
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.5,
+        "position": [
+          260,
+          0
+        ],
+        "parameters": {
+          "mode": "manual",
+          "assignments": {
+            "assignments": [
+              {
+                "id": "source-name",
+                "name": "source_name",
+                "value": "LangChain",
+                "type": "string"
+              },
+              {
+                "id": "feed-url",
+                "name": "feed_url",
+                "value": "https://www.langchain.com/blog/rss.xml",
+                "type": "string"
+              },
+              {
+                "id": "item",
+                "name": "item",
+                "value": "={{ $json }}",
+                "type": "object"
+              }
+            ]
+          },
+          "includeOtherFields": false,
+          "options": {}
+        }
+      },
+      {
+        "id": "406148b1-0349-4d4a-974c-616b809c1e5c",
+        "name": "Store RSS item",
+        "type": "n8n-nodes-base.executeWorkflow",
+        "typeVersion": 1.3,
+        "position": [
+          520,
+          0
+        ],
+        "parameters": {
+          "source": "database",
+          "workflowId": {
+            "__rl": true,
+            "mode": "id",
+            "value": "NnjbcdgnIOzxky13"
+          },
+          "workflowInputs": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "source_name": "={{ $json.source_name }}",
+              "feed_url": "={{ $json.feed_url }}",
+              "item": "={{ $json.item }}"
+            },
+            "schema": [
+              {
+                "id": "source_name",
+                "displayName": "source_name",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "feed_url",
+                "displayName": "feed_url",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "item",
+                "displayName": "item",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "object",
+                "canBeUsedToMatch": true
+              }
+            ]
+          },
+          "mode": "each",
+          "options": {
+            "waitForSubWorkflow": true
+          }
+        }
+      }
+    ],
+    "connections": {
+      "RSS Feed": {
+        "main": [
+          [
+            {
+              "node": "Package RSS item",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Package RSS item": {
+        "main": [
+          [
+            {
+              "node": "Store RSS item",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "nodeGroups": [
+      {
+        "id": "0d7d0299-5c9e-4e30-952b-56f3b00c22dc",
+        "name": "RSS ingress",
+        "nodeIds": [
+          "060c41a7-2248-463f-8ad9-d6543aa359e6",
+          "406148b1-0349-4d4a-974c-616b809c1e5c"
+        ],
+        "description": "Attach source metadata and hand each feed item to the shared RSS processor."
+      }
+    ],
+    "authors": "Administrator NTLx (via MCP)",
+    "name": "Align RSS daily ingestion",
+    "description": "Keep the existing staggered daily RSS schedule, delegate to Store RSS intelligence item, and add workflow-level production error handling.",
+    "autosaved": false,
+    "createdAt": "2026-10-22T16:37:43.885Z",
+    "updatedAt": "2026-10-22T16:37:43.885Z"
+  }
+}
