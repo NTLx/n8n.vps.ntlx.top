@@ -1,0 +1,1166 @@
+{
+  "id": "NnjbcdgnIOzxky13",
+  "name": "Store RSS intelligence item",
+  "active": true,
+  "activeVersionId": "69434d5d-fc9c-4964-a827-0dde97733a5d",
+  "createdAt": "2026-10-22T15:59:37.572Z",
+  "updatedAt": "2026-10-22T16:35:59.273Z",
+  "isArchived": false,
+  "versionId": "69434d5d-fc9c-4964-a827-0dde97733a5d",
+  "triggerCount": 0,
+  "nodes": [
+    {
+      "id": "fe1889fb-d4a2-43d4-85b6-9f6a49349b99",
+      "name": "Receive RSS item",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "inputSource": "workflowInputs",
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "source_name",
+              "type": "string"
+            },
+            {
+              "name": "feed_url",
+              "type": "string"
+            },
+            {
+              "name": "item",
+              "type": "object"
+            }
+          ]
+        },
+        "returnOutput": "lastRunOnly"
+      }
+    },
+    {
+      "id": "d4fbdb3b-2f76-414d-8f20-9bdf0b784281",
+      "name": "Normalize RSS Item",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        260,
+        0
+      ],
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "item-key",
+              "name": "item_key",
+              "value": "={{ String($('Receive RSS item').item.json.item?.link ?? $('Receive RSS item').item.json.item?.guid ?? '').trim() }}",
+              "type": "string"
+            },
+            {
+              "id": "url",
+              "name": "url",
+              "value": "={{ String($('Receive RSS item').item.json.item?.link ?? $('Receive RSS item').item.json.item?.guid ?? '').trim() }}",
+              "type": "string"
+            },
+            {
+              "id": "title",
+              "name": "title",
+              "value": "={{ $('Receive RSS item').item.json.item?.title ?? 'RSS article' }}",
+              "type": "string"
+            },
+            {
+              "id": "event-id",
+              "name": "event_id",
+              "value": "={{ 'rss.article.discovered:' + String($('Receive RSS item').item.json.item?.link ?? $('Receive RSS item').item.json.item?.guid ?? '').trim() }}",
+              "type": "string"
+            },
+            {
+              "id": "correlation-id",
+              "name": "correlation_id",
+              "value": "={{ 'rss_item:' + String($('Receive RSS item').item.json.item?.link ?? $('Receive RSS item').item.json.item?.guid ?? '').trim() }}",
+              "type": "string"
+            },
+            {
+              "id": "published",
+              "name": "published_at",
+              "value": "={{ $('Receive RSS item').item.json.item?.isoDate ?? $('Receive RSS item').item.json.item?.pubDate ?? '' }}",
+              "type": "string"
+            },
+            {
+              "id": "author",
+              "name": "author",
+              "value": "={{ $('Receive RSS item').item.json.item?.creator ?? $('Receive RSS item').item.json.item?.author ?? '' }}",
+              "type": "string"
+            },
+            {
+              "id": "source-name",
+              "name": "source_name",
+              "value": "={{ $('Receive RSS item').item.json.source_name }}",
+              "type": "string"
+            },
+            {
+              "id": "feed-url",
+              "name": "feed_url",
+              "value": "={{ $('Receive RSS item').item.json.feed_url }}",
+              "type": "string"
+            },
+            {
+              "id": "discovered-at",
+              "name": "discovered_at",
+              "value": "={{ $now.toISO() }}",
+              "type": "string"
+            },
+            {
+              "id": "item-object",
+              "name": "item_object",
+              "value": "={{ JSON.stringify($('Receive RSS item').item.json.item ?? {}) }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": false,
+        "options": {}
+      }
+    },
+    {
+      "id": "ac20dccf-365f-45a4-b4f6-6f1efc5f5a7f",
+      "name": "Has RSS Reference?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.4,
+      "position": [
+        520,
+        0
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $('Normalize RSS Item').item.json.item_key }}",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty"
+              },
+              "rightValue": ""
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {
+          "ignoreCase": false
+        }
+      }
+    },
+    {
+      "id": "d9e88dac-ba03-4a10-a1b0-e256b5800fc7",
+      "name": "Only New RSS Item",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        780,
+        -80
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "rowNotExists",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "rss_intelligence_items"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "item_key",
+              "keyValue": "={{ $('Normalize RSS Item').item.json.item_key }}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "0ee870be-650f-4e1f-9578-1bf5546530f9",
+      "name": "Insert RSS Intelligence Item",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        1040,
+        -80
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "insert",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "rss_intelligence_items"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "item_key": "={{ $('Normalize RSS Item').item.json.item_key }}",
+            "source_name": "={{ $('Normalize RSS Item').item.json.source_name }}",
+            "feed_url": "={{ $('Normalize RSS Item').item.json.feed_url }}",
+            "url": "={{ $('Normalize RSS Item').item.json.url }}",
+            "title": "={{ $('Normalize RSS Item').item.json.title }}",
+            "author": "={{ $('Normalize RSS Item').item.json.author }}",
+            "published_at": "={{ $('Normalize RSS Item').item.json.published_at || null }}",
+            "discovered_at": "={{ $('Normalize RSS Item').item.json.discovered_at }}",
+            "item_object": "={{ $('Normalize RSS Item').item.json.item_object }}",
+            "status": "new",
+            "digest_id": "",
+            "processed_at": null
+          },
+          "schema": [
+            {
+              "id": "item_key",
+              "displayName": "item_key",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "source_name",
+              "displayName": "source_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "feed_url",
+              "displayName": "feed_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "url",
+              "displayName": "url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "title",
+              "displayName": "title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "author",
+              "displayName": "author",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "published_at",
+              "displayName": "published_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "discovered_at",
+              "displayName": "discovered_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "item_object",
+              "displayName": "item_object",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "digest_id",
+              "displayName": "digest_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "processed_at",
+              "displayName": "processed_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "91c84568-1beb-426b-90d8-d726996b4d73",
+      "name": "Record RSS Discovery Event",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        1300,
+        -80
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "upsert",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "work_events"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "event_id",
+              "condition": "eq",
+              "keyValue": "={{ $('Normalize RSS Item').item.json.event_id }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "event_id": "={{ $('Normalize RSS Item').item.json.event_id }}",
+            "occurred_at": "={{ $('Normalize RSS Item').item.json.discovered_at }}",
+            "source": "n8n:rss",
+            "project": "tech-intelligence",
+            "category": "rss.article.discovered",
+            "title": "={{ $('Normalize RSS Item').item.json.title }}",
+            "description": "={{ 'Captured RSS intelligence item: ' + $('Normalize RSS Item').item.json.title }}",
+            "status": "captured",
+            "url": "={{ $('Normalize RSS Item').item.json.url }}",
+            "metadata_object": "={{ ({ source_name: $('Normalize RSS Item').item.json.source_name, feed_url: $('Normalize RSS Item').item.json.feed_url, published_at: $('Normalize RSS Item').item.json.published_at, author: $('Normalize RSS Item').item.json.author, ingestion_table: 'rss_intelligence_items' }).toJsonString() }}",
+            "correlation_id": "={{ $('Normalize RSS Item').item.json.correlation_id }}"
+          },
+          "schema": [
+            {
+              "id": "event_id",
+              "displayName": "event_id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "occurred_at",
+              "displayName": "occurred_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "source",
+              "displayName": "source",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "project",
+              "displayName": "project",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "category",
+              "displayName": "category",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "title",
+              "displayName": "title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "description",
+              "displayName": "description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "url",
+              "displayName": "url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "metadata_object",
+              "displayName": "metadata_object",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "correlation_id",
+              "displayName": "correlation_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "options": {}
+      }
+    }
+  ],
+  "connections": {
+    "Receive RSS item": {
+      "main": [
+        [
+          {
+            "node": "Normalize RSS Item",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has RSS Reference?": {
+      "main": [
+        [
+          {
+            "node": "Only New RSS Item",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize RSS Item": {
+      "main": [
+        [
+          {
+            "node": "Has RSS Reference?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Only New RSS Item": {
+      "main": [
+        [
+          {
+            "node": "Insert RSS Intelligence Item",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert RSS Intelligence Item": {
+      "main": [
+        [
+          {
+            "node": "Record RSS Discovery Event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [
+    {
+      "id": "4f139359-c148-4342-ab30-1f5d5261d069",
+      "name": "Store RSS intelligence item",
+      "nodeIds": [
+        "d4fbdb3b-2f76-414d-8f20-9bdf0b784281",
+        "ac20dccf-365f-45a4-b4f6-6f1efc5f5a7f",
+        "d9e88dac-ba03-4a10-a1b0-e256b5800fc7",
+        "0ee870be-650f-4e1f-9578-1bf5546530f9",
+        "91c84568-1beb-426b-90d8-d726996b4d73"
+      ],
+      "description": "Normalize one RSS item, deduplicate it into the daily intelligence pool, and record discovery."
+    }
+  ],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true,
+    "errorWorkflow": "3LE3BnPfHSuIZCVR",
+    "timezone": "Asia/Shanghai",
+    "saveExecutionProgress": false,
+    "saveManualExecutions": false,
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "none",
+    "timeSavedPerExecution": 240,
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [
+    {
+      "id": "jkffVXRb1S4v5PNj",
+      "name": "subworkflow",
+      "createdAt": "2026-10-22T15:59:43.410Z",
+      "updatedAt": "2026-10-22T15:59:43.410Z"
+    },
+    {
+      "id": "ADAZhgvX1et8NkUZ",
+      "name": "rss",
+      "createdAt": "2026-10-22T09:19:50.833Z",
+      "updatedAt": "2026-10-22T09:19:50.833Z"
+    },
+    {
+      "id": "twNsKNALbdWLw0Ox",
+      "name": "automation",
+      "createdAt": "2026-10-22T08:25:54.546Z",
+      "updatedAt": "2026-10-22T08:25:54.546Z"
+    },
+    {
+      "id": "BlGRvaSWqnmTk53i",
+      "name": "event-producer",
+      "createdAt": "2026-10-22T09:14:35.370Z",
+      "updatedAt": "2026-10-22T09:14:35.370Z"
+    },
+    {
+      "id": "DwepYQj50ZKkQxoC",
+      "name": "intelligence-ingest",
+      "createdAt": "2026-10-22T16:35:40.462Z",
+      "updatedAt": "2026-10-22T16:35:40.462Z"
+    }
+  ],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "NnjbcdgnIOzxky13",
+      "projectId": "cNMj0K6AdJmi0OAZ",
+      "createdAt": "2026-10-22T15:59:37.572Z",
+      "updatedAt": "2026-10-22T15:59:37.572Z"
+    }
+  ],
+  "activeVersion": {
+    "versionId": "69434d5d-fc9c-4964-a827-0dde97733a5d",
+    "workflowId": "NnjbcdgnIOzxky13",
+    "nodes": [
+      {
+        "id": "fe1889fb-d4a2-43d4-85b6-9f6a49349b99",
+        "name": "Receive RSS item",
+        "type": "n8n-nodes-base.executeWorkflowTrigger",
+        "typeVersion": 1.1,
+        "position": [
+          0,
+          0
+        ],
+        "parameters": {
+          "inputSource": "workflowInputs",
+          "workflowInputs": {
+            "values": [
+              {
+                "name": "source_name",
+                "type": "string"
+              },
+              {
+                "name": "feed_url",
+                "type": "string"
+              },
+              {
+                "name": "item",
+                "type": "object"
+              }
+            ]
+          },
+          "returnOutput": "lastRunOnly"
+        }
+      },
+      {
+        "id": "d4fbdb3b-2f76-414d-8f20-9bdf0b784281",
+        "name": "Normalize RSS Item",
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.5,
+        "position": [
+          260,
+          0
+        ],
+        "parameters": {
+          "mode": "manual",
+          "assignments": {
+            "assignments": [
+              {
+                "id": "item-key",
+                "name": "item_key",
+                "value": "={{ String($('Receive RSS item').item.json.item?.link ?? $('Receive RSS item').item.json.item?.guid ?? '').trim() }}",
+                "type": "string"
+              },
+              {
+                "id": "url",
+                "name": "url",
+                "value": "={{ String($('Receive RSS item').item.json.item?.link ?? $('Receive RSS item').item.json.item?.guid ?? '').trim() }}",
+                "type": "string"
+              },
+              {
+                "id": "title",
+                "name": "title",
+                "value": "={{ $('Receive RSS item').item.json.item?.title ?? 'RSS article' }}",
+                "type": "string"
+              },
+              {
+                "id": "event-id",
+                "name": "event_id",
+                "value": "={{ 'rss.article.discovered:' + String($('Receive RSS item').item.json.item?.link ?? $('Receive RSS item').item.json.item?.guid ?? '').trim() }}",
+                "type": "string"
+              },
+              {
+                "id": "correlation-id",
+                "name": "correlation_id",
+                "value": "={{ 'rss_item:' + String($('Receive RSS item').item.json.item?.link ?? $('Receive RSS item').item.json.item?.guid ?? '').trim() }}",
+                "type": "string"
+              },
+              {
+                "id": "published",
+                "name": "published_at",
+                "value": "={{ $('Receive RSS item').item.json.item?.isoDate ?? $('Receive RSS item').item.json.item?.pubDate ?? '' }}",
+                "type": "string"
+              },
+              {
+                "id": "author",
+                "name": "author",
+                "value": "={{ $('Receive RSS item').item.json.item?.creator ?? $('Receive RSS item').item.json.item?.author ?? '' }}",
+                "type": "string"
+              },
+              {
+                "id": "source-name",
+                "name": "source_name",
+                "value": "={{ $('Receive RSS item').item.json.source_name }}",
+                "type": "string"
+              },
+              {
+                "id": "feed-url",
+                "name": "feed_url",
+                "value": "={{ $('Receive RSS item').item.json.feed_url }}",
+                "type": "string"
+              },
+              {
+                "id": "discovered-at",
+                "name": "discovered_at",
+                "value": "={{ $now.toISO() }}",
+                "type": "string"
+              },
+              {
+                "id": "item-object",
+                "name": "item_object",
+                "value": "={{ JSON.stringify($('Receive RSS item').item.json.item ?? {}) }}",
+                "type": "string"
+              }
+            ]
+          },
+          "includeOtherFields": false,
+          "options": {}
+        }
+      },
+      {
+        "id": "ac20dccf-365f-45a4-b4f6-6f1efc5f5a7f",
+        "name": "Has RSS Reference?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.4,
+        "position": [
+          520,
+          0
+        ],
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict"
+            },
+            "conditions": [
+              {
+                "leftValue": "={{ $('Normalize RSS Item').item.json.item_key }}",
+                "operator": {
+                  "type": "string",
+                  "operation": "notEmpty"
+                },
+                "rightValue": ""
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {
+            "ignoreCase": false
+          }
+        }
+      },
+      {
+        "id": "d9e88dac-ba03-4a10-a1b0-e256b5800fc7",
+        "name": "Only New RSS Item",
+        "type": "n8n-nodes-base.dataTable",
+        "typeVersion": 1.1,
+        "position": [
+          780,
+          -80
+        ],
+        "parameters": {
+          "resource": "row",
+          "operation": "rowNotExists",
+          "dataTableId": {
+            "__rl": true,
+            "mode": "name",
+            "value": "rss_intelligence_items"
+          },
+          "matchType": "allConditions",
+          "filters": {
+            "conditions": [
+              {
+                "keyName": "item_key",
+                "keyValue": "={{ $('Normalize RSS Item').item.json.item_key }}"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "0ee870be-650f-4e1f-9578-1bf5546530f9",
+        "name": "Insert RSS Intelligence Item",
+        "type": "n8n-nodes-base.dataTable",
+        "typeVersion": 1.1,
+        "position": [
+          1040,
+          -80
+        ],
+        "parameters": {
+          "resource": "row",
+          "operation": "insert",
+          "dataTableId": {
+            "__rl": true,
+            "mode": "name",
+            "value": "rss_intelligence_items"
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "item_key": "={{ $('Normalize RSS Item').item.json.item_key }}",
+              "source_name": "={{ $('Normalize RSS Item').item.json.source_name }}",
+              "feed_url": "={{ $('Normalize RSS Item').item.json.feed_url }}",
+              "url": "={{ $('Normalize RSS Item').item.json.url }}",
+              "title": "={{ $('Normalize RSS Item').item.json.title }}",
+              "author": "={{ $('Normalize RSS Item').item.json.author }}",
+              "published_at": "={{ $('Normalize RSS Item').item.json.published_at || null }}",
+              "discovered_at": "={{ $('Normalize RSS Item').item.json.discovered_at }}",
+              "item_object": "={{ $('Normalize RSS Item').item.json.item_object }}",
+              "status": "new",
+              "digest_id": "",
+              "processed_at": null
+            },
+            "schema": [
+              {
+                "id": "item_key",
+                "displayName": "item_key",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "source_name",
+                "displayName": "source_name",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "feed_url",
+                "displayName": "feed_url",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "url",
+                "displayName": "url",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "title",
+                "displayName": "title",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "author",
+                "displayName": "author",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "published_at",
+                "displayName": "published_at",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "dateTime",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "discovered_at",
+                "displayName": "discovered_at",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "dateTime",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "item_object",
+                "displayName": "item_object",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "status",
+                "displayName": "status",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "digest_id",
+                "displayName": "digest_id",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "processed_at",
+                "displayName": "processed_at",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "dateTime",
+                "canBeUsedToMatch": true
+              }
+            ]
+          },
+          "options": {}
+        }
+      },
+      {
+        "id": "91c84568-1beb-426b-90d8-d726996b4d73",
+        "name": "Record RSS Discovery Event",
+        "type": "n8n-nodes-base.dataTable",
+        "typeVersion": 1.1,
+        "position": [
+          1300,
+          -80
+        ],
+        "parameters": {
+          "resource": "row",
+          "operation": "upsert",
+          "dataTableId": {
+            "__rl": true,
+            "mode": "name",
+            "value": "work_events"
+          },
+          "matchType": "allConditions",
+          "filters": {
+            "conditions": [
+              {
+                "keyName": "event_id",
+                "condition": "eq",
+                "keyValue": "={{ $('Normalize RSS Item').item.json.event_id }}"
+              }
+            ]
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "event_id": "={{ $('Normalize RSS Item').item.json.event_id }}",
+              "occurred_at": "={{ $('Normalize RSS Item').item.json.discovered_at }}",
+              "source": "n8n:rss",
+              "project": "tech-intelligence",
+              "category": "rss.article.discovered",
+              "title": "={{ $('Normalize RSS Item').item.json.title }}",
+              "description": "={{ 'Captured RSS intelligence item: ' + $('Normalize RSS Item').item.json.title }}",
+              "status": "captured",
+              "url": "={{ $('Normalize RSS Item').item.json.url }}",
+              "metadata_object": "={{ ({ source_name: $('Normalize RSS Item').item.json.source_name, feed_url: $('Normalize RSS Item').item.json.feed_url, published_at: $('Normalize RSS Item').item.json.published_at, author: $('Normalize RSS Item').item.json.author, ingestion_table: 'rss_intelligence_items' }).toJsonString() }}",
+              "correlation_id": "={{ $('Normalize RSS Item').item.json.correlation_id }}"
+            },
+            "schema": [
+              {
+                "id": "event_id",
+                "displayName": "event_id",
+                "required": false,
+                "defaultMatch": true,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "occurred_at",
+                "displayName": "occurred_at",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "dateTime",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "source",
+                "displayName": "source",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "project",
+                "displayName": "project",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "category",
+                "displayName": "category",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "title",
+                "displayName": "title",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "description",
+                "displayName": "description",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "status",
+                "displayName": "status",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "url",
+                "displayName": "url",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "metadata_object",
+                "displayName": "metadata_object",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "correlation_id",
+                "displayName": "correlation_id",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              }
+            ]
+          },
+          "options": {}
+        }
+      }
+    ],
+    "connections": {
+      "Receive RSS item": {
+        "main": [
+          [
+            {
+              "node": "Normalize RSS Item",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Has RSS Reference?": {
+        "main": [
+          [
+            {
+              "node": "Only New RSS Item",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Normalize RSS Item": {
+        "main": [
+          [
+            {
+              "node": "Has RSS Reference?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Only New RSS Item": {
+        "main": [
+          [
+            {
+              "node": "Insert RSS Intelligence Item",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Insert RSS Intelligence Item": {
+        "main": [
+          [
+            {
+              "node": "Record RSS Discovery Event",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "nodeGroups": [
+      {
+        "id": "4f139359-c148-4342-ab30-1f5d5261d069",
+        "name": "Store RSS intelligence item",
+        "nodeIds": [
+          "d4fbdb3b-2f76-414d-8f20-9bdf0b784281",
+          "ac20dccf-365f-45a4-b4f6-6f1efc5f5a7f",
+          "d9e88dac-ba03-4a10-a1b0-e256b5800fc7",
+          "0ee870be-650f-4e1f-9578-1bf5546530f9",
+          "91c84568-1beb-426b-90d8-d726996b4d73"
+        ],
+        "description": "Normalize one RSS item, deduplicate it into the daily intelligence pool, and record discovery."
+      }
+    ],
+    "authors": "Administrator NTLx (via MCP)",
+    "name": "Fix RSS reference gate",
+    "description": "Update the RSS reference guard to use the new item_key field after the daily intelligence pool migration.",
+    "autosaved": false,
+    "createdAt": "2026-10-22T16:35:59.276Z",
+    "updatedAt": "2026-10-22T16:35:59.276Z"
+  }
+}
