@@ -2,11 +2,11 @@
   "id": "3LE3BnPfHSuIZCVR",
   "name": "Error Notification",
   "active": true,
-  "activeVersionId": "2699f528-69f5-4b1c-840c-93500454839b",
+  "activeVersionId": "d24f37a5-7e59-46b9-a0a3-d9f271c3ed50",
   "createdAt": "2026-02-12T08:00:08.087Z",
-  "updatedAt": "2026-10-22T04:25:58.633Z",
+  "updatedAt": "2026-10-22T16:39:43.253Z",
   "isArchived": false,
-  "versionId": "2699f528-69f5-4b1c-840c-93500454839b",
+  "versionId": "d24f37a5-7e59-46b9-a0a3-d9f271c3ed50",
   "triggerCount": 0,
   "nodes": [
     {
@@ -111,11 +111,375 @@
               "name": "telegramMessage",
               "type": "string",
               "value": "={{ (() => { const e = $json.execution?.error || {}; const wf = $json.workflow?.name || 'Unknown workflow'; const node = $json.execution?.lastNodeExecuted || e.node?.name || 'Unknown'; const code = e.httpCode || '-'; const name = e.name || 'Error'; const msg = String(e.description || e.message || e.messages?.[0] || 'No message').replace(/\\s+/g, ' ').slice(0, 900); const url = $json.execution?.url || '-'; const id = $json.execution?.id || '-'; const time = $now.setZone('Asia/Shanghai').toFormat('yyyy-LL-dd HH:mm:ss'); return `🚨 n8n 工作流运行失败\\nWorkflow: ${wf}\\nNode: ${node}\\nTime: ${time}\\nHTTP: ${code}\\nError: ${name}\\nMessage: ${msg}\\nExecution: ${id}\\n${url}`; })() }}"
+            },
+            {
+              "id": "workflow-id",
+              "name": "workflow_id",
+              "type": "string",
+              "value": "={{ String($json.workflow?.id || '') }}"
+            },
+            {
+              "id": "workflow-name",
+              "name": "workflow_name",
+              "type": "string",
+              "value": "={{ String($json.workflow?.name || 'Unknown workflow') }}"
+            },
+            {
+              "id": "execution-id",
+              "name": "execution_id",
+              "type": "string",
+              "value": "={{ String($json.execution?.id || '') }}"
+            },
+            {
+              "id": "execution-url",
+              "name": "execution_url",
+              "type": "string",
+              "value": "={{ String($json.execution?.url || '') }}"
+            },
+            {
+              "id": "execution-mode",
+              "name": "execution_mode",
+              "type": "string",
+              "value": "={{ String($json.execution?.mode || '') }}"
+            },
+            {
+              "id": "error-node",
+              "name": "error_node",
+              "type": "string",
+              "value": "={{ String($json.execution?.lastNodeExecuted || $json.execution?.error?.node?.name || 'Unknown') }}"
+            },
+            {
+              "id": "error-name",
+              "name": "error_name",
+              "type": "string",
+              "value": "={{ String($json.execution?.error?.name || 'Error') }}"
+            },
+            {
+              "id": "http-code",
+              "name": "http_code",
+              "type": "string",
+              "value": "={{ String($json.execution?.error?.httpCode || '-') }}"
+            },
+            {
+              "id": "error-message",
+              "name": "error_message",
+              "type": "string",
+              "value": "={{ String($json.execution?.error?.description || $json.execution?.error?.message || $json.execution?.error?.messages?.[0] || 'No message').replace(/\\s+/g, ' ').slice(0, 1200) }}"
             }
           ]
         },
         "includeOtherFields": false,
         "options": {}
+      }
+    },
+    {
+      "id": "6dbc5fd4-4efe-4856-bb46-68a5577df687",
+      "name": "Prepare Failure AI Work",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        928,
+        560
+      ],
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "work-id",
+              "name": "work_id",
+              "type": "string",
+              "value": "={{ 'n8n_failure:' + ($json.workflow_id || 'unknown') + ':' + ($json.error_node || 'unknown') + ':' + ($json.error_name || 'Error') + ':' + ($json.http_code || '-') + ':' + $now.setZone('Asia/Shanghai').toFormat('yyyyLLddHH') }}"
+            },
+            {
+              "id": "kind",
+              "name": "kind",
+              "type": "string",
+              "value": "n8n_failure_triage"
+            },
+            {
+              "id": "priority",
+              "name": "priority",
+              "type": "number",
+              "value": "={{ ['Nutify','Recover expired AI work leases','Mutate AI work state','Enqueue AI work','Capture ServerFS CI failure','Auto-Backup n8n Workflows to GitHub (Optimized)'].includes($json.workflow_name) ? 1 : 2 }}"
+            },
+            {
+              "id": "source-event-id",
+              "name": "source_event_id",
+              "type": "string",
+              "value": "={{ 'n8n.workflow.failed:' + ($json.workflow_id || 'unknown') + ':' + ($json.error_node || 'unknown') + ':' + ($json.error_name || 'Error') + ':' + ($json.http_code || '-') + ':' + $now.setZone('Asia/Shanghai').toFormat('yyyyLLddHH') }}"
+            },
+            {
+              "id": "correlation-id",
+              "name": "correlation_id",
+              "type": "string",
+              "value": "={{ 'n8n-failure:' + ($json.workflow_id || 'unknown') + ':' + ($json.error_node || 'unknown') + ':' + $now.setZone('Asia/Shanghai').toFormat('yyyyLLddHH') }}"
+            },
+            {
+              "id": "project",
+              "name": "project",
+              "type": "string",
+              "value": "n8n-vps"
+            },
+            {
+              "id": "input-ref",
+              "name": "input_ref",
+              "type": "string",
+              "value": "={{ $json.execution_url || '' }}"
+            },
+            {
+              "id": "summary",
+              "name": "summary",
+              "type": "string",
+              "value": "={{ 'Triage n8n failure: ' + ($json.workflow_name || 'Unknown workflow') + ' / ' + ($json.error_node || 'Unknown node') + ' — ' + ($json.error_message || 'No message') }}"
+            },
+            {
+              "id": "not-before",
+              "name": "not_before",
+              "type": "string",
+              "value": "={{ $now.toISO() }}"
+            },
+            {
+              "id": "deadline",
+              "name": "deadline",
+              "type": "string",
+              "value": ""
+            },
+            {
+              "id": "event-id",
+              "name": "event_id",
+              "type": "string",
+              "value": "={{ 'n8n.workflow.failed:' + ($json.workflow_id || 'unknown') + ':' + ($json.error_node || 'unknown') + ':' + ($json.error_name || 'Error') + ':' + ($json.http_code || '-') + ':' + $now.setZone('Asia/Shanghai').toFormat('yyyyLLddHH') }}"
+            },
+            {
+              "id": "event-time",
+              "name": "event_occurred_at",
+              "type": "string",
+              "value": "={{ $now.toISO() }}"
+            },
+            {
+              "id": "event-source",
+              "name": "event_source",
+              "type": "string",
+              "value": "n8n:error-workflow"
+            },
+            {
+              "id": "event-category",
+              "name": "event_category",
+              "type": "string",
+              "value": "n8n.workflow.failed"
+            },
+            {
+              "id": "event-title",
+              "name": "event_title",
+              "type": "string",
+              "value": "={{ ($json.workflow_name || 'Unknown workflow') + ' failed at ' + ($json.error_node || 'Unknown node') }}"
+            },
+            {
+              "id": "event-description",
+              "name": "event_description",
+              "type": "string",
+              "value": "={{ ($json.error_name || 'Error') + ': ' + ($json.error_message || 'No message') }}"
+            },
+            {
+              "id": "event-status",
+              "name": "event_status",
+              "type": "string",
+              "value": "failed"
+            },
+            {
+              "id": "event-url",
+              "name": "event_url",
+              "type": "string",
+              "value": "={{ $json.execution_url || '' }}"
+            },
+            {
+              "id": "event-metadata",
+              "name": "event_metadata_object",
+              "type": "string",
+              "value": "={{ ({ workflow_id: $json.workflow_id, workflow_name: $json.workflow_name, execution_id: $json.execution_id, node: $json.error_node, error_name: $json.error_name, http_code: $json.http_code, execution_mode: $json.execution_mode }).toJsonString() }}"
+            }
+          ]
+        },
+        "includeOtherFields": false,
+        "options": {}
+      }
+    },
+    {
+      "id": "9490c757-05ad-474c-b421-29a34ef1a695",
+      "name": "Enqueue Failure AI Work",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.4,
+      "position": [
+        1184,
+        560
+      ],
+      "parameters": {
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "oe8KZW4nLbYUUDzA"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "work_id": "={{ $json.work_id }}",
+            "kind": "={{ $json.kind }}",
+            "priority": "={{ $json.priority }}",
+            "source_event_id": "={{ $json.source_event_id }}",
+            "correlation_id": "={{ $json.correlation_id }}",
+            "project": "={{ $json.project }}",
+            "input_ref": "={{ $json.input_ref }}",
+            "summary": "={{ $json.summary }}",
+            "not_before": "={{ $json.not_before }}",
+            "deadline": "={{ $json.deadline }}",
+            "event_id": "={{ $json.event_id }}",
+            "event_occurred_at": "={{ $json.event_occurred_at }}",
+            "event_source": "={{ $json.event_source }}",
+            "event_category": "={{ $json.event_category }}",
+            "event_title": "={{ $json.event_title }}",
+            "event_description": "={{ $json.event_description }}",
+            "event_status": "={{ $json.event_status }}",
+            "event_url": "={{ $json.event_url }}",
+            "event_metadata_object": "={{ $json.event_metadata_object }}"
+          },
+          "schema": [
+            {
+              "id": "work_id",
+              "displayName": "work_id",
+              "type": "string"
+            },
+            {
+              "id": "kind",
+              "displayName": "kind",
+              "type": "string"
+            },
+            {
+              "id": "priority",
+              "displayName": "priority",
+              "type": "number"
+            },
+            {
+              "id": "source_event_id",
+              "displayName": "source_event_id",
+              "type": "string"
+            },
+            {
+              "id": "correlation_id",
+              "displayName": "correlation_id",
+              "type": "string"
+            },
+            {
+              "id": "project",
+              "displayName": "project",
+              "type": "string"
+            },
+            {
+              "id": "input_ref",
+              "displayName": "input_ref",
+              "type": "string"
+            },
+            {
+              "id": "summary",
+              "displayName": "summary",
+              "type": "string"
+            },
+            {
+              "id": "not_before",
+              "displayName": "not_before",
+              "type": "string"
+            },
+            {
+              "id": "deadline",
+              "displayName": "deadline",
+              "type": "string"
+            },
+            {
+              "id": "event_id",
+              "displayName": "event_id",
+              "type": "string"
+            },
+            {
+              "id": "event_occurred_at",
+              "displayName": "event_occurred_at",
+              "type": "string"
+            },
+            {
+              "id": "event_source",
+              "displayName": "event_source",
+              "type": "string"
+            },
+            {
+              "id": "event_category",
+              "displayName": "event_category",
+              "type": "string"
+            },
+            {
+              "id": "event_title",
+              "displayName": "event_title",
+              "type": "string"
+            },
+            {
+              "id": "event_description",
+              "displayName": "event_description",
+              "type": "string"
+            },
+            {
+              "id": "event_status",
+              "displayName": "event_status",
+              "type": "string"
+            },
+            {
+              "id": "event_url",
+              "displayName": "event_url",
+              "type": "string"
+            },
+            {
+              "id": "event_metadata_object",
+              "displayName": "event_metadata_object",
+              "type": "string"
+            }
+          ]
+        },
+        "mode": "each",
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "4d95bab5-21dc-4270-b4cb-9bd596240453",
+      "name": "Skip Recursive Queue Failures",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.4,
+      "position": [
+        704,
+        560
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ ['Error Notification','Enqueue AI work'].includes($json.workflow_name) ? 'skip' : 'enqueue' }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              },
+              "rightValue": "enqueue"
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {
+          "ignoreCase": false
+        }
       }
     }
   ],
@@ -138,6 +502,11 @@
             "node": "Discord Primary Alert",
             "type": "main",
             "index": 0
+          },
+          {
+            "node": "Skip Recursive Queue Failures",
+            "type": "main",
+            "index": 0
           }
         ]
       ]
@@ -153,9 +522,42 @@
           }
         ]
       ]
+    },
+    "Prepare Failure AI Work": {
+      "main": [
+        [
+          {
+            "node": "Enqueue Failure AI Work",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Skip Recursive Queue Failures": {
+      "main": [
+        [
+          {
+            "node": "Prepare Failure AI Work",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
-  "nodeGroups": [],
+  "nodeGroups": [
+    {
+      "id": "ccfe61ff-7677-497a-b6cf-af2a0ad2604a",
+      "name": "AI failure producer",
+      "nodeIds": [
+        "4d95bab5-21dc-4270-b4cb-9bd596240453",
+        "6dbc5fd4-4efe-4856-bb46-68a5577df687",
+        "9490c757-05ad-474c-b421-29a34ef1a695"
+      ],
+      "description": "Skip self-referential queue failures; enqueue other production failures for ChatGPT triage without blocking immediate alerts."
+    }
+  ],
   "settings": {
     "executionOrder": "v1",
     "callerPolicy": "workflowsFromSameOwner",
@@ -175,7 +577,32 @@
     "aiBuilderAssisted": true,
     "builderVariant": "mcp"
   },
-  "tags": [],
+  "tags": [
+    {
+      "id": "BlGRvaSWqnmTk53i",
+      "name": "event-producer",
+      "createdAt": "2026-10-22T09:14:35.370Z",
+      "updatedAt": "2026-10-22T09:14:35.370Z"
+    },
+    {
+      "id": "9jw9Bhya2Ylf8E4D",
+      "name": "ai-work-producer",
+      "createdAt": "2026-10-22T09:14:35.367Z",
+      "updatedAt": "2026-10-22T09:14:35.367Z"
+    },
+    {
+      "id": "YwjTMUhE83IXTCRg",
+      "name": "monitoring",
+      "createdAt": "2026-10-22T08:38:34.124Z",
+      "updatedAt": "2026-10-22T08:38:34.124Z"
+    },
+    {
+      "id": "twNsKNALbdWLw0Ox",
+      "name": "automation",
+      "createdAt": "2026-10-22T08:25:54.546Z",
+      "updatedAt": "2026-10-22T08:25:54.546Z"
+    }
+  ],
   "shared": [
     {
       "role": "workflow:owner",
@@ -186,7 +613,7 @@
     }
   ],
   "activeVersion": {
-    "versionId": "2699f528-69f5-4b1c-840c-93500454839b",
+    "versionId": "d24f37a5-7e59-46b9-a0a3-d9f271c3ed50",
     "workflowId": "3LE3BnPfHSuIZCVR",
     "nodes": [
       {
@@ -291,11 +718,375 @@
                 "name": "telegramMessage",
                 "type": "string",
                 "value": "={{ (() => { const e = $json.execution?.error || {}; const wf = $json.workflow?.name || 'Unknown workflow'; const node = $json.execution?.lastNodeExecuted || e.node?.name || 'Unknown'; const code = e.httpCode || '-'; const name = e.name || 'Error'; const msg = String(e.description || e.message || e.messages?.[0] || 'No message').replace(/\\s+/g, ' ').slice(0, 900); const url = $json.execution?.url || '-'; const id = $json.execution?.id || '-'; const time = $now.setZone('Asia/Shanghai').toFormat('yyyy-LL-dd HH:mm:ss'); return `🚨 n8n 工作流运行失败\\nWorkflow: ${wf}\\nNode: ${node}\\nTime: ${time}\\nHTTP: ${code}\\nError: ${name}\\nMessage: ${msg}\\nExecution: ${id}\\n${url}`; })() }}"
+              },
+              {
+                "id": "workflow-id",
+                "name": "workflow_id",
+                "type": "string",
+                "value": "={{ String($json.workflow?.id || '') }}"
+              },
+              {
+                "id": "workflow-name",
+                "name": "workflow_name",
+                "type": "string",
+                "value": "={{ String($json.workflow?.name || 'Unknown workflow') }}"
+              },
+              {
+                "id": "execution-id",
+                "name": "execution_id",
+                "type": "string",
+                "value": "={{ String($json.execution?.id || '') }}"
+              },
+              {
+                "id": "execution-url",
+                "name": "execution_url",
+                "type": "string",
+                "value": "={{ String($json.execution?.url || '') }}"
+              },
+              {
+                "id": "execution-mode",
+                "name": "execution_mode",
+                "type": "string",
+                "value": "={{ String($json.execution?.mode || '') }}"
+              },
+              {
+                "id": "error-node",
+                "name": "error_node",
+                "type": "string",
+                "value": "={{ String($json.execution?.lastNodeExecuted || $json.execution?.error?.node?.name || 'Unknown') }}"
+              },
+              {
+                "id": "error-name",
+                "name": "error_name",
+                "type": "string",
+                "value": "={{ String($json.execution?.error?.name || 'Error') }}"
+              },
+              {
+                "id": "http-code",
+                "name": "http_code",
+                "type": "string",
+                "value": "={{ String($json.execution?.error?.httpCode || '-') }}"
+              },
+              {
+                "id": "error-message",
+                "name": "error_message",
+                "type": "string",
+                "value": "={{ String($json.execution?.error?.description || $json.execution?.error?.message || $json.execution?.error?.messages?.[0] || 'No message').replace(/\\s+/g, ' ').slice(0, 1200) }}"
               }
             ]
           },
           "includeOtherFields": false,
           "options": {}
+        }
+      },
+      {
+        "id": "6dbc5fd4-4efe-4856-bb46-68a5577df687",
+        "name": "Prepare Failure AI Work",
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.5,
+        "position": [
+          928,
+          560
+        ],
+        "parameters": {
+          "mode": "manual",
+          "assignments": {
+            "assignments": [
+              {
+                "id": "work-id",
+                "name": "work_id",
+                "type": "string",
+                "value": "={{ 'n8n_failure:' + ($json.workflow_id || 'unknown') + ':' + ($json.error_node || 'unknown') + ':' + ($json.error_name || 'Error') + ':' + ($json.http_code || '-') + ':' + $now.setZone('Asia/Shanghai').toFormat('yyyyLLddHH') }}"
+              },
+              {
+                "id": "kind",
+                "name": "kind",
+                "type": "string",
+                "value": "n8n_failure_triage"
+              },
+              {
+                "id": "priority",
+                "name": "priority",
+                "type": "number",
+                "value": "={{ ['Nutify','Recover expired AI work leases','Mutate AI work state','Enqueue AI work','Capture ServerFS CI failure','Auto-Backup n8n Workflows to GitHub (Optimized)'].includes($json.workflow_name) ? 1 : 2 }}"
+              },
+              {
+                "id": "source-event-id",
+                "name": "source_event_id",
+                "type": "string",
+                "value": "={{ 'n8n.workflow.failed:' + ($json.workflow_id || 'unknown') + ':' + ($json.error_node || 'unknown') + ':' + ($json.error_name || 'Error') + ':' + ($json.http_code || '-') + ':' + $now.setZone('Asia/Shanghai').toFormat('yyyyLLddHH') }}"
+              },
+              {
+                "id": "correlation-id",
+                "name": "correlation_id",
+                "type": "string",
+                "value": "={{ 'n8n-failure:' + ($json.workflow_id || 'unknown') + ':' + ($json.error_node || 'unknown') + ':' + $now.setZone('Asia/Shanghai').toFormat('yyyyLLddHH') }}"
+              },
+              {
+                "id": "project",
+                "name": "project",
+                "type": "string",
+                "value": "n8n-vps"
+              },
+              {
+                "id": "input-ref",
+                "name": "input_ref",
+                "type": "string",
+                "value": "={{ $json.execution_url || '' }}"
+              },
+              {
+                "id": "summary",
+                "name": "summary",
+                "type": "string",
+                "value": "={{ 'Triage n8n failure: ' + ($json.workflow_name || 'Unknown workflow') + ' / ' + ($json.error_node || 'Unknown node') + ' — ' + ($json.error_message || 'No message') }}"
+              },
+              {
+                "id": "not-before",
+                "name": "not_before",
+                "type": "string",
+                "value": "={{ $now.toISO() }}"
+              },
+              {
+                "id": "deadline",
+                "name": "deadline",
+                "type": "string",
+                "value": ""
+              },
+              {
+                "id": "event-id",
+                "name": "event_id",
+                "type": "string",
+                "value": "={{ 'n8n.workflow.failed:' + ($json.workflow_id || 'unknown') + ':' + ($json.error_node || 'unknown') + ':' + ($json.error_name || 'Error') + ':' + ($json.http_code || '-') + ':' + $now.setZone('Asia/Shanghai').toFormat('yyyyLLddHH') }}"
+              },
+              {
+                "id": "event-time",
+                "name": "event_occurred_at",
+                "type": "string",
+                "value": "={{ $now.toISO() }}"
+              },
+              {
+                "id": "event-source",
+                "name": "event_source",
+                "type": "string",
+                "value": "n8n:error-workflow"
+              },
+              {
+                "id": "event-category",
+                "name": "event_category",
+                "type": "string",
+                "value": "n8n.workflow.failed"
+              },
+              {
+                "id": "event-title",
+                "name": "event_title",
+                "type": "string",
+                "value": "={{ ($json.workflow_name || 'Unknown workflow') + ' failed at ' + ($json.error_node || 'Unknown node') }}"
+              },
+              {
+                "id": "event-description",
+                "name": "event_description",
+                "type": "string",
+                "value": "={{ ($json.error_name || 'Error') + ': ' + ($json.error_message || 'No message') }}"
+              },
+              {
+                "id": "event-status",
+                "name": "event_status",
+                "type": "string",
+                "value": "failed"
+              },
+              {
+                "id": "event-url",
+                "name": "event_url",
+                "type": "string",
+                "value": "={{ $json.execution_url || '' }}"
+              },
+              {
+                "id": "event-metadata",
+                "name": "event_metadata_object",
+                "type": "string",
+                "value": "={{ ({ workflow_id: $json.workflow_id, workflow_name: $json.workflow_name, execution_id: $json.execution_id, node: $json.error_node, error_name: $json.error_name, http_code: $json.http_code, execution_mode: $json.execution_mode }).toJsonString() }}"
+              }
+            ]
+          },
+          "includeOtherFields": false,
+          "options": {}
+        }
+      },
+      {
+        "id": "9490c757-05ad-474c-b421-29a34ef1a695",
+        "name": "Enqueue Failure AI Work",
+        "type": "n8n-nodes-base.executeWorkflow",
+        "typeVersion": 1.4,
+        "position": [
+          1184,
+          560
+        ],
+        "parameters": {
+          "source": "database",
+          "workflowId": {
+            "__rl": true,
+            "mode": "id",
+            "value": "oe8KZW4nLbYUUDzA"
+          },
+          "workflowInputs": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "work_id": "={{ $json.work_id }}",
+              "kind": "={{ $json.kind }}",
+              "priority": "={{ $json.priority }}",
+              "source_event_id": "={{ $json.source_event_id }}",
+              "correlation_id": "={{ $json.correlation_id }}",
+              "project": "={{ $json.project }}",
+              "input_ref": "={{ $json.input_ref }}",
+              "summary": "={{ $json.summary }}",
+              "not_before": "={{ $json.not_before }}",
+              "deadline": "={{ $json.deadline }}",
+              "event_id": "={{ $json.event_id }}",
+              "event_occurred_at": "={{ $json.event_occurred_at }}",
+              "event_source": "={{ $json.event_source }}",
+              "event_category": "={{ $json.event_category }}",
+              "event_title": "={{ $json.event_title }}",
+              "event_description": "={{ $json.event_description }}",
+              "event_status": "={{ $json.event_status }}",
+              "event_url": "={{ $json.event_url }}",
+              "event_metadata_object": "={{ $json.event_metadata_object }}"
+            },
+            "schema": [
+              {
+                "id": "work_id",
+                "displayName": "work_id",
+                "type": "string"
+              },
+              {
+                "id": "kind",
+                "displayName": "kind",
+                "type": "string"
+              },
+              {
+                "id": "priority",
+                "displayName": "priority",
+                "type": "number"
+              },
+              {
+                "id": "source_event_id",
+                "displayName": "source_event_id",
+                "type": "string"
+              },
+              {
+                "id": "correlation_id",
+                "displayName": "correlation_id",
+                "type": "string"
+              },
+              {
+                "id": "project",
+                "displayName": "project",
+                "type": "string"
+              },
+              {
+                "id": "input_ref",
+                "displayName": "input_ref",
+                "type": "string"
+              },
+              {
+                "id": "summary",
+                "displayName": "summary",
+                "type": "string"
+              },
+              {
+                "id": "not_before",
+                "displayName": "not_before",
+                "type": "string"
+              },
+              {
+                "id": "deadline",
+                "displayName": "deadline",
+                "type": "string"
+              },
+              {
+                "id": "event_id",
+                "displayName": "event_id",
+                "type": "string"
+              },
+              {
+                "id": "event_occurred_at",
+                "displayName": "event_occurred_at",
+                "type": "string"
+              },
+              {
+                "id": "event_source",
+                "displayName": "event_source",
+                "type": "string"
+              },
+              {
+                "id": "event_category",
+                "displayName": "event_category",
+                "type": "string"
+              },
+              {
+                "id": "event_title",
+                "displayName": "event_title",
+                "type": "string"
+              },
+              {
+                "id": "event_description",
+                "displayName": "event_description",
+                "type": "string"
+              },
+              {
+                "id": "event_status",
+                "displayName": "event_status",
+                "type": "string"
+              },
+              {
+                "id": "event_url",
+                "displayName": "event_url",
+                "type": "string"
+              },
+              {
+                "id": "event_metadata_object",
+                "displayName": "event_metadata_object",
+                "type": "string"
+              }
+            ]
+          },
+          "mode": "each",
+          "options": {
+            "waitForSubWorkflow": true
+          }
+        },
+        "onError": "continueRegularOutput"
+      },
+      {
+        "id": "4d95bab5-21dc-4270-b4cb-9bd596240453",
+        "name": "Skip Recursive Queue Failures",
+        "type": "n8n-nodes-base.filter",
+        "typeVersion": 2.4,
+        "position": [
+          704,
+          560
+        ],
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict"
+            },
+            "conditions": [
+              {
+                "leftValue": "={{ ['Error Notification','Enqueue AI work'].includes($json.workflow_name) ? 'skip' : 'enqueue' }}",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals"
+                },
+                "rightValue": "enqueue"
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {
+            "ignoreCase": false
+          }
         }
       }
     ],
@@ -318,6 +1109,11 @@
               "node": "Discord Primary Alert",
               "type": "main",
               "index": 0
+            },
+            {
+              "node": "Skip Recursive Queue Failures",
+              "type": "main",
+              "index": 0
             }
           ]
         ]
@@ -333,14 +1129,47 @@
             }
           ]
         ]
+      },
+      "Prepare Failure AI Work": {
+        "main": [
+          [
+            {
+              "node": "Enqueue Failure AI Work",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Skip Recursive Queue Failures": {
+        "main": [
+          [
+            {
+              "node": "Prepare Failure AI Work",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
       }
     },
-    "nodeGroups": [],
+    "nodeGroups": [
+      {
+        "id": "ccfe61ff-7677-497a-b6cf-af2a0ad2604a",
+        "name": "AI failure producer",
+        "nodeIds": [
+          "4d95bab5-21dc-4270-b4cb-9bd596240453",
+          "6dbc5fd4-4efe-4856-bb46-68a5577df687",
+          "9490c757-05ad-474c-b421-29a34ef1a695"
+        ],
+        "description": "Skip self-referential queue failures; enqueue other production failures for ChatGPT triage without blocking immediate alerts."
+      }
+    ],
     "authors": "Administrator NTLx (via MCP)",
-    "name": "Harden error notifications",
-    "description": "Remove LLM-dependent and disconnected legacy branches. Format errors deterministically, send the primary alert to Discord with retries, and fall back to Telegram only if Discord delivery still fails. Successful handler runs no longer retain full execution data; failed handler runs remain stored.",
+    "name": "Guard recursive queue failures",
+    "description": "Prevents Error Notification and Enqueue AI work failures from recursively re-entering the AI Work queue while preserving immediate Discord/Telegram alerts for those failures.",
     "autosaved": false,
-    "createdAt": "2026-10-22T04:25:58.637Z",
-    "updatedAt": "2026-10-22T04:25:58.637Z"
+    "createdAt": "2026-10-22T16:39:43.257Z",
+    "updatedAt": "2026-10-22T16:39:43.257Z"
   }
 }
