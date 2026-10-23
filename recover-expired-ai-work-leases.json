@@ -1,0 +1,899 @@
+{
+  "id": "EUDm6svGAS234qZZ",
+  "name": "Recover expired AI work leases",
+  "active": true,
+  "activeVersionId": "ba45e193-3e78-44f0-bc18-6f8d988b48bf",
+  "createdAt": "2026-10-22T09:24:30.765Z",
+  "updatedAt": "2026-10-22T16:25:50.163Z",
+  "isArchived": false,
+  "versionId": "ba45e193-3e78-44f0-bc18-6f8d988b48bf",
+  "triggerCount": 1,
+  "nodes": [
+    {
+      "id": "f6ccd7b8-5827-43a3-aeb9-6674fc5cc60c",
+      "name": "Every 30 Minutes",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 30
+            }
+          ]
+        },
+        "misfirePolicy": "coalesce",
+        "misfireGraceSeconds": 3600
+      }
+    },
+    {
+      "id": "d13384c9-c27c-4507-9267-d26422a45a0f",
+      "name": "Get Expired AI Work",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        272,
+        128
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "ai_work_queue"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "status",
+              "condition": "eq",
+              "keyValue": "processing"
+            },
+            {
+              "keyName": "lease_until",
+              "condition": "lte",
+              "keyValue": "={{ $now.toISO() }}"
+            }
+          ]
+        },
+        "returnAll": true,
+        "orderBy": true,
+        "orderByColumn": "lease_until",
+        "orderByDirection": "ASC"
+      }
+    },
+    {
+      "id": "e64e041e-32af-4668-b985-b96637bfdf38",
+      "name": "Requeue Expired AI Work",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        496,
+        128
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "ai_work_queue"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "work_id",
+              "condition": "eq",
+              "keyValue": "={{ $(\"Get Expired AI Work\").item.json.work_id }}"
+            },
+            {
+              "keyName": "status",
+              "condition": "eq",
+              "keyValue": "processing"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "status": "pending",
+            "not_before": "={{ $now.toISO() }}",
+            "claimed_by": "",
+            "claimed_at": null,
+            "lease_until": null,
+            "last_error": "={{ \"Recovered expired lease from \" + ($(\"Get Expired AI Work\").item.json.lease_until ?? \"unknown\") }}"
+          },
+          "schema": [
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "not_before",
+              "displayName": "not_before",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "claimed_by",
+              "displayName": "claimed_by",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "claimed_at",
+              "displayName": "claimed_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "lease_until",
+              "displayName": "lease_until",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "last_error",
+              "displayName": "last_error",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "ad36a78f-52ce-47e4-96fe-1c44a2eff973",
+      "name": "Record Lease Recovery Event",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        720,
+        128
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "upsert",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "work_events"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "event_id",
+              "condition": "eq",
+              "keyValue": "={{ \"ai_work.lease_recovered:\" + $(\"Get Expired AI Work\").item.json.work_id + \":\" + $(\"Get Expired AI Work\").item.json.lease_until }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "event_id": "={{ \"ai_work.lease_recovered:\" + $(\"Get Expired AI Work\").item.json.work_id + \":\" + $(\"Get Expired AI Work\").item.json.lease_until }}",
+            "occurred_at": "={{ $now.toISO() }}",
+            "source": "n8n:ai-work-runtime",
+            "project": "={{ $(\"Get Expired AI Work\").item.json.project ?? \"automation\" }}",
+            "category": "ai_work.lease_recovered",
+            "title": "={{ \"Recovered expired AI work lease: \" + $(\"Get Expired AI Work\").item.json.work_id }}",
+            "description": "The processing lease expired before a terminal state was recorded; n8n deterministically returned the work item to pending.",
+            "status": "pending",
+            "url": "={{ $(\"Get Expired AI Work\").item.json.input_ref ?? \"\" }}",
+            "metadata_object": "={{ ({ kind: $(\"Get Expired AI Work\").item.json.kind, expired_lease_until: $(\"Get Expired AI Work\").item.json.lease_until }).toJsonString() }}",
+            "correlation_id": "={{ $(\"Get Expired AI Work\").item.json.correlation_id ?? $(\"Get Expired AI Work\").item.json.work_id }}"
+          },
+          "schema": [
+            {
+              "id": "event_id",
+              "displayName": "event_id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "occurred_at",
+              "displayName": "occurred_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "source",
+              "displayName": "source",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "project",
+              "displayName": "project",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "category",
+              "displayName": "category",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "title",
+              "displayName": "title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "description",
+              "displayName": "description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "url",
+              "displayName": "url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "metadata_object",
+              "displayName": "metadata_object",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "correlation_id",
+              "displayName": "correlation_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "7b9a8ae2-7254-46ac-8a98-9cf77d899c23",
+      "name": "Record Recovery Heartbeat",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        272,
+        -96
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "upsert",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "automation_heartbeats"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "monitor_key",
+              "condition": "eq",
+              "keyValue": "ai_work_lease_recovery"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "monitor_key": "ai_work_lease_recovery",
+            "workflow_id": "EUDm6svGAS234qZZ",
+            "workflow_name": "Recover expired AI work leases",
+            "last_seen_at": "={{ $now.toISO() }}",
+            "next_expected_at": "={{ $now.plus({ minutes: 30 }).toISO() }}",
+            "grace_minutes": 15,
+            "priority": 1
+          }
+        },
+        "options": {}
+      },
+      "onError": "continueRegularOutput"
+    }
+  ],
+  "connections": {
+    "Every 30 Minutes": {
+      "main": [
+        [
+          {
+            "node": "Get Expired AI Work",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Record Recovery Heartbeat",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Expired AI Work": {
+      "main": [
+        [
+          {
+            "node": "Requeue Expired AI Work",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Requeue Expired AI Work": {
+      "main": [
+        [
+          {
+            "node": "Record Lease Recovery Event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [
+    {
+      "id": "dd62b35b-841d-4bdb-ac1d-d6c977e0fd07",
+      "name": "Recover expired leases",
+      "nodeIds": [
+        "d13384c9-c27c-4507-9267-d26422a45a0f",
+        "e64e041e-32af-4668-b985-b96637bfdf38",
+        "ad36a78f-52ce-47e4-96fe-1c44a2eff973"
+      ],
+      "description": "Find expired processing leases, return those items to pending, and record the recovery event."
+    }
+  ],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true,
+    "errorWorkflow": "3LE3BnPfHSuIZCVR",
+    "timezone": "Asia/Shanghai",
+    "saveExecutionProgress": false,
+    "saveManualExecutions": false,
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "none"
+  },
+  "staticData": {
+    "node:Every 30 Minutes": {
+      "recurrenceRules": [
+        null
+      ],
+      "recurrenceRuleSignatures": [
+        null
+      ]
+    }
+  },
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [
+    {
+      "id": "ATML5b5eE3eFn63x",
+      "name": "runtime",
+      "createdAt": "2026-10-22T09:12:58.479Z",
+      "updatedAt": "2026-10-22T09:12:58.479Z"
+    },
+    {
+      "id": "Kmfi1DI0MjIRkwfZ",
+      "name": "deadman-heartbeat",
+      "createdAt": "2026-10-22T16:25:50.145Z",
+      "updatedAt": "2026-10-22T16:25:50.145Z"
+    },
+    {
+      "id": "YwjTMUhE83IXTCRg",
+      "name": "monitoring",
+      "createdAt": "2026-10-22T08:38:34.124Z",
+      "updatedAt": "2026-10-22T08:38:34.124Z"
+    },
+    {
+      "id": "SvzA8xykOpMtvbwk",
+      "name": "ai-work",
+      "createdAt": "2026-10-22T09:12:58.488Z",
+      "updatedAt": "2026-10-22T09:12:58.488Z"
+    },
+    {
+      "id": "twNsKNALbdWLw0Ox",
+      "name": "automation",
+      "createdAt": "2026-10-22T08:25:54.546Z",
+      "updatedAt": "2026-10-22T08:25:54.546Z"
+    }
+  ],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "EUDm6svGAS234qZZ",
+      "projectId": "cNMj0K6AdJmi0OAZ",
+      "createdAt": "2026-10-22T09:24:30.765Z",
+      "updatedAt": "2026-10-22T09:24:30.765Z"
+    }
+  ],
+  "activeVersion": {
+    "versionId": "ba45e193-3e78-44f0-bc18-6f8d988b48bf",
+    "workflowId": "EUDm6svGAS234qZZ",
+    "nodes": [
+      {
+        "id": "f6ccd7b8-5827-43a3-aeb9-6674fc5cc60c",
+        "name": "Every 30 Minutes",
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.4,
+        "position": [
+          0,
+          0
+        ],
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "minutes",
+                "minutesInterval": 30
+              }
+            ]
+          },
+          "misfirePolicy": "coalesce",
+          "misfireGraceSeconds": 3600
+        }
+      },
+      {
+        "id": "d13384c9-c27c-4507-9267-d26422a45a0f",
+        "name": "Get Expired AI Work",
+        "type": "n8n-nodes-base.dataTable",
+        "typeVersion": 1.1,
+        "position": [
+          272,
+          128
+        ],
+        "parameters": {
+          "resource": "row",
+          "operation": "get",
+          "dataTableId": {
+            "__rl": true,
+            "mode": "name",
+            "value": "ai_work_queue"
+          },
+          "matchType": "allConditions",
+          "filters": {
+            "conditions": [
+              {
+                "keyName": "status",
+                "condition": "eq",
+                "keyValue": "processing"
+              },
+              {
+                "keyName": "lease_until",
+                "condition": "lte",
+                "keyValue": "={{ $now.toISO() }}"
+              }
+            ]
+          },
+          "returnAll": true,
+          "orderBy": true,
+          "orderByColumn": "lease_until",
+          "orderByDirection": "ASC"
+        }
+      },
+      {
+        "id": "e64e041e-32af-4668-b985-b96637bfdf38",
+        "name": "Requeue Expired AI Work",
+        "type": "n8n-nodes-base.dataTable",
+        "typeVersion": 1.1,
+        "position": [
+          496,
+          128
+        ],
+        "parameters": {
+          "resource": "row",
+          "operation": "update",
+          "dataTableId": {
+            "__rl": true,
+            "mode": "name",
+            "value": "ai_work_queue"
+          },
+          "matchType": "allConditions",
+          "filters": {
+            "conditions": [
+              {
+                "keyName": "work_id",
+                "condition": "eq",
+                "keyValue": "={{ $(\"Get Expired AI Work\").item.json.work_id }}"
+              },
+              {
+                "keyName": "status",
+                "condition": "eq",
+                "keyValue": "processing"
+              }
+            ]
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "status": "pending",
+              "not_before": "={{ $now.toISO() }}",
+              "claimed_by": "",
+              "claimed_at": null,
+              "lease_until": null,
+              "last_error": "={{ \"Recovered expired lease from \" + ($(\"Get Expired AI Work\").item.json.lease_until ?? \"unknown\") }}"
+            },
+            "schema": [
+              {
+                "id": "status",
+                "displayName": "status",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "not_before",
+                "displayName": "not_before",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "dateTime",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "claimed_by",
+                "displayName": "claimed_by",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "claimed_at",
+                "displayName": "claimed_at",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "dateTime",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "lease_until",
+                "displayName": "lease_until",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "dateTime",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "last_error",
+                "displayName": "last_error",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              }
+            ]
+          },
+          "options": {}
+        }
+      },
+      {
+        "id": "ad36a78f-52ce-47e4-96fe-1c44a2eff973",
+        "name": "Record Lease Recovery Event",
+        "type": "n8n-nodes-base.dataTable",
+        "typeVersion": 1.1,
+        "position": [
+          720,
+          128
+        ],
+        "parameters": {
+          "resource": "row",
+          "operation": "upsert",
+          "dataTableId": {
+            "__rl": true,
+            "mode": "name",
+            "value": "work_events"
+          },
+          "matchType": "allConditions",
+          "filters": {
+            "conditions": [
+              {
+                "keyName": "event_id",
+                "condition": "eq",
+                "keyValue": "={{ \"ai_work.lease_recovered:\" + $(\"Get Expired AI Work\").item.json.work_id + \":\" + $(\"Get Expired AI Work\").item.json.lease_until }}"
+              }
+            ]
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "event_id": "={{ \"ai_work.lease_recovered:\" + $(\"Get Expired AI Work\").item.json.work_id + \":\" + $(\"Get Expired AI Work\").item.json.lease_until }}",
+              "occurred_at": "={{ $now.toISO() }}",
+              "source": "n8n:ai-work-runtime",
+              "project": "={{ $(\"Get Expired AI Work\").item.json.project ?? \"automation\" }}",
+              "category": "ai_work.lease_recovered",
+              "title": "={{ \"Recovered expired AI work lease: \" + $(\"Get Expired AI Work\").item.json.work_id }}",
+              "description": "The processing lease expired before a terminal state was recorded; n8n deterministically returned the work item to pending.",
+              "status": "pending",
+              "url": "={{ $(\"Get Expired AI Work\").item.json.input_ref ?? \"\" }}",
+              "metadata_object": "={{ ({ kind: $(\"Get Expired AI Work\").item.json.kind, expired_lease_until: $(\"Get Expired AI Work\").item.json.lease_until }).toJsonString() }}",
+              "correlation_id": "={{ $(\"Get Expired AI Work\").item.json.correlation_id ?? $(\"Get Expired AI Work\").item.json.work_id }}"
+            },
+            "schema": [
+              {
+                "id": "event_id",
+                "displayName": "event_id",
+                "required": false,
+                "defaultMatch": true,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "occurred_at",
+                "displayName": "occurred_at",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "dateTime",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "source",
+                "displayName": "source",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "project",
+                "displayName": "project",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "category",
+                "displayName": "category",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "title",
+                "displayName": "title",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "description",
+                "displayName": "description",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "status",
+                "displayName": "status",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "url",
+                "displayName": "url",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "metadata_object",
+                "displayName": "metadata_object",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "correlation_id",
+                "displayName": "correlation_id",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              }
+            ]
+          },
+          "options": {}
+        }
+      },
+      {
+        "id": "7b9a8ae2-7254-46ac-8a98-9cf77d899c23",
+        "name": "Record Recovery Heartbeat",
+        "type": "n8n-nodes-base.dataTable",
+        "typeVersion": 1.1,
+        "position": [
+          272,
+          -96
+        ],
+        "parameters": {
+          "resource": "row",
+          "operation": "upsert",
+          "dataTableId": {
+            "__rl": true,
+            "mode": "name",
+            "value": "automation_heartbeats"
+          },
+          "matchType": "allConditions",
+          "filters": {
+            "conditions": [
+              {
+                "keyName": "monitor_key",
+                "condition": "eq",
+                "keyValue": "ai_work_lease_recovery"
+              }
+            ]
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "monitor_key": "ai_work_lease_recovery",
+              "workflow_id": "EUDm6svGAS234qZZ",
+              "workflow_name": "Recover expired AI work leases",
+              "last_seen_at": "={{ $now.toISO() }}",
+              "next_expected_at": "={{ $now.plus({ minutes: 30 }).toISO() }}",
+              "grace_minutes": 15,
+              "priority": 1
+            }
+          },
+          "options": {}
+        },
+        "onError": "continueRegularOutput"
+      }
+    ],
+    "connections": {
+      "Every 30 Minutes": {
+        "main": [
+          [
+            {
+              "node": "Get Expired AI Work",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Record Recovery Heartbeat",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get Expired AI Work": {
+        "main": [
+          [
+            {
+              "node": "Requeue Expired AI Work",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Requeue Expired AI Work": {
+        "main": [
+          [
+            {
+              "node": "Record Lease Recovery Event",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "nodeGroups": [
+      {
+        "id": "dd62b35b-841d-4bdb-ac1d-d6c977e0fd07",
+        "name": "Recover expired leases",
+        "nodeIds": [
+          "d13384c9-c27c-4507-9267-d26422a45a0f",
+          "e64e041e-32af-4668-b985-b96637bfdf38",
+          "ad36a78f-52ce-47e4-96fe-1c44a2eff973"
+        ],
+        "description": "Find expired processing leases, return those items to pending, and record the recovery event."
+      }
+    ],
+    "authors": "Administrator NTLx (via MCP)",
+    "name": "Add deadman heartbeat",
+    "description": "Record a non-blocking heartbeat at each 30-minute schedule trigger, including the next expected trigger time and grace window, while leaving lease recovery behavior unchanged.",
+    "autosaved": false,
+    "createdAt": "2026-10-22T16:25:50.168Z",
+    "updatedAt": "2026-10-22T16:25:50.168Z"
+  }
+}
