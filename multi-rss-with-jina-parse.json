@@ -4,9 +4,9 @@
   "active": false,
   "activeVersionId": null,
   "createdAt": "2026-03-27T13:46:50.927Z",
-  "updatedAt": "2026-07-30T06:30:04.936Z",
-  "isArchived": false,
-  "versionId": "6dde5a6f-3548-4fcb-b215-f7a4706ed581",
+  "updatedAt": "2026-10-22T16:18:49.160Z",
+  "isArchived": true,
+  "versionId": "cb48295d-2161-43d5-9989-503cac1dd62a",
   "triggerCount": 2,
   "nodes": [
     {
@@ -226,7 +226,7 @@
   "settings": {
     "executionOrder": "v1",
     "binaryMode": "separate",
-    "availableInMCP": false,
+    "availableInMCP": true,
     "timeSavedMode": "fixed",
     "saveDataSuccessExecution": "none",
     "saveExecutionProgress": false,
