@@ -2,11 +2,11 @@
   "id": "AKwuvPIWm8mmJH6h",
   "name": "Nutify",
   "active": true,
-  "activeVersionId": "c33f7db4-ac4b-4ed3-be95-9ec8d2674e8c",
+  "activeVersionId": "d6168d48-02a8-4e19-beb9-5eadc634143d",
   "createdAt": "2026-10-19T06:27:25.767Z",
-  "updatedAt": "2026-10-22T04:21:50.561Z",
+  "updatedAt": "2026-10-22T16:21:02.719Z",
   "isArchived": false,
-  "versionId": "c33f7db4-ac4b-4ed3-be95-9ec8d2674e8c",
+  "versionId": "d6168d48-02a8-4e19-beb9-5eadc634143d",
   "triggerCount": 1,
   "nodes": [
     {
@@ -57,6 +57,324 @@
           "name": "四有青年 Notifications 关键字通知（钉钉群机器人）"
         }
       }
+    },
+    {
+      "id": "aedfb796-1896-41bb-b671-6780c53729ae",
+      "name": "Keep Real UPS Events",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.4,
+      "position": [
+        224,
+        256
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.body?.test === true ? 'test' : 'real' }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              },
+              "rightValue": "real"
+            },
+            {
+              "leftValue": "={{ String($json.body?.event_type || '').toUpperCase() }}",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              },
+              "rightValue": "TEST"
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {
+          "ignoreCase": false
+        }
+      }
+    },
+    {
+      "id": "91475cd8-8bf4-4cca-83c2-ab6f7d48d6f1",
+      "name": "Prepare Infrastructure AI Work",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        448,
+        256
+      ],
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "work-id",
+              "name": "work_id",
+              "type": "string",
+              "value": "={{ 'infra_incident:' + ($json.body?.server_name || 'unknown') + ':' + ($json.body?.event_type || 'unknown') + ':' + $now.setZone('Asia/Shanghai').toFormat('yyyyLLddHH') }}"
+            },
+            {
+              "id": "kind",
+              "name": "kind",
+              "type": "string",
+              "value": "infra_incident_review"
+            },
+            {
+              "id": "priority",
+              "name": "priority",
+              "type": "number",
+              "value": "={{ ['critical','error','emergency'].includes(String($json.body?.notification_card?.severity || '').toLowerCase()) ? 0 : 1 }}"
+            },
+            {
+              "id": "source-event-id",
+              "name": "source_event_id",
+              "type": "string",
+              "value": "={{ 'infra.ups:' + ($json.body?.server_name || 'unknown') + ':' + ($json.body?.event_type || 'unknown') + ':' + $now.setZone('Asia/Shanghai').toFormat('yyyyLLddHH') }}"
+            },
+            {
+              "id": "correlation-id",
+              "name": "correlation_id",
+              "type": "string",
+              "value": "={{ 'ups:' + ($json.body?.server_name || 'unknown') + ':' + $now.setZone('Asia/Shanghai').toFormat('yyyyLLdd') }}"
+            },
+            {
+              "id": "project",
+              "name": "project",
+              "type": "string",
+              "value": "home-infrastructure"
+            },
+            {
+              "id": "input-ref",
+              "name": "input_ref",
+              "type": "string",
+              "value": "={{ $json.webhookUrl || '' }}"
+            },
+            {
+              "id": "summary",
+              "name": "summary",
+              "type": "string",
+              "value": "={{ 'Review UPS event ' + ($json.body?.event_type || 'unknown') + ' on ' + ($json.body?.server_name || 'unknown') + ': ' + ($json.body?.event_description || $json.body?.message || '') }}"
+            },
+            {
+              "id": "not-before",
+              "name": "not_before",
+              "type": "string",
+              "value": "={{ $now.toISO() }}"
+            },
+            {
+              "id": "deadline",
+              "name": "deadline",
+              "type": "string",
+              "value": ""
+            },
+            {
+              "id": "event-id",
+              "name": "event_id",
+              "type": "string",
+              "value": "={{ 'infra.ups:' + ($json.body?.server_name || 'unknown') + ':' + ($json.body?.event_type || 'unknown') + ':' + $now.setZone('Asia/Shanghai').toFormat('yyyyLLddHH') }}"
+            },
+            {
+              "id": "event-time",
+              "name": "event_occurred_at",
+              "type": "string",
+              "value": "={{ $json.body?.event_timestamp || $json.body?.timestamp || $now.toISO() }}"
+            },
+            {
+              "id": "event-source",
+              "name": "event_source",
+              "type": "string",
+              "value": "nutify"
+            },
+            {
+              "id": "event-category",
+              "name": "event_category",
+              "type": "string",
+              "value": "infra.ups.event"
+            },
+            {
+              "id": "event-title",
+              "name": "event_title",
+              "type": "string",
+              "value": "={{ ($json.body?.title || ('UPS Event: ' + ($json.body?.event_type || 'unknown'))) + ' · ' + ($json.body?.server_name || 'unknown') }}"
+            },
+            {
+              "id": "event-description",
+              "name": "event_description",
+              "type": "string",
+              "value": "={{ $json.body?.event_description || $json.body?.message || '' }}"
+            },
+            {
+              "id": "event-status",
+              "name": "event_status",
+              "type": "string",
+              "value": "detected"
+            },
+            {
+              "id": "event-url",
+              "name": "event_url",
+              "type": "string",
+              "value": ""
+            },
+            {
+              "id": "event-metadata",
+              "name": "event_metadata_object",
+              "type": "string",
+              "value": "={{ ({ event_type: $json.body?.event_type, priority: $json.body?.priority, severity: $json.body?.notification_card?.severity, ups_status: $json.body?.ups_data?.ups_status, battery_charge: $json.body?.ups_data?.battery_charge, input_voltage: $json.body?.ups_data?.input_voltage, notification_card: $json.body?.notification_card || null }).toJsonString() }}"
+            }
+          ]
+        },
+        "includeOtherFields": false,
+        "options": {}
+      }
+    },
+    {
+      "id": "117b69ef-7698-44d8-a7b8-75651c8ddf1b",
+      "name": "Enqueue Infrastructure AI Work",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.4,
+      "position": [
+        704,
+        256
+      ],
+      "parameters": {
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "oe8KZW4nLbYUUDzA"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "work_id": "={{ $json.work_id }}",
+            "kind": "={{ $json.kind }}",
+            "priority": "={{ $json.priority }}",
+            "source_event_id": "={{ $json.source_event_id }}",
+            "correlation_id": "={{ $json.correlation_id }}",
+            "project": "={{ $json.project }}",
+            "input_ref": "={{ $json.input_ref }}",
+            "summary": "={{ $json.summary }}",
+            "not_before": "={{ $json.not_before }}",
+            "deadline": "={{ $json.deadline }}",
+            "event_id": "={{ $json.event_id }}",
+            "event_occurred_at": "={{ $json.event_occurred_at }}",
+            "event_source": "={{ $json.event_source }}",
+            "event_category": "={{ $json.event_category }}",
+            "event_title": "={{ $json.event_title }}",
+            "event_description": "={{ $json.event_description }}",
+            "event_status": "={{ $json.event_status }}",
+            "event_url": "={{ $json.event_url }}",
+            "event_metadata_object": "={{ $json.event_metadata_object }}"
+          },
+          "schema": [
+            {
+              "id": "work_id",
+              "displayName": "work_id",
+              "type": "string"
+            },
+            {
+              "id": "kind",
+              "displayName": "kind",
+              "type": "string"
+            },
+            {
+              "id": "priority",
+              "displayName": "priority",
+              "type": "number"
+            },
+            {
+              "id": "source_event_id",
+              "displayName": "source_event_id",
+              "type": "string"
+            },
+            {
+              "id": "correlation_id",
+              "displayName": "correlation_id",
+              "type": "string"
+            },
+            {
+              "id": "project",
+              "displayName": "project",
+              "type": "string"
+            },
+            {
+              "id": "input_ref",
+              "displayName": "input_ref",
+              "type": "string"
+            },
+            {
+              "id": "summary",
+              "displayName": "summary",
+              "type": "string"
+            },
+            {
+              "id": "not_before",
+              "displayName": "not_before",
+              "type": "string"
+            },
+            {
+              "id": "deadline",
+              "displayName": "deadline",
+              "type": "string"
+            },
+            {
+              "id": "event_id",
+              "displayName": "event_id",
+              "type": "string"
+            },
+            {
+              "id": "event_occurred_at",
+              "displayName": "event_occurred_at",
+              "type": "string"
+            },
+            {
+              "id": "event_source",
+              "displayName": "event_source",
+              "type": "string"
+            },
+            {
+              "id": "event_category",
+              "displayName": "event_category",
+              "type": "string"
+            },
+            {
+              "id": "event_title",
+              "displayName": "event_title",
+              "type": "string"
+            },
+            {
+              "id": "event_description",
+              "displayName": "event_description",
+              "type": "string"
+            },
+            {
+              "id": "event_status",
+              "displayName": "event_status",
+              "type": "string"
+            },
+            {
+              "id": "event_url",
+              "displayName": "event_url",
+              "type": "string"
+            },
+            {
+              "id": "event_metadata_object",
+              "displayName": "event_metadata_object",
+              "type": "string"
+            }
+          ]
+        },
+        "mode": "each",
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "onError": "continueRegularOutput"
     }
   ],
   "connections": {
@@ -67,12 +385,50 @@
             "node": "发送钉钉 Markdown 消息",
             "type": "main",
             "index": 0
+          },
+          {
+            "node": "Keep Real UPS Events",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Keep Real UPS Events": {
+      "main": [
+        [
+          {
+            "node": "Prepare Infrastructure AI Work",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Infrastructure AI Work": {
+      "main": [
+        [
+          {
+            "node": "Enqueue Infrastructure AI Work",
+            "type": "main",
+            "index": 0
           }
         ]
       ]
     }
   },
-  "nodeGroups": [],
+  "nodeGroups": [
+    {
+      "id": "82e587b1-b7d1-46ed-8b90-644ac77243d0",
+      "name": "AI infrastructure incident producer",
+      "nodeIds": [
+        "aedfb796-1896-41bb-b671-6780c53729ae",
+        "91475cd8-8bf4-4cca-83c2-ab6f7d48d6f1",
+        "117b69ef-7698-44d8-a7b8-75651c8ddf1b"
+      ],
+      "description": "Ignore test notifications; enqueue real UPS events for later ChatGPT analysis without delaying the immediate DingTalk alert."
+    }
+  ],
   "settings": {
     "executionOrder": "v1",
     "binaryMode": "separate",
@@ -93,7 +449,38 @@
     "aiBuilderAssisted": true,
     "builderVariant": "mcp"
   },
-  "tags": [],
+  "tags": [
+    {
+      "id": "fKoxhQDd26tREjYf",
+      "name": "infrastructure",
+      "createdAt": "2026-10-22T16:21:02.698Z",
+      "updatedAt": "2026-10-22T16:21:02.698Z"
+    },
+    {
+      "id": "twNsKNALbdWLw0Ox",
+      "name": "automation",
+      "createdAt": "2026-10-22T08:25:54.546Z",
+      "updatedAt": "2026-10-22T08:25:54.546Z"
+    },
+    {
+      "id": "BlGRvaSWqnmTk53i",
+      "name": "event-producer",
+      "createdAt": "2026-10-22T09:14:35.370Z",
+      "updatedAt": "2026-10-22T09:14:35.370Z"
+    },
+    {
+      "id": "YwjTMUhE83IXTCRg",
+      "name": "monitoring",
+      "createdAt": "2026-10-22T08:38:34.124Z",
+      "updatedAt": "2026-10-22T08:38:34.124Z"
+    },
+    {
+      "id": "9jw9Bhya2Ylf8E4D",
+      "name": "ai-work-producer",
+      "createdAt": "2026-10-22T09:14:35.367Z",
+      "updatedAt": "2026-10-22T09:14:35.367Z"
+    }
+  ],
   "shared": [
     {
       "role": "workflow:owner",
@@ -104,7 +491,7 @@
     }
   ],
   "activeVersion": {
-    "versionId": "c33f7db4-ac4b-4ed3-be95-9ec8d2674e8c",
+    "versionId": "d6168d48-02a8-4e19-beb9-5eadc634143d",
     "workflowId": "AKwuvPIWm8mmJH6h",
     "nodes": [
       {
@@ -155,6 +542,324 @@
             "name": "四有青年 Notifications 关键字通知（钉钉群机器人）"
           }
         }
+      },
+      {
+        "id": "aedfb796-1896-41bb-b671-6780c53729ae",
+        "name": "Keep Real UPS Events",
+        "type": "n8n-nodes-base.filter",
+        "typeVersion": 2.4,
+        "position": [
+          224,
+          256
+        ],
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict"
+            },
+            "conditions": [
+              {
+                "leftValue": "={{ $json.body?.test === true ? 'test' : 'real' }}",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals"
+                },
+                "rightValue": "real"
+              },
+              {
+                "leftValue": "={{ String($json.body?.event_type || '').toUpperCase() }}",
+                "operator": {
+                  "type": "string",
+                  "operation": "notEquals"
+                },
+                "rightValue": "TEST"
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {
+            "ignoreCase": false
+          }
+        }
+      },
+      {
+        "id": "91475cd8-8bf4-4cca-83c2-ab6f7d48d6f1",
+        "name": "Prepare Infrastructure AI Work",
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.5,
+        "position": [
+          448,
+          256
+        ],
+        "parameters": {
+          "mode": "manual",
+          "assignments": {
+            "assignments": [
+              {
+                "id": "work-id",
+                "name": "work_id",
+                "type": "string",
+                "value": "={{ 'infra_incident:' + ($json.body?.server_name || 'unknown') + ':' + ($json.body?.event_type || 'unknown') + ':' + $now.setZone('Asia/Shanghai').toFormat('yyyyLLddHH') }}"
+              },
+              {
+                "id": "kind",
+                "name": "kind",
+                "type": "string",
+                "value": "infra_incident_review"
+              },
+              {
+                "id": "priority",
+                "name": "priority",
+                "type": "number",
+                "value": "={{ ['critical','error','emergency'].includes(String($json.body?.notification_card?.severity || '').toLowerCase()) ? 0 : 1 }}"
+              },
+              {
+                "id": "source-event-id",
+                "name": "source_event_id",
+                "type": "string",
+                "value": "={{ 'infra.ups:' + ($json.body?.server_name || 'unknown') + ':' + ($json.body?.event_type || 'unknown') + ':' + $now.setZone('Asia/Shanghai').toFormat('yyyyLLddHH') }}"
+              },
+              {
+                "id": "correlation-id",
+                "name": "correlation_id",
+                "type": "string",
+                "value": "={{ 'ups:' + ($json.body?.server_name || 'unknown') + ':' + $now.setZone('Asia/Shanghai').toFormat('yyyyLLdd') }}"
+              },
+              {
+                "id": "project",
+                "name": "project",
+                "type": "string",
+                "value": "home-infrastructure"
+              },
+              {
+                "id": "input-ref",
+                "name": "input_ref",
+                "type": "string",
+                "value": "={{ $json.webhookUrl || '' }}"
+              },
+              {
+                "id": "summary",
+                "name": "summary",
+                "type": "string",
+                "value": "={{ 'Review UPS event ' + ($json.body?.event_type || 'unknown') + ' on ' + ($json.body?.server_name || 'unknown') + ': ' + ($json.body?.event_description || $json.body?.message || '') }}"
+              },
+              {
+                "id": "not-before",
+                "name": "not_before",
+                "type": "string",
+                "value": "={{ $now.toISO() }}"
+              },
+              {
+                "id": "deadline",
+                "name": "deadline",
+                "type": "string",
+                "value": ""
+              },
+              {
+                "id": "event-id",
+                "name": "event_id",
+                "type": "string",
+                "value": "={{ 'infra.ups:' + ($json.body?.server_name || 'unknown') + ':' + ($json.body?.event_type || 'unknown') + ':' + $now.setZone('Asia/Shanghai').toFormat('yyyyLLddHH') }}"
+              },
+              {
+                "id": "event-time",
+                "name": "event_occurred_at",
+                "type": "string",
+                "value": "={{ $json.body?.event_timestamp || $json.body?.timestamp || $now.toISO() }}"
+              },
+              {
+                "id": "event-source",
+                "name": "event_source",
+                "type": "string",
+                "value": "nutify"
+              },
+              {
+                "id": "event-category",
+                "name": "event_category",
+                "type": "string",
+                "value": "infra.ups.event"
+              },
+              {
+                "id": "event-title",
+                "name": "event_title",
+                "type": "string",
+                "value": "={{ ($json.body?.title || ('UPS Event: ' + ($json.body?.event_type || 'unknown'))) + ' · ' + ($json.body?.server_name || 'unknown') }}"
+              },
+              {
+                "id": "event-description",
+                "name": "event_description",
+                "type": "string",
+                "value": "={{ $json.body?.event_description || $json.body?.message || '' }}"
+              },
+              {
+                "id": "event-status",
+                "name": "event_status",
+                "type": "string",
+                "value": "detected"
+              },
+              {
+                "id": "event-url",
+                "name": "event_url",
+                "type": "string",
+                "value": ""
+              },
+              {
+                "id": "event-metadata",
+                "name": "event_metadata_object",
+                "type": "string",
+                "value": "={{ ({ event_type: $json.body?.event_type, priority: $json.body?.priority, severity: $json.body?.notification_card?.severity, ups_status: $json.body?.ups_data?.ups_status, battery_charge: $json.body?.ups_data?.battery_charge, input_voltage: $json.body?.ups_data?.input_voltage, notification_card: $json.body?.notification_card || null }).toJsonString() }}"
+              }
+            ]
+          },
+          "includeOtherFields": false,
+          "options": {}
+        }
+      },
+      {
+        "id": "117b69ef-7698-44d8-a7b8-75651c8ddf1b",
+        "name": "Enqueue Infrastructure AI Work",
+        "type": "n8n-nodes-base.executeWorkflow",
+        "typeVersion": 1.4,
+        "position": [
+          704,
+          256
+        ],
+        "parameters": {
+          "source": "database",
+          "workflowId": {
+            "__rl": true,
+            "mode": "id",
+            "value": "oe8KZW4nLbYUUDzA"
+          },
+          "workflowInputs": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "work_id": "={{ $json.work_id }}",
+              "kind": "={{ $json.kind }}",
+              "priority": "={{ $json.priority }}",
+              "source_event_id": "={{ $json.source_event_id }}",
+              "correlation_id": "={{ $json.correlation_id }}",
+              "project": "={{ $json.project }}",
+              "input_ref": "={{ $json.input_ref }}",
+              "summary": "={{ $json.summary }}",
+              "not_before": "={{ $json.not_before }}",
+              "deadline": "={{ $json.deadline }}",
+              "event_id": "={{ $json.event_id }}",
+              "event_occurred_at": "={{ $json.event_occurred_at }}",
+              "event_source": "={{ $json.event_source }}",
+              "event_category": "={{ $json.event_category }}",
+              "event_title": "={{ $json.event_title }}",
+              "event_description": "={{ $json.event_description }}",
+              "event_status": "={{ $json.event_status }}",
+              "event_url": "={{ $json.event_url }}",
+              "event_metadata_object": "={{ $json.event_metadata_object }}"
+            },
+            "schema": [
+              {
+                "id": "work_id",
+                "displayName": "work_id",
+                "type": "string"
+              },
+              {
+                "id": "kind",
+                "displayName": "kind",
+                "type": "string"
+              },
+              {
+                "id": "priority",
+                "displayName": "priority",
+                "type": "number"
+              },
+              {
+                "id": "source_event_id",
+                "displayName": "source_event_id",
+                "type": "string"
+              },
+              {
+                "id": "correlation_id",
+                "displayName": "correlation_id",
+                "type": "string"
+              },
+              {
+                "id": "project",
+                "displayName": "project",
+                "type": "string"
+              },
+              {
+                "id": "input_ref",
+                "displayName": "input_ref",
+                "type": "string"
+              },
+              {
+                "id": "summary",
+                "displayName": "summary",
+                "type": "string"
+              },
+              {
+                "id": "not_before",
+                "displayName": "not_before",
+                "type": "string"
+              },
+              {
+                "id": "deadline",
+                "displayName": "deadline",
+                "type": "string"
+              },
+              {
+                "id": "event_id",
+                "displayName": "event_id",
+                "type": "string"
+              },
+              {
+                "id": "event_occurred_at",
+                "displayName": "event_occurred_at",
+                "type": "string"
+              },
+              {
+                "id": "event_source",
+                "displayName": "event_source",
+                "type": "string"
+              },
+              {
+                "id": "event_category",
+                "displayName": "event_category",
+                "type": "string"
+              },
+              {
+                "id": "event_title",
+                "displayName": "event_title",
+                "type": "string"
+              },
+              {
+                "id": "event_description",
+                "displayName": "event_description",
+                "type": "string"
+              },
+              {
+                "id": "event_status",
+                "displayName": "event_status",
+                "type": "string"
+              },
+              {
+                "id": "event_url",
+                "displayName": "event_url",
+                "type": "string"
+              },
+              {
+                "id": "event_metadata_object",
+                "displayName": "event_metadata_object",
+                "type": "string"
+              }
+            ]
+          },
+          "mode": "each",
+          "options": {
+            "waitForSubWorkflow": true
+          }
+        },
+        "onError": "continueRegularOutput"
       }
     ],
     "connections": {
@@ -165,17 +870,55 @@
               "node": "发送钉钉 Markdown 消息",
               "type": "main",
               "index": 0
+            },
+            {
+              "node": "Keep Real UPS Events",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Keep Real UPS Events": {
+        "main": [
+          [
+            {
+              "node": "Prepare Infrastructure AI Work",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prepare Infrastructure AI Work": {
+        "main": [
+          [
+            {
+              "node": "Enqueue Infrastructure AI Work",
+              "type": "main",
+              "index": 0
             }
           ]
         ]
       }
     },
-    "nodeGroups": [],
-    "authors": "Administrator NTLx",
-    "name": "Version c33f7db4",
-    "description": "",
-    "autosaved": true,
-    "createdAt": "2026-10-22T04:18:02.757Z",
-    "updatedAt": "2026-10-22T04:18:37.407Z"
+    "nodeGroups": [
+      {
+        "id": "82e587b1-b7d1-46ed-8b90-644ac77243d0",
+        "name": "AI infrastructure incident producer",
+        "nodeIds": [
+          "aedfb796-1896-41bb-b671-6780c53729ae",
+          "91475cd8-8bf4-4cca-83c2-ab6f7d48d6f1",
+          "117b69ef-7698-44d8-a7b8-75651c8ddf1b"
+        ],
+        "description": "Ignore test notifications; enqueue real UPS events for later ChatGPT analysis without delaying the immediate DingTalk alert."
+      }
+    ],
+    "authors": "Administrator NTLx (via MCP)",
+    "name": "Add infrastructure incident producer",
+    "description": "Keep existing immediate DingTalk alerts intact, filter out Nutify test notifications, and enqueue all real UPS notification events as infra_incident_review through the shared AI Work producer backend.",
+    "autosaved": false,
+    "createdAt": "2026-10-22T16:21:02.725Z",
+    "updatedAt": "2026-10-22T16:21:02.725Z"
   }
 }
