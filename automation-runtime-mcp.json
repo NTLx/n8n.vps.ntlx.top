@@ -1,0 +1,870 @@
+{
+  "id": "PQMJADgrOS9JL0DF",
+  "name": "Automation Runtime MCP",
+  "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-10-22T09:12:22.715Z",
+  "updatedAt": "2026-10-22T15:30:25.812Z",
+  "isArchived": true,
+  "versionId": "9fd4ac11-8969-4b23-8fa5-6b0bb12ce25c",
+  "triggerCount": 1,
+  "nodes": [
+    {
+      "id": "a8dbd095-b54a-4b69-b09a-8aea28110ed4",
+      "name": "Automation Runtime MCP",
+      "type": "@n8n/n8n-nodes-langchain.mcpTrigger",
+      "typeVersion": 2.1,
+      "position": [
+        384,
+        112
+      ],
+      "parameters": {
+        "authentication": "bearerAuth",
+        "path": "automation-runtime",
+        "instructions": "This is the durable runtime API for ChatGPT's cognitive automation plane. n8n does not reason. Workflow: (1) List Pending AI Work, sorted with lower numeric priority first. (2) Claim exactly one eligible work_id before cognitive work. (3) Use direct MCPs and ServerFS Agents outside n8n for reasoning/execution. (4) Always finish the claimed item with Complete, Defer, Fail, or Block. Defer is for unfinished asynchronous work and can persist result_ref such as a ServerFS task_id so a later dispatcher run can resume. Record Work Event for important terminal outcomes. Current kinds: ci_triage = inspect GitHub jobs/logs and reason about root cause; wiki_compile = compile the URL through the agentic-work-atlas repository workflow using ServerFS/Agent; rss_review = retrieve and evaluate the article in ChatGPT. Do not invent results when referenced systems are unavailable."
+      },
+      "webhookId": "4c6d110d-a314-429e-9f2c-54dd8c2239be",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "C6qLO178JVZklDXs",
+          "name": "外部调用n8n的MCP"
+        }
+      }
+    },
+    {
+      "id": "07b1e98a-a079-49cb-95e8-f55d69413696",
+      "name": "List Pending AI Work",
+      "type": "n8n-nodes-base.dataTableTool",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        336
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "ai_work_queue"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "status",
+              "condition": "eq",
+              "keyValue": "pending"
+            },
+            {
+              "keyName": "not_before",
+              "condition": "lte",
+              "keyValue": "={{ $now.toISO() }}"
+            }
+          ]
+        },
+        "returnAll": false,
+        "limit": 20,
+        "orderBy": true,
+        "orderByColumn": "priority",
+        "orderByDirection": "ASC"
+      }
+    },
+    {
+      "id": "d6dc17ee-872b-44e0-8edb-ef654a4ccc36",
+      "name": "Get AI Work",
+      "type": "n8n-nodes-base.dataTableTool",
+      "typeVersion": 1.1,
+      "position": [
+        128,
+        336
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "ai_work_queue"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "work_id",
+              "condition": "eq",
+              "keyValue": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('work_id', 'Exact work_id to retrieve') }}"
+            }
+          ]
+        },
+        "returnAll": false,
+        "limit": 1
+      }
+    },
+    {
+      "id": "9cf45d91-4010-401c-9053-a98d87d3ecc5",
+      "name": "Claim AI Work",
+      "type": "n8n-nodes-base.dataTableTool",
+      "typeVersion": 1.1,
+      "position": [
+        256,
+        336
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "ai_work_queue"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "work_id",
+              "condition": "eq",
+              "keyValue": "={{ $fromAI('work_id', 'Exact work_id returned by List Pending AI Work') }}"
+            },
+            {
+              "keyName": "status",
+              "condition": "eq",
+              "keyValue": "pending"
+            },
+            {
+              "keyName": "not_before",
+              "condition": "lte",
+              "keyValue": "={{ $now.toISO() }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "status": "processing",
+            "claimed_by": "chatgpt",
+            "claimed_at": "={{ $now.toISO() }}",
+            "lease_until": "={{ $now.plus({ minutes: 90 }).toISO() }}",
+            "last_error": ""
+          },
+          "schema": [
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "claimed_by",
+              "displayName": "claimed_by",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "claimed_at",
+              "displayName": "claimed_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "lease_until",
+              "displayName": "lease_until",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "last_error",
+              "displayName": "last_error",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "2c43631d-2b5e-4d5f-9e9d-bee7b8ae4737",
+      "name": "Complete AI Work",
+      "type": "n8n-nodes-base.dataTableTool",
+      "typeVersion": 1.1,
+      "position": [
+        384,
+        336
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "ai_work_queue"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "work_id",
+              "condition": "eq",
+              "keyValue": "={{ $fromAI('work_id', 'Exact claimed work_id') }}"
+            },
+            {
+              "keyName": "status",
+              "condition": "eq",
+              "keyValue": "processing"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "status": "completed",
+            "result_ref": "={{ $fromAI('result_ref', 'Result URL, file path, commit, or empty string when none') }}",
+            "result_summary": "={{ $fromAI('result_summary', 'Concise factual summary of what was completed') }}",
+            "completed_at": "={{ $now.toISO() }}",
+            "lease_until": null,
+            "last_error": ""
+          },
+          "schema": [
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "result_ref",
+              "displayName": "result_ref",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "result_summary",
+              "displayName": "result_summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "completed_at",
+              "displayName": "completed_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "lease_until",
+              "displayName": "lease_until",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "last_error",
+              "displayName": "last_error",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "d35c469b-d19d-436d-bf6a-456870aa891e",
+      "name": "Defer AI Work",
+      "type": "n8n-nodes-base.dataTableTool",
+      "typeVersion": 1.1,
+      "position": [
+        512,
+        336
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "ai_work_queue"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "work_id",
+              "condition": "eq",
+              "keyValue": "={{ $fromAI('work_id', 'Exact claimed work_id') }}"
+            },
+            {
+              "keyName": "status",
+              "condition": "eq",
+              "keyValue": "processing"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "status": "pending",
+            "not_before": "={{ $fromAI('not_before', 'ISO 8601 time when this work should become eligible again') }}",
+            "result_ref": "={{ $fromAI('result_ref', 'Ongoing external task reference such as a ServerFS task_id, PR URL, or empty string when none') }}",
+            "result_summary": "={{ $fromAI('reason', 'Why the work is being deferred and what should happen next') }}",
+            "claimed_by": "",
+            "claimed_at": null,
+            "lease_until": null
+          },
+          "schema": [
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "not_before",
+              "displayName": "not_before",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "result_ref",
+              "displayName": "result_ref",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "result_summary",
+              "displayName": "result_summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "claimed_by",
+              "displayName": "claimed_by",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "claimed_at",
+              "displayName": "claimed_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "lease_until",
+              "displayName": "lease_until",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "e5fb41c6-c27c-406c-944a-611cdac9f3c5",
+      "name": "Fail AI Work",
+      "type": "n8n-nodes-base.dataTableTool",
+      "typeVersion": 1.1,
+      "position": [
+        640,
+        336
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "ai_work_queue"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "work_id",
+              "condition": "eq",
+              "keyValue": "={{ $fromAI('work_id', 'Exact claimed work_id') }}"
+            },
+            {
+              "keyName": "status",
+              "condition": "eq",
+              "keyValue": "processing"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "status": "failed",
+            "last_error": "={{ $fromAI('error', 'Concise error or reason the work failed') }}",
+            "completed_at": "={{ $now.toISO() }}",
+            "lease_until": null
+          },
+          "schema": [
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "last_error",
+              "displayName": "last_error",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "completed_at",
+              "displayName": "completed_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "lease_until",
+              "displayName": "lease_until",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "07fdb12f-1233-4e8c-85d7-ade7a3a18729",
+      "name": "Block AI Work",
+      "type": "n8n-nodes-base.dataTableTool",
+      "typeVersion": 1.1,
+      "position": [
+        768,
+        336
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "ai_work_queue"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "work_id",
+              "condition": "eq",
+              "keyValue": "={{ $fromAI('work_id', 'Exact claimed work_id') }}"
+            },
+            {
+              "keyName": "status",
+              "condition": "eq",
+              "keyValue": "processing"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "status": "blocked",
+            "last_error": "={{ $fromAI('reason', 'What human input or external condition is blocking the work') }}",
+            "completed_at": "={{ $now.toISO() }}",
+            "lease_until": null
+          },
+          "schema": [
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "last_error",
+              "displayName": "last_error",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "completed_at",
+              "displayName": "completed_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "lease_until",
+              "displayName": "lease_until",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "a437a3af-efc2-4065-a551-9a7ef067edfe",
+      "name": "Record Work Event",
+      "type": "n8n-nodes-base.dataTableTool",
+      "typeVersion": 1.1,
+      "position": [
+        896,
+        336
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "upsert",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "work_events"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "event_id",
+              "condition": "eq",
+              "keyValue": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('event_id', 'Stable unique event identifier') }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "event_id": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('event_id', 'Stable unique event identifier') }}",
+            "occurred_at": "={{ $now.toISO() }}",
+            "source": "chatgpt",
+            "project": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('project', 'Project or domain name, or empty string') }}",
+            "category": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('category', 'Short event category such as ai_work.completed') }}",
+            "title": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('title', 'Short factual event title') }}",
+            "description": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('description', 'Concise factual description') }}",
+            "status": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('status', 'Event status such as completed, failed, blocked, or info') }}",
+            "url": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('url', 'Relevant URL or empty string') }}",
+            "metadata_object": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('metadata_object', 'Optional compact JSON string or empty string') }}",
+            "correlation_id": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('correlation_id', 'Correlation ID linking the event to AI work or agent tasks, or empty string') }}"
+          },
+          "schema": [
+            {
+              "id": "event_id",
+              "displayName": "event_id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "occurred_at",
+              "displayName": "occurred_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "source",
+              "displayName": "source",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "project",
+              "displayName": "project",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "category",
+              "displayName": "category",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "title",
+              "displayName": "title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "description",
+              "displayName": "description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "url",
+              "displayName": "url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "metadata_object",
+              "displayName": "metadata_object",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "correlation_id",
+              "displayName": "correlation_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "options": {}
+      }
+    }
+  ],
+  "connections": {
+    "List Pending AI Work": {
+      "ai_tool": [
+        [
+          {
+            "node": "Automation Runtime MCP",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get AI Work": {
+      "ai_tool": [
+        [
+          {
+            "node": "Automation Runtime MCP",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Claim AI Work": {
+      "ai_tool": [
+        [
+          {
+            "node": "Automation Runtime MCP",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Complete AI Work": {
+      "ai_tool": [
+        [
+          {
+            "node": "Automation Runtime MCP",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Defer AI Work": {
+      "ai_tool": [
+        [
+          {
+            "node": "Automation Runtime MCP",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fail AI Work": {
+      "ai_tool": [
+        [
+          {
+            "node": "Automation Runtime MCP",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Block AI Work": {
+      "ai_tool": [
+        [
+          {
+            "node": "Automation Runtime MCP",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Record Work Event": {
+      "ai_tool": [
+        [
+          {
+            "node": "Automation Runtime MCP",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true,
+    "errorWorkflow": "3LE3BnPfHSuIZCVR",
+    "timezone": "Asia/Shanghai",
+    "saveExecutionProgress": false,
+    "saveManualExecutions": false,
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "none"
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [
+    {
+      "id": "twNsKNALbdWLw0Ox",
+      "name": "automation",
+      "createdAt": "2026-10-22T08:25:54.546Z",
+      "updatedAt": "2026-10-22T08:25:54.546Z"
+    },
+    {
+      "id": "SvzA8xykOpMtvbwk",
+      "name": "ai-work",
+      "createdAt": "2026-10-22T09:12:58.488Z",
+      "updatedAt": "2026-10-22T09:12:58.488Z"
+    },
+    {
+      "id": "vFSgDqIgd5B7WQV5",
+      "name": "mcp",
+      "createdAt": "2026-10-22T09:12:58.484Z",
+      "updatedAt": "2026-10-22T09:12:58.484Z"
+    },
+    {
+      "id": "ATML5b5eE3eFn63x",
+      "name": "runtime",
+      "createdAt": "2026-10-22T09:12:58.479Z",
+      "updatedAt": "2026-10-22T09:12:58.479Z"
+    }
+  ],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "PQMJADgrOS9JL0DF",
+      "projectId": "cNMj0K6AdJmi0OAZ",
+      "createdAt": "2026-10-22T09:12:22.715Z",
+      "updatedAt": "2026-10-22T09:12:22.715Z"
+    }
+  ],
+  "activeVersion": null
+}
