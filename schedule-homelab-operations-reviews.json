@@ -1,0 +1,2498 @@
+{
+  "id": "DoKUgXuvIeD65FvW",
+  "name": "Schedule homelab operations reviews",
+  "active": true,
+  "activeVersionId": "35bef769-ebf1-4569-86a6-b90017698322",
+  "createdAt": "2026-10-23T15:38:29.844Z",
+  "updatedAt": "2026-10-23T16:33:32.532Z",
+  "isArchived": false,
+  "versionId": "35bef769-ebf1-4569-86a6-b90017698322",
+  "triggerCount": 3,
+  "nodes": [
+    {
+      "id": "37cec5b8-a4a1-4ad2-b337-62a804ba9afe",
+      "name": "Fleet health every 6h",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 50 5,11,17,23 * * *"
+            }
+          ]
+        },
+        "misfirePolicy": "coalesce",
+        "misfireGraceSeconds": 7200
+      }
+    },
+    {
+      "id": "07dda1a4-87d1-4a7a-9a8a-3a9062baa4c9",
+      "name": "Prepare fleet health review",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        280,
+        0
+      ],
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "work-id",
+              "name": "work_id",
+              "type": "string",
+              "value": "={{ 'homelab_ops:health_fallback:' + $now.setZone('Asia/Shanghai').toFormat('yyyyLLdd-HH') }}"
+            },
+            {
+              "id": "worker",
+              "name": "worker",
+              "type": "string",
+              "value": "hourly"
+            },
+            {
+              "id": "kind",
+              "name": "kind",
+              "type": "string",
+              "value": "homelab_ops_review"
+            },
+            {
+              "id": "priority",
+              "name": "priority",
+              "type": "number",
+              "value": 60
+            },
+            {
+              "id": "source-event-id",
+              "name": "source_event_id",
+              "type": "string",
+              "value": "={{ 'homelab.ops.scheduled:health_fallback:' + $now.setZone('Asia/Shanghai').toFormat('yyyyLLdd-HH') }}"
+            },
+            {
+              "id": "correlation-id",
+              "name": "correlation_id",
+              "type": "string",
+              "value": "={{ 'homelab:health-fallback:' + $now.setZone('Asia/Shanghai').toFormat('yyyyLLdd') }}"
+            },
+            {
+              "id": "project",
+              "name": "project",
+              "type": "string",
+              "value": "home-infrastructure"
+            },
+            {
+              "id": "input-ref",
+              "name": "input_ref",
+              "type": "string",
+              "value": "={{ 'homelab://ops/snapshot_fallback?scope=health&scheduled_at=' + encodeURIComponent($now.toISO()) }}"
+            },
+            {
+              "id": "summary",
+              "name": "summary",
+              "type": "string",
+              "value": "Read deterministic Homelab health snapshots. Do not start an Agent when snapshots are fresh and healthy; target only stale, missing or abnormal evidence."
+            },
+            {
+              "id": "not-before",
+              "name": "not_before",
+              "type": "string",
+              "value": "={{ $now.toISO() }}"
+            },
+            {
+              "id": "deadline",
+              "name": "deadline",
+              "type": "string",
+              "value": "={{ $now.plus({ hours: 3 }).toISO() }}"
+            },
+            {
+              "id": "event-id",
+              "name": "event_id",
+              "type": "string",
+              "value": "={{ 'homelab.ops.scheduled:health_fallback:' + $now.setZone('Asia/Shanghai').toFormat('yyyyLLdd-HH') }}"
+            },
+            {
+              "id": "event-time",
+              "name": "event_occurred_at",
+              "type": "string",
+              "value": "={{ $now.toISO() }}"
+            },
+            {
+              "id": "event-source",
+              "name": "event_source",
+              "type": "string",
+              "value": "n8n:homelab-ops"
+            },
+            {
+              "id": "event-category",
+              "name": "event_category",
+              "type": "string",
+              "value": "homelab.ops.scheduled"
+            },
+            {
+              "id": "event-title",
+              "name": "event_title",
+              "type": "string",
+              "value": "Homelab health snapshot fallback scheduled"
+            },
+            {
+              "id": "event-description",
+              "name": "event_description",
+              "type": "string",
+              "value": "Transition-period stale/missing snapshot fallback. Healthy fresh snapshots complete silently without Agent invocation."
+            },
+            {
+              "id": "event-status",
+              "name": "event_status",
+              "type": "string",
+              "value": "scheduled"
+            },
+            {
+              "id": "event-url",
+              "name": "event_url",
+              "type": "string",
+              "value": ""
+            },
+            {
+              "id": "event-meta",
+              "name": "event_metadata_object",
+              "type": "string",
+              "value": "={{ ({ scope: 'health', architecture_version: 2, worker: 'hourly', mode: 'snapshot_fallback', eligible_nodes: ['vps:DevOps','pi1:devops','pi2:devops'], excluded_nodes: ['MacBook:user_excluded','WorkPC:no_devops_workdir'] }).toJsonString() }}"
+            }
+          ]
+        },
+        "includeOtherFields": false,
+        "options": {}
+      }
+    },
+    {
+      "id": "3100ef95-e173-4a2c-88a4-7a29ac568354",
+      "name": "Enqueue fleet health review",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.4,
+      "position": [
+        560,
+        0
+      ],
+      "parameters": {
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "oe8KZW4nLbYUUDzA"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "work_id": "={{ $json.work_id }}",
+            "worker": "={{ $json.worker }}",
+            "kind": "={{ $json.kind }}",
+            "priority": "={{ $json.priority }}",
+            "source_event_id": "={{ $json.source_event_id }}",
+            "correlation_id": "={{ $json.correlation_id }}",
+            "project": "={{ $json.project }}",
+            "input_ref": "={{ $json.input_ref }}",
+            "summary": "={{ $json.summary }}",
+            "not_before": "={{ $json.not_before }}",
+            "deadline": "={{ $json.deadline }}",
+            "event_id": "={{ $json.event_id }}",
+            "event_occurred_at": "={{ $json.event_occurred_at }}",
+            "event_source": "={{ $json.event_source }}",
+            "event_category": "={{ $json.event_category }}",
+            "event_title": "={{ $json.event_title }}",
+            "event_description": "={{ $json.event_description }}",
+            "event_status": "={{ $json.event_status }}",
+            "event_url": "={{ $json.event_url }}",
+            "event_metadata_object": "={{ $json.event_metadata_object }}"
+          },
+          "schema": [
+            {
+              "id": "work_id",
+              "displayName": "work_id",
+              "type": "string"
+            },
+            {
+              "id": "worker",
+              "displayName": "worker",
+              "type": "string"
+            },
+            {
+              "id": "kind",
+              "displayName": "kind",
+              "type": "string"
+            },
+            {
+              "id": "priority",
+              "displayName": "priority",
+              "type": "number"
+            },
+            {
+              "id": "source_event_id",
+              "displayName": "source_event_id",
+              "type": "string"
+            },
+            {
+              "id": "correlation_id",
+              "displayName": "correlation_id",
+              "type": "string"
+            },
+            {
+              "id": "project",
+              "displayName": "project",
+              "type": "string"
+            },
+            {
+              "id": "input_ref",
+              "displayName": "input_ref",
+              "type": "string"
+            },
+            {
+              "id": "summary",
+              "displayName": "summary",
+              "type": "string"
+            },
+            {
+              "id": "not_before",
+              "displayName": "not_before",
+              "type": "string"
+            },
+            {
+              "id": "deadline",
+              "displayName": "deadline",
+              "type": "string"
+            },
+            {
+              "id": "event_id",
+              "displayName": "event_id",
+              "type": "string"
+            },
+            {
+              "id": "event_occurred_at",
+              "displayName": "event_occurred_at",
+              "type": "string"
+            },
+            {
+              "id": "event_source",
+              "displayName": "event_source",
+              "type": "string"
+            },
+            {
+              "id": "event_category",
+              "displayName": "event_category",
+              "type": "string"
+            },
+            {
+              "id": "event_title",
+              "displayName": "event_title",
+              "type": "string"
+            },
+            {
+              "id": "event_description",
+              "displayName": "event_description",
+              "type": "string"
+            },
+            {
+              "id": "event_status",
+              "displayName": "event_status",
+              "type": "string"
+            },
+            {
+              "id": "event_url",
+              "displayName": "event_url",
+              "type": "string"
+            },
+            {
+              "id": "event_metadata_object",
+              "displayName": "event_metadata_object",
+              "type": "string"
+            }
+          ]
+        },
+        "mode": "each",
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      }
+    },
+    {
+      "id": "841f4351-ae1b-4f97-8919-422fe4347018",
+      "name": "Backup freshness daily 07:50",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        300
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 50 7 * * *"
+            }
+          ]
+        },
+        "misfirePolicy": "coalesce",
+        "misfireGraceSeconds": 10800
+      }
+    },
+    {
+      "id": "86205226-cb37-464f-9d6b-d347e11dd11a",
+      "name": "Prepare backup freshness review",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        280,
+        300
+      ],
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "work-id",
+              "name": "work_id",
+              "type": "string",
+              "value": "={{ 'homelab_ops:backup_fallback:' + $now.setZone('Asia/Shanghai').toFormat('yyyyLLdd') }}"
+            },
+            {
+              "id": "worker",
+              "name": "worker",
+              "type": "string",
+              "value": "hourly"
+            },
+            {
+              "id": "kind",
+              "name": "kind",
+              "type": "string",
+              "value": "homelab_ops_review"
+            },
+            {
+              "id": "priority",
+              "name": "priority",
+              "type": "number",
+              "value": 55
+            },
+            {
+              "id": "source-event-id",
+              "name": "source_event_id",
+              "type": "string",
+              "value": "={{ 'homelab.ops.scheduled:backup_fallback:' + $now.setZone('Asia/Shanghai').toFormat('yyyyLLdd') }}"
+            },
+            {
+              "id": "correlation-id",
+              "name": "correlation_id",
+              "type": "string",
+              "value": "={{ 'homelab:backup-fallback:' + $now.setZone('Asia/Shanghai').toFormat('yyyyLLdd') }}"
+            },
+            {
+              "id": "project",
+              "name": "project",
+              "type": "string",
+              "value": "home-infrastructure"
+            },
+            {
+              "id": "input-ref",
+              "name": "input_ref",
+              "type": "string",
+              "value": "={{ 'homelab://ops/snapshot_fallback?scope=backup&scheduled_at=' + encodeURIComponent($now.toISO()) }}"
+            },
+            {
+              "id": "summary",
+              "name": "summary",
+              "type": "string",
+              "value": "Read deterministic Homelab backup snapshots. Do not start an Agent when four-layer evidence is fresh and unchanged; target only stale, missing or abnormal evidence."
+            },
+            {
+              "id": "not-before",
+              "name": "not_before",
+              "type": "string",
+              "value": "={{ $now.toISO() }}"
+            },
+            {
+              "id": "deadline",
+              "name": "deadline",
+              "type": "string",
+              "value": "={{ $now.plus({ hours: 26 }).toISO() }}"
+            },
+            {
+              "id": "event-id",
+              "name": "event_id",
+              "type": "string",
+              "value": "={{ 'homelab.ops.scheduled:backup_fallback:' + $now.setZone('Asia/Shanghai').toFormat('yyyyLLdd') }}"
+            },
+            {
+              "id": "event-time",
+              "name": "event_occurred_at",
+              "type": "string",
+              "value": "={{ $now.toISO() }}"
+            },
+            {
+              "id": "event-source",
+              "name": "event_source",
+              "type": "string",
+              "value": "n8n:homelab-ops"
+            },
+            {
+              "id": "event-category",
+              "name": "event_category",
+              "type": "string",
+              "value": "homelab.ops.scheduled"
+            },
+            {
+              "id": "event-title",
+              "name": "event_title",
+              "type": "string",
+              "value": "Homelab backup snapshot fallback scheduled"
+            },
+            {
+              "id": "event-description",
+              "name": "event_description",
+              "type": "string",
+              "value": "Transition-period backup snapshot fallback. Timer/service state alone never implies recoverability."
+            },
+            {
+              "id": "event-status",
+              "name": "event_status",
+              "type": "string",
+              "value": "scheduled"
+            },
+            {
+              "id": "event-url",
+              "name": "event_url",
+              "type": "string",
+              "value": ""
+            },
+            {
+              "id": "event-meta",
+              "name": "event_metadata_object",
+              "type": "string",
+              "value": "={{ ({ scope: 'backup', architecture_version: 2, worker: 'hourly', mode: 'snapshot_fallback', restore_policy: 'evidence_only_no_restore', eligible_nodes: ['vps:DevOps','pi1:devops','pi2:devops'], excluded_nodes: ['MacBook:user_excluded','WorkPC:no_devops_workdir'] }).toJsonString() }}"
+            }
+          ]
+        },
+        "includeOtherFields": false,
+        "options": {}
+      }
+    },
+    {
+      "id": "0b12ccde-791c-4fb6-ab47-fd66af08558a",
+      "name": "Enqueue backup freshness review",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.4,
+      "position": [
+        560,
+        300
+      ],
+      "parameters": {
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "oe8KZW4nLbYUUDzA"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "work_id": "={{ $json.work_id }}",
+            "worker": "={{ $json.worker }}",
+            "kind": "={{ $json.kind }}",
+            "priority": "={{ $json.priority }}",
+            "source_event_id": "={{ $json.source_event_id }}",
+            "correlation_id": "={{ $json.correlation_id }}",
+            "project": "={{ $json.project }}",
+            "input_ref": "={{ $json.input_ref }}",
+            "summary": "={{ $json.summary }}",
+            "not_before": "={{ $json.not_before }}",
+            "deadline": "={{ $json.deadline }}",
+            "event_id": "={{ $json.event_id }}",
+            "event_occurred_at": "={{ $json.event_occurred_at }}",
+            "event_source": "={{ $json.event_source }}",
+            "event_category": "={{ $json.event_category }}",
+            "event_title": "={{ $json.event_title }}",
+            "event_description": "={{ $json.event_description }}",
+            "event_status": "={{ $json.event_status }}",
+            "event_url": "={{ $json.event_url }}",
+            "event_metadata_object": "={{ $json.event_metadata_object }}"
+          },
+          "schema": [
+            {
+              "id": "work_id",
+              "displayName": "work_id",
+              "type": "string"
+            },
+            {
+              "id": "worker",
+              "displayName": "worker",
+              "type": "string"
+            },
+            {
+              "id": "kind",
+              "displayName": "kind",
+              "type": "string"
+            },
+            {
+              "id": "priority",
+              "displayName": "priority",
+              "type": "number"
+            },
+            {
+              "id": "source_event_id",
+              "displayName": "source_event_id",
+              "type": "string"
+            },
+            {
+              "id": "correlation_id",
+              "displayName": "correlation_id",
+              "type": "string"
+            },
+            {
+              "id": "project",
+              "displayName": "project",
+              "type": "string"
+            },
+            {
+              "id": "input_ref",
+              "displayName": "input_ref",
+              "type": "string"
+            },
+            {
+              "id": "summary",
+              "displayName": "summary",
+              "type": "string"
+            },
+            {
+              "id": "not_before",
+              "displayName": "not_before",
+              "type": "string"
+            },
+            {
+              "id": "deadline",
+              "displayName": "deadline",
+              "type": "string"
+            },
+            {
+              "id": "event_id",
+              "displayName": "event_id",
+              "type": "string"
+            },
+            {
+              "id": "event_occurred_at",
+              "displayName": "event_occurred_at",
+              "type": "string"
+            },
+            {
+              "id": "event_source",
+              "displayName": "event_source",
+              "type": "string"
+            },
+            {
+              "id": "event_category",
+              "displayName": "event_category",
+              "type": "string"
+            },
+            {
+              "id": "event_title",
+              "displayName": "event_title",
+              "type": "string"
+            },
+            {
+              "id": "event_description",
+              "displayName": "event_description",
+              "type": "string"
+            },
+            {
+              "id": "event_status",
+              "displayName": "event_status",
+              "type": "string"
+            },
+            {
+              "id": "event_url",
+              "displayName": "event_url",
+              "type": "string"
+            },
+            {
+              "id": "event_metadata_object",
+              "displayName": "event_metadata_object",
+              "type": "string"
+            }
+          ]
+        },
+        "mode": "each",
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      }
+    },
+    {
+      "id": "b1817fbe-7b29-4441-af02-3abe7631f6fb",
+      "name": "Backup assurance weekly Sunday 09:50",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        600
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 50 9 * * 0"
+            }
+          ]
+        },
+        "misfirePolicy": "coalesce",
+        "misfireGraceSeconds": 21600
+      }
+    },
+    {
+      "id": "e09db473-60b2-4df6-986e-7d0110724d17",
+      "name": "Prepare backup assurance review",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        280,
+        600
+      ],
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "work-id",
+              "name": "work_id",
+              "type": "string",
+              "value": "={{ 'homelab_ops:backup_assurance:' + $now.setZone('Asia/Shanghai').toFormat('kkkk-ww') }}"
+            },
+            {
+              "id": "worker",
+              "name": "worker",
+              "type": "string",
+              "value": "weekly"
+            },
+            {
+              "id": "kind",
+              "name": "kind",
+              "type": "string",
+              "value": "homelab_ops_review"
+            },
+            {
+              "id": "priority",
+              "name": "priority",
+              "type": "number",
+              "value": 58
+            },
+            {
+              "id": "source-event-id",
+              "name": "source_event_id",
+              "type": "string",
+              "value": "={{ 'homelab.ops.scheduled:backup_assurance:' + $now.setZone('Asia/Shanghai').toFormat('kkkk-ww') }}"
+            },
+            {
+              "id": "correlation-id",
+              "name": "correlation_id",
+              "type": "string",
+              "value": "={{ 'homelab:backup_assurance:' + $now.setZone('Asia/Shanghai').toFormat('kkkk-ww') }}"
+            },
+            {
+              "id": "project",
+              "name": "project",
+              "type": "string",
+              "value": "home-infrastructure"
+            },
+            {
+              "id": "input-ref",
+              "name": "input_ref",
+              "type": "string",
+              "value": "={{ 'homelab://ops/backup_assurance?mode=state_history&scheduled_at=' + encodeURIComponent($now.toISO()) }}"
+            },
+            {
+              "id": "summary",
+              "name": "summary",
+              "type": "string",
+              "value": "Synthesize 7-day Homelab state/event evidence for backup recoverability and blind spots. Do not broadly rescan hosts; promote host-level evidence gaps to targeted Hourly work."
+            },
+            {
+              "id": "not-before",
+              "name": "not_before",
+              "type": "string",
+              "value": "={{ $now.toISO() }}"
+            },
+            {
+              "id": "deadline",
+              "name": "deadline",
+              "type": "string",
+              "value": "={{ $now.plus({ days: 6 }).toISO() }}"
+            },
+            {
+              "id": "event-id",
+              "name": "event_id",
+              "type": "string",
+              "value": "={{ 'homelab.ops.scheduled:backup_assurance:' + $now.setZone('Asia/Shanghai').toFormat('kkkk-ww') }}"
+            },
+            {
+              "id": "event-time",
+              "name": "event_occurred_at",
+              "type": "string",
+              "value": "={{ $now.toISO() }}"
+            },
+            {
+              "id": "event-source",
+              "name": "event_source",
+              "type": "string",
+              "value": "n8n:homelab-ops"
+            },
+            {
+              "id": "event-category",
+              "name": "event_category",
+              "type": "string",
+              "value": "homelab.ops.scheduled"
+            },
+            {
+              "id": "event-title",
+              "name": "event_title",
+              "type": "string",
+              "value": "Homelab weekly backup assurance scheduled"
+            },
+            {
+              "id": "event-description",
+              "name": "event_description",
+              "type": "string",
+              "value": "Weekly state/history evidence audit. No implicit restore or broad host Agent sweep is authorized."
+            },
+            {
+              "id": "event-status",
+              "name": "event_status",
+              "type": "string",
+              "value": "scheduled"
+            },
+            {
+              "id": "event-url",
+              "name": "event_url",
+              "type": "string",
+              "value": ""
+            },
+            {
+              "id": "event-meta",
+              "name": "event_metadata_object",
+              "type": "string",
+              "value": "={{ ({ scope: 'backup_assurance', architecture_version: 2, worker: 'weekly', mode: 'state_history', restore_policy: 'documented_evidence_only_no_implicit_restore' }).toJsonString() }}"
+            }
+          ]
+        },
+        "includeOtherFields": false,
+        "options": {}
+      }
+    },
+    {
+      "id": "44978530-447c-40fb-a15f-0847131c9d5e",
+      "name": "Enqueue backup assurance review",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.4,
+      "position": [
+        560,
+        600
+      ],
+      "parameters": {
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "oe8KZW4nLbYUUDzA"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "work_id": "={{ $json.work_id }}",
+            "worker": "={{ $json.worker }}",
+            "kind": "={{ $json.kind }}",
+            "priority": "={{ $json.priority }}",
+            "source_event_id": "={{ $json.source_event_id }}",
+            "correlation_id": "={{ $json.correlation_id }}",
+            "project": "={{ $json.project }}",
+            "input_ref": "={{ $json.input_ref }}",
+            "summary": "={{ $json.summary }}",
+            "not_before": "={{ $json.not_before }}",
+            "deadline": "={{ $json.deadline }}",
+            "event_id": "={{ $json.event_id }}",
+            "event_occurred_at": "={{ $json.event_occurred_at }}",
+            "event_source": "={{ $json.event_source }}",
+            "event_category": "={{ $json.event_category }}",
+            "event_title": "={{ $json.event_title }}",
+            "event_description": "={{ $json.event_description }}",
+            "event_status": "={{ $json.event_status }}",
+            "event_url": "={{ $json.event_url }}",
+            "event_metadata_object": "={{ $json.event_metadata_object }}"
+          },
+          "schema": [
+            {
+              "id": "work_id",
+              "displayName": "work_id",
+              "type": "string"
+            },
+            {
+              "id": "worker",
+              "displayName": "worker",
+              "type": "string"
+            },
+            {
+              "id": "kind",
+              "displayName": "kind",
+              "type": "string"
+            },
+            {
+              "id": "priority",
+              "displayName": "priority",
+              "type": "number"
+            },
+            {
+              "id": "source_event_id",
+              "displayName": "source_event_id",
+              "type": "string"
+            },
+            {
+              "id": "correlation_id",
+              "displayName": "correlation_id",
+              "type": "string"
+            },
+            {
+              "id": "project",
+              "displayName": "project",
+              "type": "string"
+            },
+            {
+              "id": "input_ref",
+              "displayName": "input_ref",
+              "type": "string"
+            },
+            {
+              "id": "summary",
+              "displayName": "summary",
+              "type": "string"
+            },
+            {
+              "id": "not_before",
+              "displayName": "not_before",
+              "type": "string"
+            },
+            {
+              "id": "deadline",
+              "displayName": "deadline",
+              "type": "string"
+            },
+            {
+              "id": "event_id",
+              "displayName": "event_id",
+              "type": "string"
+            },
+            {
+              "id": "event_occurred_at",
+              "displayName": "event_occurred_at",
+              "type": "string"
+            },
+            {
+              "id": "event_source",
+              "displayName": "event_source",
+              "type": "string"
+            },
+            {
+              "id": "event_category",
+              "displayName": "event_category",
+              "type": "string"
+            },
+            {
+              "id": "event_title",
+              "displayName": "event_title",
+              "type": "string"
+            },
+            {
+              "id": "event_description",
+              "displayName": "event_description",
+              "type": "string"
+            },
+            {
+              "id": "event_status",
+              "displayName": "event_status",
+              "type": "string"
+            },
+            {
+              "id": "event_url",
+              "displayName": "event_url",
+              "type": "string"
+            },
+            {
+              "id": "event_metadata_object",
+              "displayName": "event_metadata_object",
+              "type": "string"
+            }
+          ]
+        },
+        "mode": "each",
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      }
+    },
+    {
+      "id": "03498d41-ce94-4924-9680-34c3d375073a",
+      "name": "Record fleet health heartbeat",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        280,
+        -160
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "upsert",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "automation_heartbeats"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "monitor_key",
+              "condition": "eq",
+              "keyValue": "homelab_ops_health"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "monitor_key": "homelab_ops_health",
+            "workflow_id": "DoKUgXuvIeD65FvW",
+            "workflow_name": "Schedule homelab operations reviews / fleet health",
+            "last_seen_at": "={{ $now.toISO() }}",
+            "next_expected_at": "={{ $now.setZone('Asia/Shanghai').plus({ hours: 6 }).toISO() }}",
+            "grace_minutes": 30,
+            "priority": 2
+          }
+        },
+        "options": {}
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "6dc23bda-7db8-47ea-a596-e20d3dde095d",
+      "name": "Record backup freshness heartbeat",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        280,
+        140
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "upsert",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "automation_heartbeats"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "monitor_key",
+              "condition": "eq",
+              "keyValue": "homelab_ops_backup"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "monitor_key": "homelab_ops_backup",
+            "workflow_id": "DoKUgXuvIeD65FvW",
+            "workflow_name": "Schedule homelab operations reviews / backup freshness",
+            "last_seen_at": "={{ $now.toISO() }}",
+            "next_expected_at": "={{ $now.setZone('Asia/Shanghai').plus({ days: 1 }).set({ hour: 7, minute: 50, second: 0, millisecond: 0 }).toISO() }}",
+            "grace_minutes": 30,
+            "priority": 2
+          }
+        },
+        "options": {}
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "12915fd5-c9e5-4aac-be33-2adef3d4a332",
+      "name": "Record backup assurance heartbeat",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        280,
+        440
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "upsert",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "automation_heartbeats"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "monitor_key",
+              "condition": "eq",
+              "keyValue": "homelab_ops_backup_assurance"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "monitor_key": "homelab_ops_backup_assurance",
+            "workflow_id": "DoKUgXuvIeD65FvW",
+            "workflow_name": "Schedule homelab operations reviews / backup assurance",
+            "last_seen_at": "={{ $now.toISO() }}",
+            "next_expected_at": "={{ $now.setZone('Asia/Shanghai').plus({ days: 7 }).set({ hour: 9, minute: 50, second: 0, millisecond: 0 }).toISO() }}",
+            "grace_minutes": 60,
+            "priority": 3
+          }
+        },
+        "options": {}
+      },
+      "onError": "continueRegularOutput"
+    }
+  ],
+  "connections": {
+    "Fleet health every 6h": {
+      "main": [
+        [
+          {
+            "node": "Record fleet health heartbeat",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare fleet health review": {
+      "main": [
+        [
+          {
+            "node": "Enqueue fleet health review",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Backup freshness daily 07:50": {
+      "main": [
+        [
+          {
+            "node": "Record backup freshness heartbeat",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare backup freshness review": {
+      "main": [
+        [
+          {
+            "node": "Enqueue backup freshness review",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Backup assurance weekly Sunday 09:50": {
+      "main": [
+        [
+          {
+            "node": "Record backup assurance heartbeat",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare backup assurance review": {
+      "main": [
+        [
+          {
+            "node": "Enqueue backup assurance review",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Record fleet health heartbeat": {
+      "main": [
+        [
+          {
+            "node": "Prepare fleet health review",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Record backup freshness heartbeat": {
+      "main": [
+        [
+          {
+            "node": "Prepare backup freshness review",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Record backup assurance heartbeat": {
+      "main": [
+        [
+          {
+            "node": "Prepare backup assurance review",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [
+    {
+      "id": "485c6e8c-1dc9-4f56-86fb-2da5d3e99cf9",
+      "name": "Fleet health scheduling",
+      "nodeIds": [
+        "03498d41-ce94-4924-9680-34c3d375073a",
+        "07dda1a4-87d1-4a7a-9a8a-3a9062baa4c9",
+        "3100ef95-e173-4a2c-88a4-7a29ac568354"
+      ],
+      "description": "Independent 6-hour read-only fleet health producer with deadman heartbeat."
+    },
+    {
+      "id": "2eb7f9e9-ed1b-4019-afe2-f01ee9a364a5",
+      "name": "Backup freshness scheduling",
+      "nodeIds": [
+        "6dc23bda-7db8-47ea-a596-e20d3dde095d",
+        "86205226-cb37-464f-9d6b-d347e11dd11a",
+        "0b12ccde-791c-4fb6-ab47-fd66af08558a"
+      ],
+      "description": "Independent daily read-only backup freshness producer with deadman heartbeat."
+    },
+    {
+      "id": "f48c1508-783a-41b1-b3d8-e645fdc90355",
+      "name": "Backup assurance scheduling",
+      "nodeIds": [
+        "12915fd5-c9e5-4aac-be33-2adef3d4a332",
+        "e09db473-60b2-4df6-986e-7d0110724d17",
+        "44978530-447c-40fb-a15f-0847131c9d5e"
+      ],
+      "description": "Independent weekly recoverability-evidence producer with deadman heartbeat and no implicit restore."
+    }
+  ],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true,
+    "errorWorkflow": "3LE3BnPfHSuIZCVR",
+    "timezone": "Asia/Shanghai",
+    "saveExecutionProgress": false,
+    "saveManualExecutions": false,
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "none",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "staticData": {
+    "node:Fleet health every 6h": {
+      "recurrenceRules": [
+        null
+      ],
+      "recurrenceRuleSignatures": [
+        null
+      ]
+    },
+    "node:Backup freshness daily 07:50": {
+      "recurrenceRules": [
+        null
+      ],
+      "recurrenceRuleSignatures": [
+        null
+      ]
+    },
+    "node:Backup assurance weekly Sunday 09:50": {
+      "recurrenceRules": [
+        null
+      ],
+      "recurrenceRuleSignatures": [
+        null
+      ]
+    }
+  },
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [
+    {
+      "id": "twNsKNALbdWLw0Ox",
+      "name": "automation",
+      "createdAt": "2026-10-22T08:25:54.546Z",
+      "updatedAt": "2026-10-22T08:25:54.546Z"
+    },
+    {
+      "id": "Kmfi1DI0MjIRkwfZ",
+      "name": "deadman-heartbeat",
+      "createdAt": "2026-10-22T16:25:50.145Z",
+      "updatedAt": "2026-10-22T16:25:50.145Z"
+    },
+    {
+      "id": "9jw9Bhya2Ylf8E4D",
+      "name": "ai-work-producer",
+      "createdAt": "2026-10-22T09:14:35.367Z",
+      "updatedAt": "2026-10-22T09:14:35.367Z"
+    },
+    {
+      "id": "BlGRvaSWqnmTk53i",
+      "name": "event-producer",
+      "createdAt": "2026-10-22T09:14:35.370Z",
+      "updatedAt": "2026-10-22T09:14:35.370Z"
+    },
+    {
+      "id": "fKoxhQDd26tREjYf",
+      "name": "infrastructure",
+      "createdAt": "2026-10-22T16:21:02.698Z",
+      "updatedAt": "2026-10-22T16:21:02.698Z"
+    },
+    {
+      "id": "YwjTMUhE83IXTCRg",
+      "name": "monitoring",
+      "createdAt": "2026-10-22T08:38:34.124Z",
+      "updatedAt": "2026-10-22T08:38:34.124Z"
+    }
+  ],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "DoKUgXuvIeD65FvW",
+      "projectId": "cNMj0K6AdJmi0OAZ",
+      "createdAt": "2026-10-23T15:38:29.844Z",
+      "updatedAt": "2026-10-23T15:38:29.844Z"
+    }
+  ],
+  "activeVersion": {
+    "versionId": "35bef769-ebf1-4569-86a6-b90017698322",
+    "workflowId": "DoKUgXuvIeD65FvW",
+    "nodes": [
+      {
+        "id": "37cec5b8-a4a1-4ad2-b337-62a804ba9afe",
+        "name": "Fleet health every 6h",
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.4,
+        "position": [
+          0,
+          0
+        ],
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "cronExpression",
+                "expression": "0 50 5,11,17,23 * * *"
+              }
+            ]
+          },
+          "misfirePolicy": "coalesce",
+          "misfireGraceSeconds": 7200
+        }
+      },
+      {
+        "id": "07dda1a4-87d1-4a7a-9a8a-3a9062baa4c9",
+        "name": "Prepare fleet health review",
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.5,
+        "position": [
+          280,
+          0
+        ],
+        "parameters": {
+          "mode": "manual",
+          "assignments": {
+            "assignments": [
+              {
+                "id": "work-id",
+                "name": "work_id",
+                "type": "string",
+                "value": "={{ 'homelab_ops:health_fallback:' + $now.setZone('Asia/Shanghai').toFormat('yyyyLLdd-HH') }}"
+              },
+              {
+                "id": "worker",
+                "name": "worker",
+                "type": "string",
+                "value": "hourly"
+              },
+              {
+                "id": "kind",
+                "name": "kind",
+                "type": "string",
+                "value": "homelab_ops_review"
+              },
+              {
+                "id": "priority",
+                "name": "priority",
+                "type": "number",
+                "value": 60
+              },
+              {
+                "id": "source-event-id",
+                "name": "source_event_id",
+                "type": "string",
+                "value": "={{ 'homelab.ops.scheduled:health_fallback:' + $now.setZone('Asia/Shanghai').toFormat('yyyyLLdd-HH') }}"
+              },
+              {
+                "id": "correlation-id",
+                "name": "correlation_id",
+                "type": "string",
+                "value": "={{ 'homelab:health-fallback:' + $now.setZone('Asia/Shanghai').toFormat('yyyyLLdd') }}"
+              },
+              {
+                "id": "project",
+                "name": "project",
+                "type": "string",
+                "value": "home-infrastructure"
+              },
+              {
+                "id": "input-ref",
+                "name": "input_ref",
+                "type": "string",
+                "value": "={{ 'homelab://ops/snapshot_fallback?scope=health&scheduled_at=' + encodeURIComponent($now.toISO()) }}"
+              },
+              {
+                "id": "summary",
+                "name": "summary",
+                "type": "string",
+                "value": "Read deterministic Homelab health snapshots. Do not start an Agent when snapshots are fresh and healthy; target only stale, missing or abnormal evidence."
+              },
+              {
+                "id": "not-before",
+                "name": "not_before",
+                "type": "string",
+                "value": "={{ $now.toISO() }}"
+              },
+              {
+                "id": "deadline",
+                "name": "deadline",
+                "type": "string",
+                "value": "={{ $now.plus({ hours: 3 }).toISO() }}"
+              },
+              {
+                "id": "event-id",
+                "name": "event_id",
+                "type": "string",
+                "value": "={{ 'homelab.ops.scheduled:health_fallback:' + $now.setZone('Asia/Shanghai').toFormat('yyyyLLdd-HH') }}"
+              },
+              {
+                "id": "event-time",
+                "name": "event_occurred_at",
+                "type": "string",
+                "value": "={{ $now.toISO() }}"
+              },
+              {
+                "id": "event-source",
+                "name": "event_source",
+                "type": "string",
+                "value": "n8n:homelab-ops"
+              },
+              {
+                "id": "event-category",
+                "name": "event_category",
+                "type": "string",
+                "value": "homelab.ops.scheduled"
+              },
+              {
+                "id": "event-title",
+                "name": "event_title",
+                "type": "string",
+                "value": "Homelab health snapshot fallback scheduled"
+              },
+              {
+                "id": "event-description",
+                "name": "event_description",
+                "type": "string",
+                "value": "Transition-period stale/missing snapshot fallback. Healthy fresh snapshots complete silently without Agent invocation."
+              },
+              {
+                "id": "event-status",
+                "name": "event_status",
+                "type": "string",
+                "value": "scheduled"
+              },
+              {
+                "id": "event-url",
+                "name": "event_url",
+                "type": "string",
+                "value": ""
+              },
+              {
+                "id": "event-meta",
+                "name": "event_metadata_object",
+                "type": "string",
+                "value": "={{ ({ scope: 'health', architecture_version: 2, worker: 'hourly', mode: 'snapshot_fallback', eligible_nodes: ['vps:DevOps','pi1:devops','pi2:devops'], excluded_nodes: ['MacBook:user_excluded','WorkPC:no_devops_workdir'] }).toJsonString() }}"
+              }
+            ]
+          },
+          "includeOtherFields": false,
+          "options": {}
+        }
+      },
+      {
+        "id": "3100ef95-e173-4a2c-88a4-7a29ac568354",
+        "name": "Enqueue fleet health review",
+        "type": "n8n-nodes-base.executeWorkflow",
+        "typeVersion": 1.4,
+        "position": [
+          560,
+          0
+        ],
+        "parameters": {
+          "source": "database",
+          "workflowId": {
+            "__rl": true,
+            "mode": "id",
+            "value": "oe8KZW4nLbYUUDzA"
+          },
+          "workflowInputs": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "work_id": "={{ $json.work_id }}",
+              "worker": "={{ $json.worker }}",
+              "kind": "={{ $json.kind }}",
+              "priority": "={{ $json.priority }}",
+              "source_event_id": "={{ $json.source_event_id }}",
+              "correlation_id": "={{ $json.correlation_id }}",
+              "project": "={{ $json.project }}",
+              "input_ref": "={{ $json.input_ref }}",
+              "summary": "={{ $json.summary }}",
+              "not_before": "={{ $json.not_before }}",
+              "deadline": "={{ $json.deadline }}",
+              "event_id": "={{ $json.event_id }}",
+              "event_occurred_at": "={{ $json.event_occurred_at }}",
+              "event_source": "={{ $json.event_source }}",
+              "event_category": "={{ $json.event_category }}",
+              "event_title": "={{ $json.event_title }}",
+              "event_description": "={{ $json.event_description }}",
+              "event_status": "={{ $json.event_status }}",
+              "event_url": "={{ $json.event_url }}",
+              "event_metadata_object": "={{ $json.event_metadata_object }}"
+            },
+            "schema": [
+              {
+                "id": "work_id",
+                "displayName": "work_id",
+                "type": "string"
+              },
+              {
+                "id": "worker",
+                "displayName": "worker",
+                "type": "string"
+              },
+              {
+                "id": "kind",
+                "displayName": "kind",
+                "type": "string"
+              },
+              {
+                "id": "priority",
+                "displayName": "priority",
+                "type": "number"
+              },
+              {
+                "id": "source_event_id",
+                "displayName": "source_event_id",
+                "type": "string"
+              },
+              {
+                "id": "correlation_id",
+                "displayName": "correlation_id",
+                "type": "string"
+              },
+              {
+                "id": "project",
+                "displayName": "project",
+                "type": "string"
+              },
+              {
+                "id": "input_ref",
+                "displayName": "input_ref",
+                "type": "string"
+              },
+              {
+                "id": "summary",
+                "displayName": "summary",
+                "type": "string"
+              },
+              {
+                "id": "not_before",
+                "displayName": "not_before",
+                "type": "string"
+              },
+              {
+                "id": "deadline",
+                "displayName": "deadline",
+                "type": "string"
+              },
+              {
+                "id": "event_id",
+                "displayName": "event_id",
+                "type": "string"
+              },
+              {
+                "id": "event_occurred_at",
+                "displayName": "event_occurred_at",
+                "type": "string"
+              },
+              {
+                "id": "event_source",
+                "displayName": "event_source",
+                "type": "string"
+              },
+              {
+                "id": "event_category",
+                "displayName": "event_category",
+                "type": "string"
+              },
+              {
+                "id": "event_title",
+                "displayName": "event_title",
+                "type": "string"
+              },
+              {
+                "id": "event_description",
+                "displayName": "event_description",
+                "type": "string"
+              },
+              {
+                "id": "event_status",
+                "displayName": "event_status",
+                "type": "string"
+              },
+              {
+                "id": "event_url",
+                "displayName": "event_url",
+                "type": "string"
+              },
+              {
+                "id": "event_metadata_object",
+                "displayName": "event_metadata_object",
+                "type": "string"
+              }
+            ]
+          },
+          "mode": "each",
+          "options": {
+            "waitForSubWorkflow": true
+          }
+        }
+      },
+      {
+        "id": "841f4351-ae1b-4f97-8919-422fe4347018",
+        "name": "Backup freshness daily 07:50",
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.4,
+        "position": [
+          0,
+          300
+        ],
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "cronExpression",
+                "expression": "0 50 7 * * *"
+              }
+            ]
+          },
+          "misfirePolicy": "coalesce",
+          "misfireGraceSeconds": 10800
+        }
+      },
+      {
+        "id": "86205226-cb37-464f-9d6b-d347e11dd11a",
+        "name": "Prepare backup freshness review",
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.5,
+        "position": [
+          280,
+          300
+        ],
+        "parameters": {
+          "mode": "manual",
+          "assignments": {
+            "assignments": [
+              {
+                "id": "work-id",
+                "name": "work_id",
+                "type": "string",
+                "value": "={{ 'homelab_ops:backup_fallback:' + $now.setZone('Asia/Shanghai').toFormat('yyyyLLdd') }}"
+              },
+              {
+                "id": "worker",
+                "name": "worker",
+                "type": "string",
+                "value": "hourly"
+              },
+              {
+                "id": "kind",
+                "name": "kind",
+                "type": "string",
+                "value": "homelab_ops_review"
+              },
+              {
+                "id": "priority",
+                "name": "priority",
+                "type": "number",
+                "value": 55
+              },
+              {
+                "id": "source-event-id",
+                "name": "source_event_id",
+                "type": "string",
+                "value": "={{ 'homelab.ops.scheduled:backup_fallback:' + $now.setZone('Asia/Shanghai').toFormat('yyyyLLdd') }}"
+              },
+              {
+                "id": "correlation-id",
+                "name": "correlation_id",
+                "type": "string",
+                "value": "={{ 'homelab:backup-fallback:' + $now.setZone('Asia/Shanghai').toFormat('yyyyLLdd') }}"
+              },
+              {
+                "id": "project",
+                "name": "project",
+                "type": "string",
+                "value": "home-infrastructure"
+              },
+              {
+                "id": "input-ref",
+                "name": "input_ref",
+                "type": "string",
+                "value": "={{ 'homelab://ops/snapshot_fallback?scope=backup&scheduled_at=' + encodeURIComponent($now.toISO()) }}"
+              },
+              {
+                "id": "summary",
+                "name": "summary",
+                "type": "string",
+                "value": "Read deterministic Homelab backup snapshots. Do not start an Agent when four-layer evidence is fresh and unchanged; target only stale, missing or abnormal evidence."
+              },
+              {
+                "id": "not-before",
+                "name": "not_before",
+                "type": "string",
+                "value": "={{ $now.toISO() }}"
+              },
+              {
+                "id": "deadline",
+                "name": "deadline",
+                "type": "string",
+                "value": "={{ $now.plus({ hours: 26 }).toISO() }}"
+              },
+              {
+                "id": "event-id",
+                "name": "event_id",
+                "type": "string",
+                "value": "={{ 'homelab.ops.scheduled:backup_fallback:' + $now.setZone('Asia/Shanghai').toFormat('yyyyLLdd') }}"
+              },
+              {
+                "id": "event-time",
+                "name": "event_occurred_at",
+                "type": "string",
+                "value": "={{ $now.toISO() }}"
+              },
+              {
+                "id": "event-source",
+                "name": "event_source",
+                "type": "string",
+                "value": "n8n:homelab-ops"
+              },
+              {
+                "id": "event-category",
+                "name": "event_category",
+                "type": "string",
+                "value": "homelab.ops.scheduled"
+              },
+              {
+                "id": "event-title",
+                "name": "event_title",
+                "type": "string",
+                "value": "Homelab backup snapshot fallback scheduled"
+              },
+              {
+                "id": "event-description",
+                "name": "event_description",
+                "type": "string",
+                "value": "Transition-period backup snapshot fallback. Timer/service state alone never implies recoverability."
+              },
+              {
+                "id": "event-status",
+                "name": "event_status",
+                "type": "string",
+                "value": "scheduled"
+              },
+              {
+                "id": "event-url",
+                "name": "event_url",
+                "type": "string",
+                "value": ""
+              },
+              {
+                "id": "event-meta",
+                "name": "event_metadata_object",
+                "type": "string",
+                "value": "={{ ({ scope: 'backup', architecture_version: 2, worker: 'hourly', mode: 'snapshot_fallback', restore_policy: 'evidence_only_no_restore', eligible_nodes: ['vps:DevOps','pi1:devops','pi2:devops'], excluded_nodes: ['MacBook:user_excluded','WorkPC:no_devops_workdir'] }).toJsonString() }}"
+              }
+            ]
+          },
+          "includeOtherFields": false,
+          "options": {}
+        }
+      },
+      {
+        "id": "0b12ccde-791c-4fb6-ab47-fd66af08558a",
+        "name": "Enqueue backup freshness review",
+        "type": "n8n-nodes-base.executeWorkflow",
+        "typeVersion": 1.4,
+        "position": [
+          560,
+          300
+        ],
+        "parameters": {
+          "source": "database",
+          "workflowId": {
+            "__rl": true,
+            "mode": "id",
+            "value": "oe8KZW4nLbYUUDzA"
+          },
+          "workflowInputs": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "work_id": "={{ $json.work_id }}",
+              "worker": "={{ $json.worker }}",
+              "kind": "={{ $json.kind }}",
+              "priority": "={{ $json.priority }}",
+              "source_event_id": "={{ $json.source_event_id }}",
+              "correlation_id": "={{ $json.correlation_id }}",
+              "project": "={{ $json.project }}",
+              "input_ref": "={{ $json.input_ref }}",
+              "summary": "={{ $json.summary }}",
+              "not_before": "={{ $json.not_before }}",
+              "deadline": "={{ $json.deadline }}",
+              "event_id": "={{ $json.event_id }}",
+              "event_occurred_at": "={{ $json.event_occurred_at }}",
+              "event_source": "={{ $json.event_source }}",
+              "event_category": "={{ $json.event_category }}",
+              "event_title": "={{ $json.event_title }}",
+              "event_description": "={{ $json.event_description }}",
+              "event_status": "={{ $json.event_status }}",
+              "event_url": "={{ $json.event_url }}",
+              "event_metadata_object": "={{ $json.event_metadata_object }}"
+            },
+            "schema": [
+              {
+                "id": "work_id",
+                "displayName": "work_id",
+                "type": "string"
+              },
+              {
+                "id": "worker",
+                "displayName": "worker",
+                "type": "string"
+              },
+              {
+                "id": "kind",
+                "displayName": "kind",
+                "type": "string"
+              },
+              {
+                "id": "priority",
+                "displayName": "priority",
+                "type": "number"
+              },
+              {
+                "id": "source_event_id",
+                "displayName": "source_event_id",
+                "type": "string"
+              },
+              {
+                "id": "correlation_id",
+                "displayName": "correlation_id",
+                "type": "string"
+              },
+              {
+                "id": "project",
+                "displayName": "project",
+                "type": "string"
+              },
+              {
+                "id": "input_ref",
+                "displayName": "input_ref",
+                "type": "string"
+              },
+              {
+                "id": "summary",
+                "displayName": "summary",
+                "type": "string"
+              },
+              {
+                "id": "not_before",
+                "displayName": "not_before",
+                "type": "string"
+              },
+              {
+                "id": "deadline",
+                "displayName": "deadline",
+                "type": "string"
+              },
+              {
+                "id": "event_id",
+                "displayName": "event_id",
+                "type": "string"
+              },
+              {
+                "id": "event_occurred_at",
+                "displayName": "event_occurred_at",
+                "type": "string"
+              },
+              {
+                "id": "event_source",
+                "displayName": "event_source",
+                "type": "string"
+              },
+              {
+                "id": "event_category",
+                "displayName": "event_category",
+                "type": "string"
+              },
+              {
+                "id": "event_title",
+                "displayName": "event_title",
+                "type": "string"
+              },
+              {
+                "id": "event_description",
+                "displayName": "event_description",
+                "type": "string"
+              },
+              {
+                "id": "event_status",
+                "displayName": "event_status",
+                "type": "string"
+              },
+              {
+                "id": "event_url",
+                "displayName": "event_url",
+                "type": "string"
+              },
+              {
+                "id": "event_metadata_object",
+                "displayName": "event_metadata_object",
+                "type": "string"
+              }
+            ]
+          },
+          "mode": "each",
+          "options": {
+            "waitForSubWorkflow": true
+          }
+        }
+      },
+      {
+        "id": "b1817fbe-7b29-4441-af02-3abe7631f6fb",
+        "name": "Backup assurance weekly Sunday 09:50",
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.4,
+        "position": [
+          0,
+          600
+        ],
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "cronExpression",
+                "expression": "0 50 9 * * 0"
+              }
+            ]
+          },
+          "misfirePolicy": "coalesce",
+          "misfireGraceSeconds": 21600
+        }
+      },
+      {
+        "id": "e09db473-60b2-4df6-986e-7d0110724d17",
+        "name": "Prepare backup assurance review",
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.5,
+        "position": [
+          280,
+          600
+        ],
+        "parameters": {
+          "mode": "manual",
+          "assignments": {
+            "assignments": [
+              {
+                "id": "work-id",
+                "name": "work_id",
+                "type": "string",
+                "value": "={{ 'homelab_ops:backup_assurance:' + $now.setZone('Asia/Shanghai').toFormat('kkkk-ww') }}"
+              },
+              {
+                "id": "worker",
+                "name": "worker",
+                "type": "string",
+                "value": "weekly"
+              },
+              {
+                "id": "kind",
+                "name": "kind",
+                "type": "string",
+                "value": "homelab_ops_review"
+              },
+              {
+                "id": "priority",
+                "name": "priority",
+                "type": "number",
+                "value": 58
+              },
+              {
+                "id": "source-event-id",
+                "name": "source_event_id",
+                "type": "string",
+                "value": "={{ 'homelab.ops.scheduled:backup_assurance:' + $now.setZone('Asia/Shanghai').toFormat('kkkk-ww') }}"
+              },
+              {
+                "id": "correlation-id",
+                "name": "correlation_id",
+                "type": "string",
+                "value": "={{ 'homelab:backup_assurance:' + $now.setZone('Asia/Shanghai').toFormat('kkkk-ww') }}"
+              },
+              {
+                "id": "project",
+                "name": "project",
+                "type": "string",
+                "value": "home-infrastructure"
+              },
+              {
+                "id": "input-ref",
+                "name": "input_ref",
+                "type": "string",
+                "value": "={{ 'homelab://ops/backup_assurance?mode=state_history&scheduled_at=' + encodeURIComponent($now.toISO()) }}"
+              },
+              {
+                "id": "summary",
+                "name": "summary",
+                "type": "string",
+                "value": "Synthesize 7-day Homelab state/event evidence for backup recoverability and blind spots. Do not broadly rescan hosts; promote host-level evidence gaps to targeted Hourly work."
+              },
+              {
+                "id": "not-before",
+                "name": "not_before",
+                "type": "string",
+                "value": "={{ $now.toISO() }}"
+              },
+              {
+                "id": "deadline",
+                "name": "deadline",
+                "type": "string",
+                "value": "={{ $now.plus({ days: 6 }).toISO() }}"
+              },
+              {
+                "id": "event-id",
+                "name": "event_id",
+                "type": "string",
+                "value": "={{ 'homelab.ops.scheduled:backup_assurance:' + $now.setZone('Asia/Shanghai').toFormat('kkkk-ww') }}"
+              },
+              {
+                "id": "event-time",
+                "name": "event_occurred_at",
+                "type": "string",
+                "value": "={{ $now.toISO() }}"
+              },
+              {
+                "id": "event-source",
+                "name": "event_source",
+                "type": "string",
+                "value": "n8n:homelab-ops"
+              },
+              {
+                "id": "event-category",
+                "name": "event_category",
+                "type": "string",
+                "value": "homelab.ops.scheduled"
+              },
+              {
+                "id": "event-title",
+                "name": "event_title",
+                "type": "string",
+                "value": "Homelab weekly backup assurance scheduled"
+              },
+              {
+                "id": "event-description",
+                "name": "event_description",
+                "type": "string",
+                "value": "Weekly state/history evidence audit. No implicit restore or broad host Agent sweep is authorized."
+              },
+              {
+                "id": "event-status",
+                "name": "event_status",
+                "type": "string",
+                "value": "scheduled"
+              },
+              {
+                "id": "event-url",
+                "name": "event_url",
+                "type": "string",
+                "value": ""
+              },
+              {
+                "id": "event-meta",
+                "name": "event_metadata_object",
+                "type": "string",
+                "value": "={{ ({ scope: 'backup_assurance', architecture_version: 2, worker: 'weekly', mode: 'state_history', restore_policy: 'documented_evidence_only_no_implicit_restore' }).toJsonString() }}"
+              }
+            ]
+          },
+          "includeOtherFields": false,
+          "options": {}
+        }
+      },
+      {
+        "id": "44978530-447c-40fb-a15f-0847131c9d5e",
+        "name": "Enqueue backup assurance review",
+        "type": "n8n-nodes-base.executeWorkflow",
+        "typeVersion": 1.4,
+        "position": [
+          560,
+          600
+        ],
+        "parameters": {
+          "source": "database",
+          "workflowId": {
+            "__rl": true,
+            "mode": "id",
+            "value": "oe8KZW4nLbYUUDzA"
+          },
+          "workflowInputs": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "work_id": "={{ $json.work_id }}",
+              "worker": "={{ $json.worker }}",
+              "kind": "={{ $json.kind }}",
+              "priority": "={{ $json.priority }}",
+              "source_event_id": "={{ $json.source_event_id }}",
+              "correlation_id": "={{ $json.correlation_id }}",
+              "project": "={{ $json.project }}",
+              "input_ref": "={{ $json.input_ref }}",
+              "summary": "={{ $json.summary }}",
+              "not_before": "={{ $json.not_before }}",
+              "deadline": "={{ $json.deadline }}",
+              "event_id": "={{ $json.event_id }}",
+              "event_occurred_at": "={{ $json.event_occurred_at }}",
+              "event_source": "={{ $json.event_source }}",
+              "event_category": "={{ $json.event_category }}",
+              "event_title": "={{ $json.event_title }}",
+              "event_description": "={{ $json.event_description }}",
+              "event_status": "={{ $json.event_status }}",
+              "event_url": "={{ $json.event_url }}",
+              "event_metadata_object": "={{ $json.event_metadata_object }}"
+            },
+            "schema": [
+              {
+                "id": "work_id",
+                "displayName": "work_id",
+                "type": "string"
+              },
+              {
+                "id": "worker",
+                "displayName": "worker",
+                "type": "string"
+              },
+              {
+                "id": "kind",
+                "displayName": "kind",
+                "type": "string"
+              },
+              {
+                "id": "priority",
+                "displayName": "priority",
+                "type": "number"
+              },
+              {
+                "id": "source_event_id",
+                "displayName": "source_event_id",
+                "type": "string"
+              },
+              {
+                "id": "correlation_id",
+                "displayName": "correlation_id",
+                "type": "string"
+              },
+              {
+                "id": "project",
+                "displayName": "project",
+                "type": "string"
+              },
+              {
+                "id": "input_ref",
+                "displayName": "input_ref",
+                "type": "string"
+              },
+              {
+                "id": "summary",
+                "displayName": "summary",
+                "type": "string"
+              },
+              {
+                "id": "not_before",
+                "displayName": "not_before",
+                "type": "string"
+              },
+              {
+                "id": "deadline",
+                "displayName": "deadline",
+                "type": "string"
+              },
+              {
+                "id": "event_id",
+                "displayName": "event_id",
+                "type": "string"
+              },
+              {
+                "id": "event_occurred_at",
+                "displayName": "event_occurred_at",
+                "type": "string"
+              },
+              {
+                "id": "event_source",
+                "displayName": "event_source",
+                "type": "string"
+              },
+              {
+                "id": "event_category",
+                "displayName": "event_category",
+                "type": "string"
+              },
+              {
+                "id": "event_title",
+                "displayName": "event_title",
+                "type": "string"
+              },
+              {
+                "id": "event_description",
+                "displayName": "event_description",
+                "type": "string"
+              },
+              {
+                "id": "event_status",
+                "displayName": "event_status",
+                "type": "string"
+              },
+              {
+                "id": "event_url",
+                "displayName": "event_url",
+                "type": "string"
+              },
+              {
+                "id": "event_metadata_object",
+                "displayName": "event_metadata_object",
+                "type": "string"
+              }
+            ]
+          },
+          "mode": "each",
+          "options": {
+            "waitForSubWorkflow": true
+          }
+        }
+      },
+      {
+        "id": "03498d41-ce94-4924-9680-34c3d375073a",
+        "name": "Record fleet health heartbeat",
+        "type": "n8n-nodes-base.dataTable",
+        "typeVersion": 1.1,
+        "position": [
+          280,
+          -160
+        ],
+        "parameters": {
+          "resource": "row",
+          "operation": "upsert",
+          "dataTableId": {
+            "__rl": true,
+            "mode": "name",
+            "value": "automation_heartbeats"
+          },
+          "matchType": "allConditions",
+          "filters": {
+            "conditions": [
+              {
+                "keyName": "monitor_key",
+                "condition": "eq",
+                "keyValue": "homelab_ops_health"
+              }
+            ]
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "monitor_key": "homelab_ops_health",
+              "workflow_id": "DoKUgXuvIeD65FvW",
+              "workflow_name": "Schedule homelab operations reviews / fleet health",
+              "last_seen_at": "={{ $now.toISO() }}",
+              "next_expected_at": "={{ $now.setZone('Asia/Shanghai').plus({ hours: 6 }).toISO() }}",
+              "grace_minutes": 30,
+              "priority": 2
+            }
+          },
+          "options": {}
+        },
+        "onError": "continueRegularOutput"
+      },
+      {
+        "id": "6dc23bda-7db8-47ea-a596-e20d3dde095d",
+        "name": "Record backup freshness heartbeat",
+        "type": "n8n-nodes-base.dataTable",
+        "typeVersion": 1.1,
+        "position": [
+          280,
+          140
+        ],
+        "parameters": {
+          "resource": "row",
+          "operation": "upsert",
+          "dataTableId": {
+            "__rl": true,
+            "mode": "name",
+            "value": "automation_heartbeats"
+          },
+          "matchType": "allConditions",
+          "filters": {
+            "conditions": [
+              {
+                "keyName": "monitor_key",
+                "condition": "eq",
+                "keyValue": "homelab_ops_backup"
+              }
+            ]
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "monitor_key": "homelab_ops_backup",
+              "workflow_id": "DoKUgXuvIeD65FvW",
+              "workflow_name": "Schedule homelab operations reviews / backup freshness",
+              "last_seen_at": "={{ $now.toISO() }}",
+              "next_expected_at": "={{ $now.setZone('Asia/Shanghai').plus({ days: 1 }).set({ hour: 7, minute: 50, second: 0, millisecond: 0 }).toISO() }}",
+              "grace_minutes": 30,
+              "priority": 2
+            }
+          },
+          "options": {}
+        },
+        "onError": "continueRegularOutput"
+      },
+      {
+        "id": "12915fd5-c9e5-4aac-be33-2adef3d4a332",
+        "name": "Record backup assurance heartbeat",
+        "type": "n8n-nodes-base.dataTable",
+        "typeVersion": 1.1,
+        "position": [
+          280,
+          440
+        ],
+        "parameters": {
+          "resource": "row",
+          "operation": "upsert",
+          "dataTableId": {
+            "__rl": true,
+            "mode": "name",
+            "value": "automation_heartbeats"
+          },
+          "matchType": "allConditions",
+          "filters": {
+            "conditions": [
+              {
+                "keyName": "monitor_key",
+                "condition": "eq",
+                "keyValue": "homelab_ops_backup_assurance"
+              }
+            ]
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "monitor_key": "homelab_ops_backup_assurance",
+              "workflow_id": "DoKUgXuvIeD65FvW",
+              "workflow_name": "Schedule homelab operations reviews / backup assurance",
+              "last_seen_at": "={{ $now.toISO() }}",
+              "next_expected_at": "={{ $now.setZone('Asia/Shanghai').plus({ days: 7 }).set({ hour: 9, minute: 50, second: 0, millisecond: 0 }).toISO() }}",
+              "grace_minutes": 60,
+              "priority": 3
+            }
+          },
+          "options": {}
+        },
+        "onError": "continueRegularOutput"
+      }
+    ],
+    "connections": {
+      "Fleet health every 6h": {
+        "main": [
+          [
+            {
+              "node": "Record fleet health heartbeat",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prepare fleet health review": {
+        "main": [
+          [
+            {
+              "node": "Enqueue fleet health review",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Backup freshness daily 07:50": {
+        "main": [
+          [
+            {
+              "node": "Record backup freshness heartbeat",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prepare backup freshness review": {
+        "main": [
+          [
+            {
+              "node": "Enqueue backup freshness review",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Backup assurance weekly Sunday 09:50": {
+        "main": [
+          [
+            {
+              "node": "Record backup assurance heartbeat",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prepare backup assurance review": {
+        "main": [
+          [
+            {
+              "node": "Enqueue backup assurance review",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Record fleet health heartbeat": {
+        "main": [
+          [
+            {
+              "node": "Prepare fleet health review",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Record backup freshness heartbeat": {
+        "main": [
+          [
+            {
+              "node": "Prepare backup freshness review",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Record backup assurance heartbeat": {
+        "main": [
+          [
+            {
+              "node": "Prepare backup assurance review",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "nodeGroups": [
+      {
+        "id": "485c6e8c-1dc9-4f56-86fb-2da5d3e99cf9",
+        "name": "Fleet health scheduling",
+        "nodeIds": [
+          "03498d41-ce94-4924-9680-34c3d375073a",
+          "07dda1a4-87d1-4a7a-9a8a-3a9062baa4c9",
+          "3100ef95-e173-4a2c-88a4-7a29ac568354"
+        ],
+        "description": "Independent 6-hour read-only fleet health producer with deadman heartbeat."
+      },
+      {
+        "id": "2eb7f9e9-ed1b-4019-afe2-f01ee9a364a5",
+        "name": "Backup freshness scheduling",
+        "nodeIds": [
+          "6dc23bda-7db8-47ea-a596-e20d3dde095d",
+          "86205226-cb37-464f-9d6b-d347e11dd11a",
+          "0b12ccde-791c-4fb6-ab47-fd66af08558a"
+        ],
+        "description": "Independent daily read-only backup freshness producer with deadman heartbeat."
+      },
+      {
+        "id": "f48c1508-783a-41b1-b3d8-e645fdc90355",
+        "name": "Backup assurance scheduling",
+        "nodeIds": [
+          "12915fd5-c9e5-4aac-be33-2adef3d4a332",
+          "e09db473-60b2-4df6-986e-7d0110724d17",
+          "44978530-447c-40fb-a15f-0847131c9d5e"
+        ],
+        "description": "Independent weekly recoverability-evidence producer with deadman heartbeat and no implicit restore."
+      }
+    ],
+    "authors": "Administrator NTLx (via MCP)",
+    "name": "Homelab v2 worker routing",
+    "description": "Converts health/backup scheduled reviews to explicit Hourly snapshot fallbacks with deadlines. Weekly backup assurance becomes state/history synthesis. Primary path is deterministic probes -> current state -> material transition -> Hourly.",
+    "autosaved": false,
+    "createdAt": "2026-10-23T16:33:32.544Z",
+    "updatedAt": "2026-10-23T16:33:32.544Z"
+  }
+}
