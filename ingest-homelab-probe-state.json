@@ -1,0 +1,971 @@
+{
+  "id": "JIMvmNhQgTrDEoQM",
+  "name": "Ingest Homelab probe state",
+  "active": true,
+  "activeVersionId": "86dcff54-22e1-4d2c-bdc9-39f4bdd844e9",
+  "createdAt": "2026-10-23T16:28:21.585Z",
+  "updatedAt": "2026-10-23T17:04:50.318Z",
+  "isArchived": false,
+  "versionId": "86dcff54-22e1-4d2c-bdc9-39f4bdd844e9",
+  "triggerCount": 1,
+  "nodes": [
+    {
+      "id": "5911076d-09ec-4db1-8f08-bc3e782fbf49",
+      "name": "Receive Homelab Probe",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.2,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "internal/homelab/probe",
+        "authentication": "headerAuth",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "webhookId": "7e21b190-5ab1-4e49-a2f6-fbd61361dd92",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "RvmfH6qWSIUABPQO",
+          "name": "n8n Webhook（Bearer Auth）"
+        }
+      }
+    },
+    {
+      "id": "ec188ee6-d281-4fce-a931-81225d8de349",
+      "name": "Normalize and Validate Probe",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        0
+      ],
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "language": "javaScript",
+        "jsCode": "const b = $json.body || {};\nconst allowedNodes = new Set(['vps','pi1','pi2']);\nconst allowedScopes = new Set(['health','backup']);\nconst allowedStatus = new Set(['healthy','ok','degraded','unhealthy','critical','unknown']);\nif (!allowedNodes.has(String(b.node_id || ''))) throw new Error('invalid node_id');\nif (!allowedScopes.has(String(b.scope || ''))) throw new Error('invalid scope');\nif (!allowedStatus.has(String(b.status || ''))) throw new Error('invalid status');\nif (!b.observed_at || Number.isNaN(Date.parse(b.observed_at))) throw new Error('invalid observed_at');\nif (!b.state_hash) throw new Error('state_hash required');\nconst backup = b.backup || {};\nreturn { state_key: String(b.node_id) + ':' + String(b.scope), node_id: String(b.node_id), scope: String(b.scope), observed_at: String(b.observed_at), observed_status: String(b.status), coverage_status: String(b.coverage_status || 'full'), state_hash: String(b.state_hash), probe_version: String(b.probe_version || 'v2'), dry_run: b.dry_run === true, snapshot_json: JSON.stringify(b.snapshot || b), blind_spots: JSON.stringify(Array.isArray(b.blind_spots) ? b.blind_spots : []), backup_configured: String(backup.configured ?? (b.scope === 'backup' ? 'unknown' : 'n/a')), backup_fresh_artifact: String(backup.fresh_artifact ?? (b.scope === 'backup' ? 'unknown' : 'n/a')), backup_correct_destination: String(backup.correct_destination ?? (b.scope === 'backup' ? 'unknown' : 'n/a')), backup_recoverability: String(backup.recoverability ?? (b.scope === 'backup' ? 'unknown' : 'n/a')) };"
+      }
+    },
+    {
+      "id": "2cb1e9bc-dc21-4fd5-8a2e-27b639296717",
+      "name": "Get Current Homelab State",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        448,
+        0
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "homelab_node_state"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "state_key",
+              "condition": "eq",
+              "keyValue": "={{ $(\"Normalize and Validate Probe\").item.json.state_key }}"
+            }
+          ]
+        },
+        "returnAll": false,
+        "limit": 1
+      }
+    },
+    {
+      "id": "b4034b8b-9553-4e12-8dc8-465d17d61ac1",
+      "name": "Decide Homelab Transition",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        672,
+        0
+      ],
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "language": "javaScript",
+        "jsCode": "const prev = $json || {};\nconst obs = $('Normalize and Validate Probe').item.json;\nconst previousStatus = String(prev.status || 'unknown');\nconst previousCoverage = String(prev.coverage_status || 'unknown');\nconst previousIncident = String(prev.incident_id || '');\nconst previousFailures = Number(prev.consecutive_failures || 0);\nconst previousSuccesses = Number(prev.consecutive_successes || 0);\nconst rawHealthy = ['healthy','ok'].includes(obs.observed_status);\nconst coverageFull = obs.coverage_status === 'full';\nconst critical = obs.observed_status === 'critical';\nconst coverageOnly = rawHealthy && !coverageFull;\nconst sameHash = Boolean(prev.state_hash) && String(prev.state_hash) === obs.state_hash;\nconst recoveringFromStale = previousIncident.startsWith('homelab-stale:') && obs.coverage_status !== 'stale' && rawHealthy;\nlet failures = previousFailures, successes = previousSuccesses, effectiveStatus = previousStatus;\nlet incidentId = previousIncident, incidentStartedAt = prev.incident_started_at || null;\nlet eventCategory = '', eventStatus = '', shouldEnqueue = false, transition = 'no_change';\n\nif (recoveringFromStale) {\n  failures = 0; successes = previousSuccesses + 1;\n  if (successes < 2) {\n    effectiveStatus = 'recovering'; transition = 'hysteresis_wait_success_2';\n  } else {\n    effectiveStatus = coverageOnly ? 'coverage_degraded' : 'healthy';\n    eventCategory = 'homelab.ops.recovery'; eventStatus = 'recovered'; shouldEnqueue = true; transition = 'probe_coverage_recovered';\n  }\n} else if (critical) {\n  failures = previousFailures + 1; successes = 0; effectiveStatus = 'critical';\n  if (!previousIncident) {\n    incidentId = 'homelab-inc:' + obs.node_id + ':' + obs.scope + ':' + obs.observed_at.replace(/[^0-9]/g, '').slice(0,14);\n    incidentStartedAt = obs.observed_at;\n    eventCategory = 'homelab.ops.incident'; eventStatus = 'detected'; shouldEnqueue = true; transition = 'incident_opened';\n  } else if (previousStatus !== 'critical' || !sameHash) {\n    eventCategory = 'homelab.ops.change'; eventStatus = 'changed'; shouldEnqueue = true; transition = 'incident_changed';\n  } else transition = 'incident_unchanged';\n} else if (coverageOnly) {\n  successes = 0;\n  if (previousStatus === 'unknown' && !previousIncident) {\n    failures = 0; effectiveStatus = 'coverage_degraded'; incidentId = ''; incidentStartedAt = null;\n    transition = 'baseline_established_degraded';\n  } else if (previousStatus === 'coverage_degraded' && !previousIncident) {\n    failures = 0; effectiveStatus = 'coverage_degraded';\n    if (sameHash && previousCoverage === obs.coverage_status) transition = 'coverage_baseline_unchanged';\n    else {\n      eventCategory = 'homelab.ops.change'; eventStatus = 'changed'; shouldEnqueue = true; transition = 'coverage_baseline_changed';\n    }\n  } else if (previousIncident) {\n    failures = previousFailures + 1; effectiveStatus = 'coverage_degraded';\n    if (previousStatus !== effectiveStatus || !sameHash || previousCoverage !== obs.coverage_status) {\n      eventCategory = 'homelab.ops.change'; eventStatus = 'changed'; shouldEnqueue = true; transition = 'incident_changed';\n    } else transition = 'incident_unchanged';\n  } else {\n    failures = previousFailures + 1;\n    if (failures >= 2) {\n      effectiveStatus = 'coverage_degraded';\n      incidentId = 'homelab-inc:' + obs.node_id + ':' + obs.scope + ':' + obs.observed_at.replace(/[^0-9]/g, '').slice(0,14);\n      incidentStartedAt = obs.observed_at;\n      eventCategory = 'homelab.ops.coverage_change'; eventStatus = 'coverage_degraded'; shouldEnqueue = true; transition = 'coverage_degraded';\n    } else { effectiveStatus = 'suspect'; transition = 'hysteresis_wait_failure_2'; }\n  }\n} else if (!rawHealthy) {\n  failures = previousFailures + 1; successes = 0;\n  if (previousIncident) {\n    effectiveStatus = obs.observed_status;\n    if (previousStatus !== effectiveStatus || !sameHash) {\n      eventCategory = 'homelab.ops.change'; eventStatus = 'changed'; shouldEnqueue = true; transition = 'incident_changed';\n    } else transition = 'incident_unchanged';\n  } else if (failures >= 2) {\n    effectiveStatus = obs.observed_status;\n    incidentId = 'homelab-inc:' + obs.node_id + ':' + obs.scope + ':' + obs.observed_at.replace(/[^0-9]/g, '').slice(0,14);\n    incidentStartedAt = obs.observed_at;\n    eventCategory = 'homelab.ops.incident'; eventStatus = 'detected'; shouldEnqueue = true; transition = 'incident_opened';\n  } else { effectiveStatus = 'suspect'; transition = 'hysteresis_wait_failure_2'; }\n} else {\n  failures = 0; successes = previousSuccesses + 1;\n  if (previousIncident && successes < 2) {\n    effectiveStatus = 'recovering'; transition = 'hysteresis_wait_success_2';\n  } else if (previousIncident && successes >= 2) {\n    effectiveStatus = 'healthy'; eventCategory = 'homelab.ops.recovery'; eventStatus = 'recovered'; shouldEnqueue = true; transition = 'recovered';\n  } else if (previousStatus === 'coverage_degraded') {\n    effectiveStatus = 'healthy'; eventCategory = 'homelab.ops.coverage_change'; eventStatus = 'coverage_restored'; shouldEnqueue = true; transition = 'coverage_restored';\n  } else {\n    effectiveStatus = 'healthy';\n    if (previousStatus === 'unknown') transition = 'baseline_established';\n    else if (previousStatus === 'suspect') transition = 'transient_recovered';\n    else transition = 'no_change';\n  }\n}\n\nconst correlationId = previousIncident || incidentId || ('homelab:' + obs.node_id + ':' + obs.scope);\nconst eventIncidentId = previousIncident || incidentId;\nconst changed = previousStatus !== effectiveStatus || previousCoverage !== obs.coverage_status || String(prev.state_hash || '') !== obs.state_hash;\nconst lastChangeAt = changed ? obs.observed_at : (prev.last_change_at || obs.observed_at);\nconst recovery = eventCategory === 'homelab.ops.recovery';\nconst stateIncidentId = recovery ? '' : incidentId;\nconst stateIncidentStartedAt = recovery ? null : incidentStartedAt;\nconst stamp = obs.observed_at.replace(/[^0-9]/g, '').slice(0,14);\nconst eventId = shouldEnqueue ? eventCategory + ':' + obs.node_id + ':' + obs.scope + ':' + stamp : '';\nconst priority = critical ? 3 : eventCategory === 'homelab.ops.incident' ? 5 : eventCategory === 'homelab.ops.change' ? 12 : eventCategory === 'homelab.ops.coverage_change' ? 15 : eventCategory === 'homelab.ops.recovery' ? 20 : 30;\nconst deadline = obs.scope === 'health' ? new Date(Date.parse(obs.observed_at) + 3 * 3600000).toISOString() : new Date(Date.parse(obs.observed_at) + 26 * 3600000).toISOString();\nreturn { ...obs, status: effectiveStatus, last_seen_at: obs.observed_at, consecutive_failures: failures, consecutive_successes: successes, incident_id: stateIncidentId, incident_started_at: stateIncidentStartedAt, last_change_at: lastChangeAt, transition, should_enqueue: shouldEnqueue, worker: 'hourly', kind: 'homelab_ops_review', priority, correlation_id: correlationId, event_incident_id: eventIncidentId, event_id: eventId, event_category: eventCategory, event_status: eventStatus, deadline, work_id: shouldEnqueue ? ('homelab_ops:' + obs.node_id + ':' + obs.scope + ':' + transition + ':' + stamp) : '', source_event_id: eventId, project: 'home-infrastructure', input_ref: 'homelab://state/' + obs.state_key + '?observed_at=' + encodeURIComponent(obs.observed_at) + (eventIncidentId ? '&incident_id=' + encodeURIComponent(eventIncidentId) : ''), summary: shouldEnqueue ? ('Homelab ' + transition + ' on ' + obs.node_id + ' / ' + obs.scope + '. Effective status=' + effectiveStatus + ', observed=' + obs.observed_status + ', coverage=' + obs.coverage_status + '.') : '', event_title: shouldEnqueue ? ('Homelab ' + transition + ': ' + obs.node_id + ' / ' + obs.scope) : '', event_description: shouldEnqueue ? ('Deterministic probe transition ' + previousStatus + ' -> ' + effectiveStatus + '; observed status=' + obs.observed_status + '; coverage=' + obs.coverage_status + '; failures=' + failures + '; successes=' + successes + '.') : '', event_metadata_object: JSON.stringify({ node_id: obs.node_id, scope: obs.scope, previous_status: previousStatus, effective_status: effectiveStatus, observed_status: obs.observed_status, previous_coverage_status: previousCoverage, coverage_status: obs.coverage_status, transition, incident_id: eventIncidentId || null, state_hash: obs.state_hash, probe_version: obs.probe_version, blind_spots: JSON.parse(obs.blind_spots || '[]'), backup: { configured: obs.backup_configured, fresh_artifact: obs.backup_fresh_artifact, correct_destination: obs.backup_correct_destination, recoverability: obs.backup_recoverability } }) };"
+      }
+    },
+    {
+      "id": "d7794965-8cd9-42fe-8e0d-812af2f5403a",
+      "name": "Upsert Current Homelab State",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        896,
+        0
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "upsert",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "homelab_node_state"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "state_key",
+              "condition": "eq",
+              "keyValue": "={{ $(\"Decide Homelab Transition\").item.json.state_key }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "state_key": "={{ $(\"Decide Homelab Transition\").item.json.state_key }}",
+            "node_id": "={{ $(\"Decide Homelab Transition\").item.json.node_id }}",
+            "scope": "={{ $(\"Decide Homelab Transition\").item.json.scope }}",
+            "observed_at": "={{ $(\"Decide Homelab Transition\").item.json.observed_at }}",
+            "last_seen_at": "={{ $(\"Decide Homelab Transition\").item.json.last_seen_at }}",
+            "status": "={{ $(\"Decide Homelab Transition\").item.json.status }}",
+            "coverage_status": "={{ $(\"Decide Homelab Transition\").item.json.coverage_status }}",
+            "state_hash": "={{ $(\"Decide Homelab Transition\").item.json.state_hash }}",
+            "probe_version": "={{ $(\"Decide Homelab Transition\").item.json.probe_version }}",
+            "consecutive_failures": "={{ $(\"Decide Homelab Transition\").item.json.consecutive_failures }}",
+            "consecutive_successes": "={{ $(\"Decide Homelab Transition\").item.json.consecutive_successes }}",
+            "incident_id": "={{ $(\"Decide Homelab Transition\").item.json.incident_id }}",
+            "incident_started_at": "={{ $(\"Decide Homelab Transition\").item.json.incident_started_at }}",
+            "last_change_at": "={{ $(\"Decide Homelab Transition\").item.json.last_change_at }}",
+            "snapshot_json": "={{ $(\"Decide Homelab Transition\").item.json.snapshot_json }}",
+            "blind_spots": "={{ $(\"Decide Homelab Transition\").item.json.blind_spots }}",
+            "backup_configured": "={{ $(\"Decide Homelab Transition\").item.json.backup_configured }}",
+            "backup_fresh_artifact": "={{ $(\"Decide Homelab Transition\").item.json.backup_fresh_artifact }}",
+            "backup_correct_destination": "={{ $(\"Decide Homelab Transition\").item.json.backup_correct_destination }}",
+            "backup_recoverability": "={{ $(\"Decide Homelab Transition\").item.json.backup_recoverability }}"
+          }
+        },
+        "options": {
+          "dryRun": "={{ $('Normalize and Validate Probe').item.json.dry_run === true }}"
+        }
+      }
+    },
+    {
+      "id": "28d18b97-2b75-4cec-a198-5f97a21985e0",
+      "name": "Restore Transition Context",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1120,
+        0
+      ],
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "language": "javaScript",
+        "jsCode": "return $('Decide Homelab Transition').item.json;"
+      }
+    },
+    {
+      "id": "f397076c-d06a-4f19-a35c-9c91bdb448bf",
+      "name": "Keep Material Transitions",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.4,
+      "position": [
+        1344,
+        0
+      ],
+      "parameters": {
+        "conditions": {
+          "combinator": "and",
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.should_enqueue }}",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              },
+              "rightValue": ""
+            },
+            {
+              "leftValue": "={{ $json.dry_run === true ? 'dry' : 'live' }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              },
+              "rightValue": "live"
+            }
+          ]
+        },
+        "options": {
+          "ignoreCase": false
+        }
+      }
+    },
+    {
+      "id": "291e03e9-c8de-4b86-812f-088ad6f1e526",
+      "name": "Enqueue Homelab Transition",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.4,
+      "position": [
+        1568,
+        0
+      ],
+      "parameters": {
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "oe8KZW4nLbYUUDzA"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "work_id": "={{ $json.work_id }}",
+            "worker": "={{ $json.worker }}",
+            "kind": "={{ $json.kind }}",
+            "priority": "={{ $json.priority }}",
+            "source_event_id": "={{ $json.source_event_id }}",
+            "correlation_id": "={{ $json.correlation_id }}",
+            "project": "={{ $json.project }}",
+            "input_ref": "={{ $json.input_ref }}",
+            "summary": "={{ $json.summary }}",
+            "not_before": "={{ $now.toISO() }}",
+            "deadline": "={{ $json.deadline }}",
+            "event_id": "={{ $json.event_id }}",
+            "event_occurred_at": "={{ $json.observed_at }}",
+            "event_source": "homelab-probe",
+            "event_category": "={{ $json.event_category }}",
+            "event_title": "={{ $json.event_title }}",
+            "event_description": "={{ $json.event_description }}",
+            "event_status": "={{ $json.event_status }}",
+            "event_url": "",
+            "event_metadata_object": "={{ $json.event_metadata_object }}"
+          },
+          "schema": [
+            {
+              "id": "work_id",
+              "displayName": "work_id",
+              "type": "string"
+            },
+            {
+              "id": "worker",
+              "displayName": "worker",
+              "type": "string"
+            },
+            {
+              "id": "kind",
+              "displayName": "kind",
+              "type": "string"
+            },
+            {
+              "id": "priority",
+              "displayName": "priority",
+              "type": "number"
+            },
+            {
+              "id": "source_event_id",
+              "displayName": "source_event_id",
+              "type": "string"
+            },
+            {
+              "id": "correlation_id",
+              "displayName": "correlation_id",
+              "type": "string"
+            },
+            {
+              "id": "project",
+              "displayName": "project",
+              "type": "string"
+            },
+            {
+              "id": "input_ref",
+              "displayName": "input_ref",
+              "type": "string"
+            },
+            {
+              "id": "summary",
+              "displayName": "summary",
+              "type": "string"
+            },
+            {
+              "id": "not_before",
+              "displayName": "not_before",
+              "type": "string"
+            },
+            {
+              "id": "deadline",
+              "displayName": "deadline",
+              "type": "string"
+            },
+            {
+              "id": "event_id",
+              "displayName": "event_id",
+              "type": "string"
+            },
+            {
+              "id": "event_occurred_at",
+              "displayName": "event_occurred_at",
+              "type": "string"
+            },
+            {
+              "id": "event_source",
+              "displayName": "event_source",
+              "type": "string"
+            },
+            {
+              "id": "event_category",
+              "displayName": "event_category",
+              "type": "string"
+            },
+            {
+              "id": "event_title",
+              "displayName": "event_title",
+              "type": "string"
+            },
+            {
+              "id": "event_description",
+              "displayName": "event_description",
+              "type": "string"
+            },
+            {
+              "id": "event_status",
+              "displayName": "event_status",
+              "type": "string"
+            },
+            {
+              "id": "event_url",
+              "displayName": "event_url",
+              "type": "string"
+            },
+            {
+              "id": "event_metadata_object",
+              "displayName": "event_metadata_object",
+              "type": "string"
+            }
+          ]
+        },
+        "mode": "each",
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Receive Homelab Probe": {
+      "main": [
+        [
+          {
+            "node": "Normalize and Validate Probe",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize and Validate Probe": {
+      "main": [
+        [
+          {
+            "node": "Get Current Homelab State",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Current Homelab State": {
+      "main": [
+        [
+          {
+            "node": "Decide Homelab Transition",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Decide Homelab Transition": {
+      "main": [
+        [
+          {
+            "node": "Upsert Current Homelab State",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upsert Current Homelab State": {
+      "main": [
+        [
+          {
+            "node": "Restore Transition Context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Restore Transition Context": {
+      "main": [
+        [
+          {
+            "node": "Keep Material Transitions",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Keep Material Transitions": {
+      "main": [
+        [
+          {
+            "node": "Enqueue Homelab Transition",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [
+    {
+      "id": "04d7aa03-894d-4b82-b18b-760bff460803",
+      "name": "Process probe state",
+      "nodeIds": [
+        "ec188ee6-d281-4fce-a931-81225d8de349",
+        "2cb1e9bc-dc21-4fd5-8a2e-27b639296717",
+        "b4034b8b-9553-4e12-8dc8-465d17d61ac1",
+        "d7794965-8cd9-42fe-8e0d-812af2f5403a",
+        "28d18b97-2b75-4cec-a198-5f97a21985e0",
+        "f397076c-d06a-4f19-a35c-9c91bdb448bf",
+        "291e03e9-c8de-4b86-812f-088ad6f1e526"
+      ],
+      "description": "Validate snapshots, maintain hysteretic current state, and promote only material transitions."
+    }
+  ],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true,
+    "errorWorkflow": "3LE3BnPfHSuIZCVR",
+    "timezone": "Asia/Shanghai",
+    "saveExecutionProgress": false,
+    "saveManualExecutions": false,
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "none",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [
+    {
+      "id": "twNsKNALbdWLw0Ox",
+      "name": "automation",
+      "createdAt": "2026-10-22T08:25:54.546Z",
+      "updatedAt": "2026-10-22T08:25:54.546Z"
+    },
+    {
+      "id": "YwjTMUhE83IXTCRg",
+      "name": "monitoring",
+      "createdAt": "2026-10-22T08:38:34.124Z",
+      "updatedAt": "2026-10-22T08:38:34.124Z"
+    },
+    {
+      "id": "fKoxhQDd26tREjYf",
+      "name": "infrastructure",
+      "createdAt": "2026-10-22T16:21:02.698Z",
+      "updatedAt": "2026-10-22T16:21:02.698Z"
+    },
+    {
+      "id": "BlGRvaSWqnmTk53i",
+      "name": "event-producer",
+      "createdAt": "2026-10-22T09:14:35.370Z",
+      "updatedAt": "2026-10-22T09:14:35.370Z"
+    },
+    {
+      "id": "9jw9Bhya2Ylf8E4D",
+      "name": "ai-work-producer",
+      "createdAt": "2026-10-22T09:14:35.367Z",
+      "updatedAt": "2026-10-22T09:14:35.367Z"
+    }
+  ],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "JIMvmNhQgTrDEoQM",
+      "projectId": "cNMj0K6AdJmi0OAZ",
+      "createdAt": "2026-10-23T16:28:21.585Z",
+      "updatedAt": "2026-10-23T16:28:21.585Z"
+    }
+  ],
+  "activeVersion": {
+    "versionId": "86dcff54-22e1-4d2c-bdc9-39f4bdd844e9",
+    "workflowId": "JIMvmNhQgTrDEoQM",
+    "nodes": [
+      {
+        "id": "5911076d-09ec-4db1-8f08-bc3e782fbf49",
+        "name": "Receive Homelab Probe",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.2,
+        "position": [
+          0,
+          0
+        ],
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "internal/homelab/probe",
+          "authentication": "headerAuth",
+          "responseMode": "onReceived",
+          "options": {}
+        },
+        "webhookId": "7e21b190-5ab1-4e49-a2f6-fbd61361dd92",
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "RvmfH6qWSIUABPQO",
+            "name": "n8n Webhook（Bearer Auth）"
+          }
+        }
+      },
+      {
+        "id": "ec188ee6-d281-4fce-a931-81225d8de349",
+        "name": "Normalize and Validate Probe",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          224,
+          0
+        ],
+        "parameters": {
+          "mode": "runOnceForEachItem",
+          "language": "javaScript",
+          "jsCode": "const b = $json.body || {};\nconst allowedNodes = new Set(['vps','pi1','pi2']);\nconst allowedScopes = new Set(['health','backup']);\nconst allowedStatus = new Set(['healthy','ok','degraded','unhealthy','critical','unknown']);\nif (!allowedNodes.has(String(b.node_id || ''))) throw new Error('invalid node_id');\nif (!allowedScopes.has(String(b.scope || ''))) throw new Error('invalid scope');\nif (!allowedStatus.has(String(b.status || ''))) throw new Error('invalid status');\nif (!b.observed_at || Number.isNaN(Date.parse(b.observed_at))) throw new Error('invalid observed_at');\nif (!b.state_hash) throw new Error('state_hash required');\nconst backup = b.backup || {};\nreturn { state_key: String(b.node_id) + ':' + String(b.scope), node_id: String(b.node_id), scope: String(b.scope), observed_at: String(b.observed_at), observed_status: String(b.status), coverage_status: String(b.coverage_status || 'full'), state_hash: String(b.state_hash), probe_version: String(b.probe_version || 'v2'), dry_run: b.dry_run === true, snapshot_json: JSON.stringify(b.snapshot || b), blind_spots: JSON.stringify(Array.isArray(b.blind_spots) ? b.blind_spots : []), backup_configured: String(backup.configured ?? (b.scope === 'backup' ? 'unknown' : 'n/a')), backup_fresh_artifact: String(backup.fresh_artifact ?? (b.scope === 'backup' ? 'unknown' : 'n/a')), backup_correct_destination: String(backup.correct_destination ?? (b.scope === 'backup' ? 'unknown' : 'n/a')), backup_recoverability: String(backup.recoverability ?? (b.scope === 'backup' ? 'unknown' : 'n/a')) };"
+        }
+      },
+      {
+        "id": "2cb1e9bc-dc21-4fd5-8a2e-27b639296717",
+        "name": "Get Current Homelab State",
+        "type": "n8n-nodes-base.dataTable",
+        "typeVersion": 1.1,
+        "position": [
+          448,
+          0
+        ],
+        "parameters": {
+          "resource": "row",
+          "operation": "get",
+          "dataTableId": {
+            "__rl": true,
+            "mode": "name",
+            "value": "homelab_node_state"
+          },
+          "matchType": "allConditions",
+          "filters": {
+            "conditions": [
+              {
+                "keyName": "state_key",
+                "condition": "eq",
+                "keyValue": "={{ $(\"Normalize and Validate Probe\").item.json.state_key }}"
+              }
+            ]
+          },
+          "returnAll": false,
+          "limit": 1
+        }
+      },
+      {
+        "id": "b4034b8b-9553-4e12-8dc8-465d17d61ac1",
+        "name": "Decide Homelab Transition",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          672,
+          0
+        ],
+        "parameters": {
+          "mode": "runOnceForEachItem",
+          "language": "javaScript",
+          "jsCode": "const prev = $json || {};\nconst obs = $('Normalize and Validate Probe').item.json;\nconst previousStatus = String(prev.status || 'unknown');\nconst previousCoverage = String(prev.coverage_status || 'unknown');\nconst previousIncident = String(prev.incident_id || '');\nconst previousFailures = Number(prev.consecutive_failures || 0);\nconst previousSuccesses = Number(prev.consecutive_successes || 0);\nconst rawHealthy = ['healthy','ok'].includes(obs.observed_status);\nconst coverageFull = obs.coverage_status === 'full';\nconst critical = obs.observed_status === 'critical';\nconst coverageOnly = rawHealthy && !coverageFull;\nconst sameHash = Boolean(prev.state_hash) && String(prev.state_hash) === obs.state_hash;\nconst recoveringFromStale = previousIncident.startsWith('homelab-stale:') && obs.coverage_status !== 'stale' && rawHealthy;\nlet failures = previousFailures, successes = previousSuccesses, effectiveStatus = previousStatus;\nlet incidentId = previousIncident, incidentStartedAt = prev.incident_started_at || null;\nlet eventCategory = '', eventStatus = '', shouldEnqueue = false, transition = 'no_change';\n\nif (recoveringFromStale) {\n  failures = 0; successes = previousSuccesses + 1;\n  if (successes < 2) {\n    effectiveStatus = 'recovering'; transition = 'hysteresis_wait_success_2';\n  } else {\n    effectiveStatus = coverageOnly ? 'coverage_degraded' : 'healthy';\n    eventCategory = 'homelab.ops.recovery'; eventStatus = 'recovered'; shouldEnqueue = true; transition = 'probe_coverage_recovered';\n  }\n} else if (critical) {\n  failures = previousFailures + 1; successes = 0; effectiveStatus = 'critical';\n  if (!previousIncident) {\n    incidentId = 'homelab-inc:' + obs.node_id + ':' + obs.scope + ':' + obs.observed_at.replace(/[^0-9]/g, '').slice(0,14);\n    incidentStartedAt = obs.observed_at;\n    eventCategory = 'homelab.ops.incident'; eventStatus = 'detected'; shouldEnqueue = true; transition = 'incident_opened';\n  } else if (previousStatus !== 'critical' || !sameHash) {\n    eventCategory = 'homelab.ops.change'; eventStatus = 'changed'; shouldEnqueue = true; transition = 'incident_changed';\n  } else transition = 'incident_unchanged';\n} else if (coverageOnly) {\n  successes = 0;\n  if (previousStatus === 'unknown' && !previousIncident) {\n    failures = 0; effectiveStatus = 'coverage_degraded'; incidentId = ''; incidentStartedAt = null;\n    transition = 'baseline_established_degraded';\n  } else if (previousStatus === 'coverage_degraded' && !previousIncident) {\n    failures = 0; effectiveStatus = 'coverage_degraded';\n    if (sameHash && previousCoverage === obs.coverage_status) transition = 'coverage_baseline_unchanged';\n    else {\n      eventCategory = 'homelab.ops.change'; eventStatus = 'changed'; shouldEnqueue = true; transition = 'coverage_baseline_changed';\n    }\n  } else if (previousIncident) {\n    failures = previousFailures + 1; effectiveStatus = 'coverage_degraded';\n    if (previousStatus !== effectiveStatus || !sameHash || previousCoverage !== obs.coverage_status) {\n      eventCategory = 'homelab.ops.change'; eventStatus = 'changed'; shouldEnqueue = true; transition = 'incident_changed';\n    } else transition = 'incident_unchanged';\n  } else {\n    failures = previousFailures + 1;\n    if (failures >= 2) {\n      effectiveStatus = 'coverage_degraded';\n      incidentId = 'homelab-inc:' + obs.node_id + ':' + obs.scope + ':' + obs.observed_at.replace(/[^0-9]/g, '').slice(0,14);\n      incidentStartedAt = obs.observed_at;\n      eventCategory = 'homelab.ops.coverage_change'; eventStatus = 'coverage_degraded'; shouldEnqueue = true; transition = 'coverage_degraded';\n    } else { effectiveStatus = 'suspect'; transition = 'hysteresis_wait_failure_2'; }\n  }\n} else if (!rawHealthy) {\n  failures = previousFailures + 1; successes = 0;\n  if (previousIncident) {\n    effectiveStatus = obs.observed_status;\n    if (previousStatus !== effectiveStatus || !sameHash) {\n      eventCategory = 'homelab.ops.change'; eventStatus = 'changed'; shouldEnqueue = true; transition = 'incident_changed';\n    } else transition = 'incident_unchanged';\n  } else if (failures >= 2) {\n    effectiveStatus = obs.observed_status;\n    incidentId = 'homelab-inc:' + obs.node_id + ':' + obs.scope + ':' + obs.observed_at.replace(/[^0-9]/g, '').slice(0,14);\n    incidentStartedAt = obs.observed_at;\n    eventCategory = 'homelab.ops.incident'; eventStatus = 'detected'; shouldEnqueue = true; transition = 'incident_opened';\n  } else { effectiveStatus = 'suspect'; transition = 'hysteresis_wait_failure_2'; }\n} else {\n  failures = 0; successes = previousSuccesses + 1;\n  if (previousIncident && successes < 2) {\n    effectiveStatus = 'recovering'; transition = 'hysteresis_wait_success_2';\n  } else if (previousIncident && successes >= 2) {\n    effectiveStatus = 'healthy'; eventCategory = 'homelab.ops.recovery'; eventStatus = 'recovered'; shouldEnqueue = true; transition = 'recovered';\n  } else if (previousStatus === 'coverage_degraded') {\n    effectiveStatus = 'healthy'; eventCategory = 'homelab.ops.coverage_change'; eventStatus = 'coverage_restored'; shouldEnqueue = true; transition = 'coverage_restored';\n  } else {\n    effectiveStatus = 'healthy';\n    if (previousStatus === 'unknown') transition = 'baseline_established';\n    else if (previousStatus === 'suspect') transition = 'transient_recovered';\n    else transition = 'no_change';\n  }\n}\n\nconst correlationId = previousIncident || incidentId || ('homelab:' + obs.node_id + ':' + obs.scope);\nconst eventIncidentId = previousIncident || incidentId;\nconst changed = previousStatus !== effectiveStatus || previousCoverage !== obs.coverage_status || String(prev.state_hash || '') !== obs.state_hash;\nconst lastChangeAt = changed ? obs.observed_at : (prev.last_change_at || obs.observed_at);\nconst recovery = eventCategory === 'homelab.ops.recovery';\nconst stateIncidentId = recovery ? '' : incidentId;\nconst stateIncidentStartedAt = recovery ? null : incidentStartedAt;\nconst stamp = obs.observed_at.replace(/[^0-9]/g, '').slice(0,14);\nconst eventId = shouldEnqueue ? eventCategory + ':' + obs.node_id + ':' + obs.scope + ':' + stamp : '';\nconst priority = critical ? 3 : eventCategory === 'homelab.ops.incident' ? 5 : eventCategory === 'homelab.ops.change' ? 12 : eventCategory === 'homelab.ops.coverage_change' ? 15 : eventCategory === 'homelab.ops.recovery' ? 20 : 30;\nconst deadline = obs.scope === 'health' ? new Date(Date.parse(obs.observed_at) + 3 * 3600000).toISOString() : new Date(Date.parse(obs.observed_at) + 26 * 3600000).toISOString();\nreturn { ...obs, status: effectiveStatus, last_seen_at: obs.observed_at, consecutive_failures: failures, consecutive_successes: successes, incident_id: stateIncidentId, incident_started_at: stateIncidentStartedAt, last_change_at: lastChangeAt, transition, should_enqueue: shouldEnqueue, worker: 'hourly', kind: 'homelab_ops_review', priority, correlation_id: correlationId, event_incident_id: eventIncidentId, event_id: eventId, event_category: eventCategory, event_status: eventStatus, deadline, work_id: shouldEnqueue ? ('homelab_ops:' + obs.node_id + ':' + obs.scope + ':' + transition + ':' + stamp) : '', source_event_id: eventId, project: 'home-infrastructure', input_ref: 'homelab://state/' + obs.state_key + '?observed_at=' + encodeURIComponent(obs.observed_at) + (eventIncidentId ? '&incident_id=' + encodeURIComponent(eventIncidentId) : ''), summary: shouldEnqueue ? ('Homelab ' + transition + ' on ' + obs.node_id + ' / ' + obs.scope + '. Effective status=' + effectiveStatus + ', observed=' + obs.observed_status + ', coverage=' + obs.coverage_status + '.') : '', event_title: shouldEnqueue ? ('Homelab ' + transition + ': ' + obs.node_id + ' / ' + obs.scope) : '', event_description: shouldEnqueue ? ('Deterministic probe transition ' + previousStatus + ' -> ' + effectiveStatus + '; observed status=' + obs.observed_status + '; coverage=' + obs.coverage_status + '; failures=' + failures + '; successes=' + successes + '.') : '', event_metadata_object: JSON.stringify({ node_id: obs.node_id, scope: obs.scope, previous_status: previousStatus, effective_status: effectiveStatus, observed_status: obs.observed_status, previous_coverage_status: previousCoverage, coverage_status: obs.coverage_status, transition, incident_id: eventIncidentId || null, state_hash: obs.state_hash, probe_version: obs.probe_version, blind_spots: JSON.parse(obs.blind_spots || '[]'), backup: { configured: obs.backup_configured, fresh_artifact: obs.backup_fresh_artifact, correct_destination: obs.backup_correct_destination, recoverability: obs.backup_recoverability } }) };"
+        }
+      },
+      {
+        "id": "d7794965-8cd9-42fe-8e0d-812af2f5403a",
+        "name": "Upsert Current Homelab State",
+        "type": "n8n-nodes-base.dataTable",
+        "typeVersion": 1.1,
+        "position": [
+          896,
+          0
+        ],
+        "parameters": {
+          "resource": "row",
+          "operation": "upsert",
+          "dataTableId": {
+            "__rl": true,
+            "mode": "name",
+            "value": "homelab_node_state"
+          },
+          "matchType": "allConditions",
+          "filters": {
+            "conditions": [
+              {
+                "keyName": "state_key",
+                "condition": "eq",
+                "keyValue": "={{ $(\"Decide Homelab Transition\").item.json.state_key }}"
+              }
+            ]
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "state_key": "={{ $(\"Decide Homelab Transition\").item.json.state_key }}",
+              "node_id": "={{ $(\"Decide Homelab Transition\").item.json.node_id }}",
+              "scope": "={{ $(\"Decide Homelab Transition\").item.json.scope }}",
+              "observed_at": "={{ $(\"Decide Homelab Transition\").item.json.observed_at }}",
+              "last_seen_at": "={{ $(\"Decide Homelab Transition\").item.json.last_seen_at }}",
+              "status": "={{ $(\"Decide Homelab Transition\").item.json.status }}",
+              "coverage_status": "={{ $(\"Decide Homelab Transition\").item.json.coverage_status }}",
+              "state_hash": "={{ $(\"Decide Homelab Transition\").item.json.state_hash }}",
+              "probe_version": "={{ $(\"Decide Homelab Transition\").item.json.probe_version }}",
+              "consecutive_failures": "={{ $(\"Decide Homelab Transition\").item.json.consecutive_failures }}",
+              "consecutive_successes": "={{ $(\"Decide Homelab Transition\").item.json.consecutive_successes }}",
+              "incident_id": "={{ $(\"Decide Homelab Transition\").item.json.incident_id }}",
+              "incident_started_at": "={{ $(\"Decide Homelab Transition\").item.json.incident_started_at }}",
+              "last_change_at": "={{ $(\"Decide Homelab Transition\").item.json.last_change_at }}",
+              "snapshot_json": "={{ $(\"Decide Homelab Transition\").item.json.snapshot_json }}",
+              "blind_spots": "={{ $(\"Decide Homelab Transition\").item.json.blind_spots }}",
+              "backup_configured": "={{ $(\"Decide Homelab Transition\").item.json.backup_configured }}",
+              "backup_fresh_artifact": "={{ $(\"Decide Homelab Transition\").item.json.backup_fresh_artifact }}",
+              "backup_correct_destination": "={{ $(\"Decide Homelab Transition\").item.json.backup_correct_destination }}",
+              "backup_recoverability": "={{ $(\"Decide Homelab Transition\").item.json.backup_recoverability }}"
+            }
+          },
+          "options": {
+            "dryRun": "={{ $('Normalize and Validate Probe').item.json.dry_run === true }}"
+          }
+        }
+      },
+      {
+        "id": "28d18b97-2b75-4cec-a198-5f97a21985e0",
+        "name": "Restore Transition Context",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1120,
+          0
+        ],
+        "parameters": {
+          "mode": "runOnceForEachItem",
+          "language": "javaScript",
+          "jsCode": "return $('Decide Homelab Transition').item.json;"
+        }
+      },
+      {
+        "id": "f397076c-d06a-4f19-a35c-9c91bdb448bf",
+        "name": "Keep Material Transitions",
+        "type": "n8n-nodes-base.filter",
+        "typeVersion": 2.4,
+        "position": [
+          1344,
+          0
+        ],
+        "parameters": {
+          "conditions": {
+            "combinator": "and",
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 2
+            },
+            "conditions": [
+              {
+                "leftValue": "={{ $json.should_enqueue }}",
+                "operator": {
+                  "type": "boolean",
+                  "operation": "true",
+                  "singleValue": true
+                },
+                "rightValue": ""
+              },
+              {
+                "leftValue": "={{ $json.dry_run === true ? 'dry' : 'live' }}",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals"
+                },
+                "rightValue": "live"
+              }
+            ]
+          },
+          "options": {
+            "ignoreCase": false
+          }
+        }
+      },
+      {
+        "id": "291e03e9-c8de-4b86-812f-088ad6f1e526",
+        "name": "Enqueue Homelab Transition",
+        "type": "n8n-nodes-base.executeWorkflow",
+        "typeVersion": 1.4,
+        "position": [
+          1568,
+          0
+        ],
+        "parameters": {
+          "source": "database",
+          "workflowId": {
+            "__rl": true,
+            "mode": "id",
+            "value": "oe8KZW4nLbYUUDzA"
+          },
+          "workflowInputs": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "work_id": "={{ $json.work_id }}",
+              "worker": "={{ $json.worker }}",
+              "kind": "={{ $json.kind }}",
+              "priority": "={{ $json.priority }}",
+              "source_event_id": "={{ $json.source_event_id }}",
+              "correlation_id": "={{ $json.correlation_id }}",
+              "project": "={{ $json.project }}",
+              "input_ref": "={{ $json.input_ref }}",
+              "summary": "={{ $json.summary }}",
+              "not_before": "={{ $now.toISO() }}",
+              "deadline": "={{ $json.deadline }}",
+              "event_id": "={{ $json.event_id }}",
+              "event_occurred_at": "={{ $json.observed_at }}",
+              "event_source": "homelab-probe",
+              "event_category": "={{ $json.event_category }}",
+              "event_title": "={{ $json.event_title }}",
+              "event_description": "={{ $json.event_description }}",
+              "event_status": "={{ $json.event_status }}",
+              "event_url": "",
+              "event_metadata_object": "={{ $json.event_metadata_object }}"
+            },
+            "schema": [
+              {
+                "id": "work_id",
+                "displayName": "work_id",
+                "type": "string"
+              },
+              {
+                "id": "worker",
+                "displayName": "worker",
+                "type": "string"
+              },
+              {
+                "id": "kind",
+                "displayName": "kind",
+                "type": "string"
+              },
+              {
+                "id": "priority",
+                "displayName": "priority",
+                "type": "number"
+              },
+              {
+                "id": "source_event_id",
+                "displayName": "source_event_id",
+                "type": "string"
+              },
+              {
+                "id": "correlation_id",
+                "displayName": "correlation_id",
+                "type": "string"
+              },
+              {
+                "id": "project",
+                "displayName": "project",
+                "type": "string"
+              },
+              {
+                "id": "input_ref",
+                "displayName": "input_ref",
+                "type": "string"
+              },
+              {
+                "id": "summary",
+                "displayName": "summary",
+                "type": "string"
+              },
+              {
+                "id": "not_before",
+                "displayName": "not_before",
+                "type": "string"
+              },
+              {
+                "id": "deadline",
+                "displayName": "deadline",
+                "type": "string"
+              },
+              {
+                "id": "event_id",
+                "displayName": "event_id",
+                "type": "string"
+              },
+              {
+                "id": "event_occurred_at",
+                "displayName": "event_occurred_at",
+                "type": "string"
+              },
+              {
+                "id": "event_source",
+                "displayName": "event_source",
+                "type": "string"
+              },
+              {
+                "id": "event_category",
+                "displayName": "event_category",
+                "type": "string"
+              },
+              {
+                "id": "event_title",
+                "displayName": "event_title",
+                "type": "string"
+              },
+              {
+                "id": "event_description",
+                "displayName": "event_description",
+                "type": "string"
+              },
+              {
+                "id": "event_status",
+                "displayName": "event_status",
+                "type": "string"
+              },
+              {
+                "id": "event_url",
+                "displayName": "event_url",
+                "type": "string"
+              },
+              {
+                "id": "event_metadata_object",
+                "displayName": "event_metadata_object",
+                "type": "string"
+              }
+            ]
+          },
+          "mode": "each",
+          "options": {
+            "waitForSubWorkflow": true
+          }
+        }
+      }
+    ],
+    "connections": {
+      "Receive Homelab Probe": {
+        "main": [
+          [
+            {
+              "node": "Normalize and Validate Probe",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Normalize and Validate Probe": {
+        "main": [
+          [
+            {
+              "node": "Get Current Homelab State",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get Current Homelab State": {
+        "main": [
+          [
+            {
+              "node": "Decide Homelab Transition",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Decide Homelab Transition": {
+        "main": [
+          [
+            {
+              "node": "Upsert Current Homelab State",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Upsert Current Homelab State": {
+        "main": [
+          [
+            {
+              "node": "Restore Transition Context",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Restore Transition Context": {
+        "main": [
+          [
+            {
+              "node": "Keep Material Transitions",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Keep Material Transitions": {
+        "main": [
+          [
+            {
+              "node": "Enqueue Homelab Transition",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "nodeGroups": [
+      {
+        "id": "04d7aa03-894d-4b82-b18b-760bff460803",
+        "name": "Process probe state",
+        "nodeIds": [
+          "ec188ee6-d281-4fce-a931-81225d8de349",
+          "2cb1e9bc-dc21-4fd5-8a2e-27b639296717",
+          "b4034b8b-9553-4e12-8dc8-465d17d61ac1",
+          "d7794965-8cd9-42fe-8e0d-812af2f5403a",
+          "28d18b97-2b75-4cec-a198-5f97a21985e0",
+          "f397076c-d06a-4f19-a35c-9c91bdb448bf",
+          "291e03e9-c8de-4b86-812f-088ad6f1e526"
+        ],
+        "description": "Validate snapshots, maintain hysteretic current state, and promote only material transitions."
+      }
+    ],
+    "authors": "Administrator NTLx (via MCP)",
+    "name": "Close stale incidents back to baseline",
+    "description": "Fixes stale-probe recovery when the normal scope baseline is intentionally coverage_degraded. Two fresh samples now close homelab-stale incidents and return to either healthy/full or coverage_degraded baseline without leaving a stuck incident.",
+    "autosaved": false,
+    "createdAt": "2026-10-23T17:03:43.822Z",
+    "updatedAt": "2026-10-23T17:03:43.822Z"
+  }
+}
