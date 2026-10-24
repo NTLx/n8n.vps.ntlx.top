@@ -1,0 +1,780 @@
+{
+  "id": "lEGtY2mNTWnYD5p6",
+  "name": "Monitor Claude Code changelog",
+  "active": true,
+  "activeVersionId": "35859f35-0a18-4d7e-ac60-e44278f43d11",
+  "createdAt": "2026-10-23T15:51:18.549Z",
+  "updatedAt": "2026-10-23T15:52:38.660Z",
+  "isArchived": false,
+  "versionId": "35859f35-0a18-4d7e-ac60-e44278f43d11",
+  "triggerCount": 1,
+  "nodes": [
+    {
+      "id": "5fc70c1f-7f35-4ab1-9427-991afadbd878",
+      "name": "Every 15 minutes",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 15
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "eb320aa1-2005-46c0-bb7e-6a0439d2d915",
+      "name": "Fetch Claude Code changelog feed",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        224,
+        0
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "https://raw.githubusercontent.com/anthropics/claude-code/main/feed.xml",
+        "authentication": "none",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text",
+              "outputPropertyName": "xml"
+            }
+          }
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000
+    },
+    {
+      "id": "03cd69e5-c06e-4c23-a99b-813ae3a16c4a",
+      "name": "Parse latest Claude Code release",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        448,
+        0
+      ],
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={{ (() => { const xml = $(\"Fetch Claude Code changelog feed\").item.json.xml || \"\"; const feedUpdated = (xml.match(/<feed[^>]*>[\\s\\S]*?<updated>([^<]+)<\\/updated>/) || [])[1] || \"\"; const entryMatch = xml.match(/<entry>([\\s\\S]*?)<\\/entry>/); if (!entryMatch) throw new Error(\"No Claude Code changelog entry found\"); const entry = entryMatch[1]; const id = (entry.match(/<id>([^<]+)<\\/id>/) || [])[1] || \"\"; const title = (entry.match(/<title>([^<]+)<\\/title>/) || [])[1] || \"\"; const updated = (entry.match(/<updated>([^<]+)<\\/updated>/) || [])[1] || \"\"; const contentEncoded = (entry.match(/<content[^>]*>([\\s\\S]*?)<\\/content>/) || [])[1] || \"\"; const html = contentEncoded.replace(/&lt;/g, \"<\").replace(/&gt;/g, \">\").replace(/&quot;/g, \"\\\"\").replace(/&#39;/g, \"'\").replace(/&amp;/g, \"&\"); const notes = html.replace(/<br\\s*\\/?>/gi, \"\\n\").replace(/<\\/p>/gi, \"\\n\").replace(/<[^>]+>/g, \"\").replace(/\\n{3,}/g, \"\\n\\n\").trim(); const version = ((title.match(/v?(\\d+\\.\\d+\\.\\d+)/) || [])[1] || title.replace(/^Claude Code\\s+v?/i, \"\").trim()); return { source_url: id || \"https://github.com/anthropics/claude-code/releases\", feed_url: \"https://raw.githubusercontent.com/anthropics/claude-code/main/feed.xml\", changelog_url: \"https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md\", feed_updated: feedUpdated, version, title, updated, release_notes: notes, snapshot_text: `${id}\\n${title}\\n${updated}\\n${notes}` }; })() }}",
+        "includeOtherFields": false
+      }
+    },
+    {
+      "id": "14a92496-4890-4b48-93d5-3f66b62b8be3",
+      "name": "Hash Claude Code release snapshot",
+      "type": "n8n-nodes-base.crypto",
+      "typeVersion": 2,
+      "position": [
+        672,
+        0
+      ],
+      "parameters": {
+        "action": "hash",
+        "binaryData": false,
+        "type": "SHA256",
+        "value": "={{ $(\"Parse latest Claude Code release\").item.json.snapshot_text }}",
+        "dataPropertyName": "snapshot_hash",
+        "encoding": "hex"
+      }
+    },
+    {
+      "id": "c0cc7260-baa6-4238-a957-3f25be2c99d7",
+      "name": "Enqueue Claude Code review",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.4,
+      "position": [
+        896,
+        0
+      ],
+      "parameters": {
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "oe8KZW4nLbYUUDzA",
+          "cachedResultName": "Enqueue AI work"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "work_id": "={{ \"claude-code-changelog:\" + $(\"Hash Claude Code release snapshot\").item.json.snapshot_hash }}",
+            "kind": "claude_code_changelog_review",
+            "priority": 2,
+            "source_event_id": "={{ \"claude-code-changelog:\" + $(\"Hash Claude Code release snapshot\").item.json.snapshot_hash }}",
+            "correlation_id": "={{ \"claude-code:\" + $(\"Parse latest Claude Code release\").item.json.version }}",
+            "project": "claude-code",
+            "input_ref": "={{ $(\"Parse latest Claude Code release\").item.json.source_url }}",
+            "summary": "={{ $(\"Parse latest Claude Code release\").item.json.title + \" | \" + $(\"Parse latest Claude Code release\").item.json.updated }}",
+            "not_before": "={{ $now.toISO() }}",
+            "deadline": "",
+            "event_id": "={{ \"claude-code-changelog:\" + $(\"Hash Claude Code release snapshot\").item.json.snapshot_hash }}",
+            "event_occurred_at": "={{ $now.toISO() }}",
+            "event_source": "claude_code_changelog",
+            "event_category": "claude_code.changelog.updated",
+            "event_title": "={{ $(\"Parse latest Claude Code release\").item.json.title }}",
+            "event_description": "={{ $(\"Parse latest Claude Code release\").item.json.release_notes }}",
+            "event_status": "new",
+            "event_url": "={{ $(\"Parse latest Claude Code release\").item.json.source_url }}",
+            "event_metadata_object": "={{ JSON.stringify({ snapshot_hash: $(\"Hash Claude Code release snapshot\").item.json.snapshot_hash, version: $(\"Parse latest Claude Code release\").item.json.version, title: $(\"Parse latest Claude Code release\").item.json.title, updated: $(\"Parse latest Claude Code release\").item.json.updated, release_notes: $(\"Parse latest Claude Code release\").item.json.release_notes, detected_at: $now.toISO(), source_url: $(\"Parse latest Claude Code release\").item.json.source_url, feed_url: $(\"Parse latest Claude Code release\").item.json.feed_url, changelog_url: $(\"Parse latest Claude Code release\").item.json.changelog_url, feed_updated: $(\"Parse latest Claude Code release\").item.json.feed_updated }) }}"
+          },
+          "schema": [
+            {
+              "id": "work_id",
+              "displayName": "work_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "kind",
+              "displayName": "kind",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "priority",
+              "displayName": "priority",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "source_event_id",
+              "displayName": "source_event_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "correlation_id",
+              "displayName": "correlation_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "project",
+              "displayName": "project",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "input_ref",
+              "displayName": "input_ref",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "summary",
+              "displayName": "summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "not_before",
+              "displayName": "not_before",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "deadline",
+              "displayName": "deadline",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "event_id",
+              "displayName": "event_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "event_occurred_at",
+              "displayName": "event_occurred_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "event_source",
+              "displayName": "event_source",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "event_category",
+              "displayName": "event_category",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "event_title",
+              "displayName": "event_title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "event_description",
+              "displayName": "event_description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "event_status",
+              "displayName": "event_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "event_url",
+              "displayName": "event_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "event_metadata_object",
+              "displayName": "event_metadata_object",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "mode": "once",
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "disabled": false
+    }
+  ],
+  "connections": {
+    "Every 15 minutes": {
+      "main": [
+        [
+          {
+            "node": "Fetch Claude Code changelog feed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Claude Code changelog feed": {
+      "main": [
+        [
+          {
+            "node": "Parse latest Claude Code release",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse latest Claude Code release": {
+      "main": [
+        [
+          {
+            "node": "Hash Claude Code release snapshot",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Hash Claude Code release snapshot": {
+      "main": [
+        [
+          {
+            "node": "Enqueue Claude Code review",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true,
+    "errorWorkflow": "3LE3BnPfHSuIZCVR",
+    "timezone": "Asia/Shanghai",
+    "saveExecutionProgress": false,
+    "saveManualExecutions": false,
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "none",
+    "executionTimeout": 120
+  },
+  "staticData": {
+    "node:Every 15 minutes": {
+      "recurrenceRules": [
+        null
+      ],
+      "recurrenceRuleSignatures": [
+        null
+      ]
+    }
+  },
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [
+    {
+      "id": "9jw9Bhya2Ylf8E4D",
+      "name": "ai-work-producer",
+      "createdAt": "2026-10-22T09:14:35.367Z",
+      "updatedAt": "2026-10-22T09:14:35.367Z"
+    },
+    {
+      "id": "twNsKNALbdWLw0Ox",
+      "name": "automation",
+      "createdAt": "2026-10-22T08:25:54.546Z",
+      "updatedAt": "2026-10-22T08:25:54.546Z"
+    },
+    {
+      "id": "YwjTMUhE83IXTCRg",
+      "name": "monitoring",
+      "createdAt": "2026-10-22T08:38:34.124Z",
+      "updatedAt": "2026-10-22T08:38:34.124Z"
+    },
+    {
+      "id": "BlGRvaSWqnmTk53i",
+      "name": "event-producer",
+      "createdAt": "2026-10-22T09:14:35.370Z",
+      "updatedAt": "2026-10-22T09:14:35.370Z"
+    }
+  ],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "lEGtY2mNTWnYD5p6",
+      "projectId": "cNMj0K6AdJmi0OAZ",
+      "createdAt": "2026-10-23T15:51:18.549Z",
+      "updatedAt": "2026-10-23T15:51:18.549Z"
+    }
+  ],
+  "activeVersion": {
+    "versionId": "35859f35-0a18-4d7e-ac60-e44278f43d11",
+    "workflowId": "lEGtY2mNTWnYD5p6",
+    "nodes": [
+      {
+        "id": "5fc70c1f-7f35-4ab1-9427-991afadbd878",
+        "name": "Every 15 minutes",
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.4,
+        "position": [
+          0,
+          0
+        ],
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "minutes",
+                "minutesInterval": 15
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "eb320aa1-2005-46c0-bb7e-6a0439d2d915",
+        "name": "Fetch Claude Code changelog feed",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.5,
+        "position": [
+          224,
+          0
+        ],
+        "parameters": {
+          "method": "GET",
+          "url": "https://raw.githubusercontent.com/anthropics/claude-code/main/feed.xml",
+          "authentication": "none",
+          "options": {
+            "response": {
+              "response": {
+                "responseFormat": "text",
+                "outputPropertyName": "xml"
+              }
+            }
+          }
+        },
+        "retryOnFail": true,
+        "maxTries": 3,
+        "waitBetweenTries": 5000
+      },
+      {
+        "id": "03cd69e5-c06e-4c23-a99b-813ae3a16c4a",
+        "name": "Parse latest Claude Code release",
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.5,
+        "position": [
+          448,
+          0
+        ],
+        "parameters": {
+          "mode": "raw",
+          "jsonOutput": "={{ (() => { const xml = $(\"Fetch Claude Code changelog feed\").item.json.xml || \"\"; const feedUpdated = (xml.match(/<feed[^>]*>[\\s\\S]*?<updated>([^<]+)<\\/updated>/) || [])[1] || \"\"; const entryMatch = xml.match(/<entry>([\\s\\S]*?)<\\/entry>/); if (!entryMatch) throw new Error(\"No Claude Code changelog entry found\"); const entry = entryMatch[1]; const id = (entry.match(/<id>([^<]+)<\\/id>/) || [])[1] || \"\"; const title = (entry.match(/<title>([^<]+)<\\/title>/) || [])[1] || \"\"; const updated = (entry.match(/<updated>([^<]+)<\\/updated>/) || [])[1] || \"\"; const contentEncoded = (entry.match(/<content[^>]*>([\\s\\S]*?)<\\/content>/) || [])[1] || \"\"; const html = contentEncoded.replace(/&lt;/g, \"<\").replace(/&gt;/g, \">\").replace(/&quot;/g, \"\\\"\").replace(/&#39;/g, \"'\").replace(/&amp;/g, \"&\"); const notes = html.replace(/<br\\s*\\/?>/gi, \"\\n\").replace(/<\\/p>/gi, \"\\n\").replace(/<[^>]+>/g, \"\").replace(/\\n{3,}/g, \"\\n\\n\").trim(); const version = ((title.match(/v?(\\d+\\.\\d+\\.\\d+)/) || [])[1] || title.replace(/^Claude Code\\s+v?/i, \"\").trim()); return { source_url: id || \"https://github.com/anthropics/claude-code/releases\", feed_url: \"https://raw.githubusercontent.com/anthropics/claude-code/main/feed.xml\", changelog_url: \"https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md\", feed_updated: feedUpdated, version, title, updated, release_notes: notes, snapshot_text: `${id}\\n${title}\\n${updated}\\n${notes}` }; })() }}",
+          "includeOtherFields": false
+        }
+      },
+      {
+        "id": "14a92496-4890-4b48-93d5-3f66b62b8be3",
+        "name": "Hash Claude Code release snapshot",
+        "type": "n8n-nodes-base.crypto",
+        "typeVersion": 2,
+        "position": [
+          672,
+          0
+        ],
+        "parameters": {
+          "action": "hash",
+          "binaryData": false,
+          "type": "SHA256",
+          "value": "={{ $(\"Parse latest Claude Code release\").item.json.snapshot_text }}",
+          "dataPropertyName": "snapshot_hash",
+          "encoding": "hex"
+        }
+      },
+      {
+        "id": "c0cc7260-baa6-4238-a957-3f25be2c99d7",
+        "name": "Enqueue Claude Code review",
+        "type": "n8n-nodes-base.executeWorkflow",
+        "typeVersion": 1.4,
+        "position": [
+          896,
+          0
+        ],
+        "parameters": {
+          "source": "database",
+          "workflowId": {
+            "__rl": true,
+            "mode": "id",
+            "value": "oe8KZW4nLbYUUDzA",
+            "cachedResultName": "Enqueue AI work"
+          },
+          "workflowInputs": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "work_id": "={{ \"claude-code-changelog:\" + $(\"Hash Claude Code release snapshot\").item.json.snapshot_hash }}",
+              "kind": "claude_code_changelog_review",
+              "priority": 2,
+              "source_event_id": "={{ \"claude-code-changelog:\" + $(\"Hash Claude Code release snapshot\").item.json.snapshot_hash }}",
+              "correlation_id": "={{ \"claude-code:\" + $(\"Parse latest Claude Code release\").item.json.version }}",
+              "project": "claude-code",
+              "input_ref": "={{ $(\"Parse latest Claude Code release\").item.json.source_url }}",
+              "summary": "={{ $(\"Parse latest Claude Code release\").item.json.title + \" | \" + $(\"Parse latest Claude Code release\").item.json.updated }}",
+              "not_before": "={{ $now.toISO() }}",
+              "deadline": "",
+              "event_id": "={{ \"claude-code-changelog:\" + $(\"Hash Claude Code release snapshot\").item.json.snapshot_hash }}",
+              "event_occurred_at": "={{ $now.toISO() }}",
+              "event_source": "claude_code_changelog",
+              "event_category": "claude_code.changelog.updated",
+              "event_title": "={{ $(\"Parse latest Claude Code release\").item.json.title }}",
+              "event_description": "={{ $(\"Parse latest Claude Code release\").item.json.release_notes }}",
+              "event_status": "new",
+              "event_url": "={{ $(\"Parse latest Claude Code release\").item.json.source_url }}",
+              "event_metadata_object": "={{ JSON.stringify({ snapshot_hash: $(\"Hash Claude Code release snapshot\").item.json.snapshot_hash, version: $(\"Parse latest Claude Code release\").item.json.version, title: $(\"Parse latest Claude Code release\").item.json.title, updated: $(\"Parse latest Claude Code release\").item.json.updated, release_notes: $(\"Parse latest Claude Code release\").item.json.release_notes, detected_at: $now.toISO(), source_url: $(\"Parse latest Claude Code release\").item.json.source_url, feed_url: $(\"Parse latest Claude Code release\").item.json.feed_url, changelog_url: $(\"Parse latest Claude Code release\").item.json.changelog_url, feed_updated: $(\"Parse latest Claude Code release\").item.json.feed_updated }) }}"
+            },
+            "schema": [
+              {
+                "id": "work_id",
+                "displayName": "work_id",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "kind",
+                "displayName": "kind",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "priority",
+                "displayName": "priority",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "number",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "source_event_id",
+                "displayName": "source_event_id",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "correlation_id",
+                "displayName": "correlation_id",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "project",
+                "displayName": "project",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "input_ref",
+                "displayName": "input_ref",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "summary",
+                "displayName": "summary",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "not_before",
+                "displayName": "not_before",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "deadline",
+                "displayName": "deadline",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "event_id",
+                "displayName": "event_id",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "event_occurred_at",
+                "displayName": "event_occurred_at",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "event_source",
+                "displayName": "event_source",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "event_category",
+                "displayName": "event_category",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "event_title",
+                "displayName": "event_title",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "event_description",
+                "displayName": "event_description",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "event_status",
+                "displayName": "event_status",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "event_url",
+                "displayName": "event_url",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "event_metadata_object",
+                "displayName": "event_metadata_object",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              }
+            ]
+          },
+          "mode": "once",
+          "options": {
+            "waitForSubWorkflow": true
+          }
+        },
+        "disabled": false
+      }
+    ],
+    "connections": {
+      "Every 15 minutes": {
+        "main": [
+          [
+            {
+              "node": "Fetch Claude Code changelog feed",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Fetch Claude Code changelog feed": {
+        "main": [
+          [
+            {
+              "node": "Parse latest Claude Code release",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Parse latest Claude Code release": {
+        "main": [
+          [
+            {
+              "node": "Hash Claude Code release snapshot",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Hash Claude Code release snapshot": {
+        "main": [
+          [
+            {
+              "node": "Enqueue Claude Code review",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "nodeGroups": [],
+    "authors": "Administrator NTLx (via MCP)",
+    "name": "Enable production enqueue",
+    "description": "Re-enable the Enqueue AI work call after the parser/hash chain passed the safe pin-data test.",
+    "autosaved": false,
+    "createdAt": "2026-10-23T15:52:38.662Z",
+    "updatedAt": "2026-10-23T15:52:38.662Z"
+  }
+}
