@@ -1,0 +1,169 @@
+{
+  "id": "98JuZfplH81X6ig5",
+  "name": "Repair knowledge promotion route",
+  "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-10-23T16:13:41.050Z",
+  "updatedAt": "2026-10-23T16:14:18.707Z",
+  "isArchived": true,
+  "versionId": "49c5c28d-7d76-4b70-8802-b29d45fa3ca4",
+  "triggerCount": 0,
+  "nodes": [
+    {
+      "id": "7faf43e8-d03a-460a-af46-97500ef4eb4b",
+      "name": "Repair route",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "620ea775-a2b8-4825-bb0a-764e11aae8c3",
+      "name": "Reroute knowledge promotion to Weekly",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        224,
+        0
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "OxI5fJ0yqAgyyHze"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "work_id",
+              "condition": "eq",
+              "keyValue": "knowledge_promotion:week-of-2026-10-19"
+            },
+            {
+              "keyName": "status",
+              "condition": "eq",
+              "keyValue": "blocked"
+            },
+            {
+              "keyName": "worker",
+              "condition": "eq",
+              "keyValue": "hourly"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "worker": "weekly",
+            "status": "pending",
+            "claimed_by": "",
+            "claimed_at": null,
+            "lease_until": null,
+            "result_ref": "",
+            "result_summary": "rerouted_to_weekly_after_worker_v2_migration",
+            "completed_at": null,
+            "last_error": ""
+          },
+          "schema": [
+            {
+              "id": "worker",
+              "displayName": "worker",
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "claimed_by",
+              "displayName": "claimed_by",
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "claimed_at",
+              "displayName": "claimed_at",
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "lease_until",
+              "displayName": "lease_until",
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "result_ref",
+              "displayName": "result_ref",
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "result_summary",
+              "displayName": "result_summary",
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "completed_at",
+              "displayName": "completed_at",
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "last_error",
+              "displayName": "last_error",
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "options": {}
+      }
+    }
+  ],
+  "connections": {
+    "Repair route": {
+      "main": [
+        [
+          {
+            "node": "Reroute knowledge promotion to Weekly",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "98JuZfplH81X6ig5",
+      "projectId": "cNMj0K6AdJmi0OAZ",
+      "createdAt": "2026-10-23T16:13:41.050Z",
+      "updatedAt": "2026-10-23T16:13:41.050Z"
+    }
+  ],
+  "activeVersion": null
+}
