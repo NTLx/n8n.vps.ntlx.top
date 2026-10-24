@@ -1,0 +1,870 @@
+{
+  "id": "v9uNa6L8uLq2v0un",
+  "name": "Schedule knowledge promotion review",
+  "active": true,
+  "activeVersionId": "bf8c8298-ef90-4b4c-b8ef-28d59e55c4dc",
+  "createdAt": "2026-10-23T15:44:54.531Z",
+  "updatedAt": "2026-10-23T16:12:35.470Z",
+  "isArchived": false,
+  "versionId": "bf8c8298-ef90-4b4c-b8ef-28d59e55c4dc",
+  "triggerCount": 1,
+  "nodes": [
+    {
+      "id": "e9fa100e-a709-4e51-a5fe-583c534e551b",
+      "name": "Weekly Monday 10:50",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        220
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 50 10 * * 1"
+            }
+          ]
+        },
+        "misfirePolicy": "coalesce",
+        "misfireGraceSeconds": 21600
+      }
+    },
+    {
+      "id": "2ca1ac73-07e6-47cb-bd82-e3003d5d6157",
+      "name": "Record knowledge metabolism heartbeat",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        280,
+        220
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "upsert",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "automation_heartbeats"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "monitor_key",
+              "condition": "eq",
+              "keyValue": "knowledge_promotion_weekly"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "monitor_key": "knowledge_promotion_weekly",
+            "workflow_id": "={{ $workflow.id }}",
+            "workflow_name": "Schedule knowledge promotion review",
+            "last_seen_at": "={{ $now.toISO() }}",
+            "next_expected_at": "={{ $now.setZone('Asia/Shanghai').startOf('week').plus({ weeks: 1 }).set({ hour: 10, minute: 50, second: 0, millisecond: 0 }).toISO() }}",
+            "grace_minutes": 120,
+            "priority": 3
+          }
+        },
+        "options": {}
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "e07a2c3f-e7b1-4ae5-a467-4fc7769cf11b",
+      "name": "Prepare knowledge promotion review",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        560,
+        220
+      ],
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "work-id",
+              "name": "work_id",
+              "type": "string",
+              "value": "={{ 'knowledge_promotion:week-of-' + $now.setZone('Asia/Shanghai').startOf('week').toFormat('yyyy-LL-dd') }}"
+            },
+            {
+              "id": "worker",
+              "name": "worker",
+              "type": "string",
+              "value": "weekly"
+            },
+            {
+              "id": "kind",
+              "name": "kind",
+              "type": "string",
+              "value": "knowledge_promotion_review"
+            },
+            {
+              "id": "priority",
+              "name": "priority",
+              "type": "number",
+              "value": 30
+            },
+            {
+              "id": "source-event-id",
+              "name": "source_event_id",
+              "type": "string",
+              "value": "={{ 'knowledge.promotion.scheduled:week-of-' + $now.setZone('Asia/Shanghai').startOf('week').toFormat('yyyy-LL-dd') }}"
+            },
+            {
+              "id": "correlation-id",
+              "name": "correlation_id",
+              "type": "string",
+              "value": "={{ 'knowledge-promotion:week-of-' + $now.setZone('Asia/Shanghai').startOf('week').toFormat('yyyy-LL-dd') }}"
+            },
+            {
+              "id": "project",
+              "name": "project",
+              "type": "string",
+              "value": "agentic-work-atlas"
+            },
+            {
+              "id": "input-ref",
+              "name": "input_ref",
+              "type": "string",
+              "value": "={{ 'knowledge://promotion/weekly?week_start=' + $now.setZone('Asia/Shanghai').startOf('week').toFormat('yyyy-LL-dd') + '&window_days=7' }}"
+            },
+            {
+              "id": "summary",
+              "name": "summary",
+              "type": "string",
+              "value": "Review the last 7 days of already-processed Daily intelligence, decide what deserves durable retention, and enqueue bounded Hourly wiki execution work."
+            },
+            {
+              "id": "not-before",
+              "name": "not_before",
+              "type": "string",
+              "value": "={{ $now.toISO() }}"
+            },
+            {
+              "id": "deadline",
+              "name": "deadline",
+              "type": "string",
+              "value": ""
+            },
+            {
+              "id": "event-id",
+              "name": "event_id",
+              "type": "string",
+              "value": "={{ 'knowledge.promotion.scheduled:week-of-' + $now.setZone('Asia/Shanghai').startOf('week').toFormat('yyyy-LL-dd') }}"
+            },
+            {
+              "id": "event-time",
+              "name": "event_occurred_at",
+              "type": "string",
+              "value": "={{ $now.toISO() }}"
+            },
+            {
+              "id": "event-source",
+              "name": "event_source",
+              "type": "string",
+              "value": "n8n:knowledge-metabolism"
+            },
+            {
+              "id": "event-category",
+              "name": "event_category",
+              "type": "string",
+              "value": "knowledge.promotion.scheduled"
+            },
+            {
+              "id": "event-title",
+              "name": "event_title",
+              "type": "string",
+              "value": "Weekly knowledge promotion review scheduled"
+            },
+            {
+              "id": "event-description",
+              "name": "event_description",
+              "type": "string",
+              "value": "Weekly is the promotion gate over already-processed intelligence; repository-side integration is executed separately as Hourly wiki work."
+            },
+            {
+              "id": "event-status",
+              "name": "event_status",
+              "type": "string",
+              "value": "scheduled"
+            },
+            {
+              "id": "event-url",
+              "name": "event_url",
+              "type": "string",
+              "value": ""
+            },
+            {
+              "id": "event-meta",
+              "name": "event_metadata_object",
+              "type": "string",
+              "value": "={{ ({ architecture_version: 2, window_days: 7, sources: ['NTLx/daily-artifacts:tech-intel-json','NTLx/daily-artifacts:github-trends-json','work_events'], worker: 'weekly', execution_worker: 'hourly', target: 'agentic-work-atlas', max_promotion_candidates: 3, decisions: ['promote','research_needed','ignore'], principle: 'weekly_decides_hourly_executes' }).toJsonString() }}"
+            }
+          ]
+        },
+        "includeOtherFields": false,
+        "options": {}
+      }
+    },
+    {
+      "id": "6b71a89d-9288-4ab7-91e1-0377b635e831",
+      "name": "Enqueue knowledge promotion review",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.4,
+      "position": [
+        840,
+        220
+      ],
+      "parameters": {
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "oe8KZW4nLbYUUDzA"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "work_id": "={{ $('Prepare knowledge promotion review').item.json.work_id }}",
+            "worker": "={{ $('Prepare knowledge promotion review').item.json.worker }}",
+            "kind": "={{ $('Prepare knowledge promotion review').item.json.kind }}",
+            "priority": "={{ $('Prepare knowledge promotion review').item.json.priority }}",
+            "source_event_id": "={{ $('Prepare knowledge promotion review').item.json.source_event_id }}",
+            "correlation_id": "={{ $('Prepare knowledge promotion review').item.json.correlation_id }}",
+            "project": "={{ $('Prepare knowledge promotion review').item.json.project }}",
+            "input_ref": "={{ $('Prepare knowledge promotion review').item.json.input_ref }}",
+            "summary": "={{ $('Prepare knowledge promotion review').item.json.summary }}",
+            "not_before": "={{ $('Prepare knowledge promotion review').item.json.not_before }}",
+            "deadline": "={{ $('Prepare knowledge promotion review').item.json.deadline }}",
+            "event_id": "={{ $('Prepare knowledge promotion review').item.json.event_id }}",
+            "event_occurred_at": "={{ $('Prepare knowledge promotion review').item.json.event_occurred_at }}",
+            "event_source": "={{ $('Prepare knowledge promotion review').item.json.event_source }}",
+            "event_category": "={{ $('Prepare knowledge promotion review').item.json.event_category }}",
+            "event_title": "={{ $('Prepare knowledge promotion review').item.json.event_title }}",
+            "event_description": "={{ $('Prepare knowledge promotion review').item.json.event_description }}",
+            "event_status": "={{ $('Prepare knowledge promotion review').item.json.event_status }}",
+            "event_url": "={{ $('Prepare knowledge promotion review').item.json.event_url }}",
+            "event_metadata_object": "={{ $('Prepare knowledge promotion review').item.json.event_metadata_object }}"
+          },
+          "schema": [
+            {
+              "id": "work_id",
+              "displayName": "work_id",
+              "type": "string"
+            },
+            {
+              "id": "worker",
+              "displayName": "worker",
+              "type": "string"
+            },
+            {
+              "id": "kind",
+              "displayName": "kind",
+              "type": "string"
+            },
+            {
+              "id": "priority",
+              "displayName": "priority",
+              "type": "number"
+            },
+            {
+              "id": "source_event_id",
+              "displayName": "source_event_id",
+              "type": "string"
+            },
+            {
+              "id": "correlation_id",
+              "displayName": "correlation_id",
+              "type": "string"
+            },
+            {
+              "id": "project",
+              "displayName": "project",
+              "type": "string"
+            },
+            {
+              "id": "input_ref",
+              "displayName": "input_ref",
+              "type": "string"
+            },
+            {
+              "id": "summary",
+              "displayName": "summary",
+              "type": "string"
+            },
+            {
+              "id": "not_before",
+              "displayName": "not_before",
+              "type": "string"
+            },
+            {
+              "id": "deadline",
+              "displayName": "deadline",
+              "type": "string"
+            },
+            {
+              "id": "event_id",
+              "displayName": "event_id",
+              "type": "string"
+            },
+            {
+              "id": "event_occurred_at",
+              "displayName": "event_occurred_at",
+              "type": "string"
+            },
+            {
+              "id": "event_source",
+              "displayName": "event_source",
+              "type": "string"
+            },
+            {
+              "id": "event_category",
+              "displayName": "event_category",
+              "type": "string"
+            },
+            {
+              "id": "event_title",
+              "displayName": "event_title",
+              "type": "string"
+            },
+            {
+              "id": "event_description",
+              "displayName": "event_description",
+              "type": "string"
+            },
+            {
+              "id": "event_status",
+              "displayName": "event_status",
+              "type": "string"
+            },
+            {
+              "id": "event_url",
+              "displayName": "event_url",
+              "type": "string"
+            },
+            {
+              "id": "event_metadata_object",
+              "displayName": "event_metadata_object",
+              "type": "string"
+            }
+          ]
+        },
+        "mode": "each",
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Weekly Monday 10:50": {
+      "main": [
+        [
+          {
+            "node": "Record knowledge metabolism heartbeat",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Record knowledge metabolism heartbeat": {
+      "main": [
+        [
+          {
+            "node": "Prepare knowledge promotion review",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare knowledge promotion review": {
+      "main": [
+        [
+          {
+            "node": "Enqueue knowledge promotion review",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true,
+    "errorWorkflow": "3LE3BnPfHSuIZCVR",
+    "timezone": "Asia/Shanghai",
+    "saveExecutionProgress": false,
+    "saveManualExecutions": false,
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "none",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "staticData": {
+    "node:Weekly Monday 10:50": {
+      "recurrenceRules": [
+        null
+      ],
+      "recurrenceRuleSignatures": [
+        null
+      ]
+    }
+  },
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [
+    {
+      "id": "Kmfi1DI0MjIRkwfZ",
+      "name": "deadman-heartbeat",
+      "createdAt": "2026-10-22T16:25:50.145Z",
+      "updatedAt": "2026-10-22T16:25:50.145Z"
+    },
+    {
+      "id": "N6trNzlMuM25fapz",
+      "name": "llm-wiki",
+      "createdAt": "2026-10-22T08:33:58.714Z",
+      "updatedAt": "2026-10-22T08:33:58.714Z"
+    },
+    {
+      "id": "9jw9Bhya2Ylf8E4D",
+      "name": "ai-work-producer",
+      "createdAt": "2026-10-22T09:14:35.367Z",
+      "updatedAt": "2026-10-22T09:14:35.367Z"
+    },
+    {
+      "id": "BlGRvaSWqnmTk53i",
+      "name": "event-producer",
+      "createdAt": "2026-10-22T09:14:35.370Z",
+      "updatedAt": "2026-10-22T09:14:35.370Z"
+    },
+    {
+      "id": "twNsKNALbdWLw0Ox",
+      "name": "automation",
+      "createdAt": "2026-10-22T08:25:54.546Z",
+      "updatedAt": "2026-10-22T08:25:54.546Z"
+    }
+  ],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "v9uNa6L8uLq2v0un",
+      "projectId": "cNMj0K6AdJmi0OAZ",
+      "createdAt": "2026-10-23T15:44:54.531Z",
+      "updatedAt": "2026-10-23T15:44:54.531Z"
+    }
+  ],
+  "activeVersion": {
+    "versionId": "bf8c8298-ef90-4b4c-b8ef-28d59e55c4dc",
+    "workflowId": "v9uNa6L8uLq2v0un",
+    "nodes": [
+      {
+        "id": "e9fa100e-a709-4e51-a5fe-583c534e551b",
+        "name": "Weekly Monday 10:50",
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.4,
+        "position": [
+          0,
+          220
+        ],
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "cronExpression",
+                "expression": "0 50 10 * * 1"
+              }
+            ]
+          },
+          "misfirePolicy": "coalesce",
+          "misfireGraceSeconds": 21600
+        }
+      },
+      {
+        "id": "2ca1ac73-07e6-47cb-bd82-e3003d5d6157",
+        "name": "Record knowledge metabolism heartbeat",
+        "type": "n8n-nodes-base.dataTable",
+        "typeVersion": 1.1,
+        "position": [
+          280,
+          220
+        ],
+        "parameters": {
+          "resource": "row",
+          "operation": "upsert",
+          "dataTableId": {
+            "__rl": true,
+            "mode": "name",
+            "value": "automation_heartbeats"
+          },
+          "matchType": "allConditions",
+          "filters": {
+            "conditions": [
+              {
+                "keyName": "monitor_key",
+                "condition": "eq",
+                "keyValue": "knowledge_promotion_weekly"
+              }
+            ]
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "monitor_key": "knowledge_promotion_weekly",
+              "workflow_id": "={{ $workflow.id }}",
+              "workflow_name": "Schedule knowledge promotion review",
+              "last_seen_at": "={{ $now.toISO() }}",
+              "next_expected_at": "={{ $now.setZone('Asia/Shanghai').startOf('week').plus({ weeks: 1 }).set({ hour: 10, minute: 50, second: 0, millisecond: 0 }).toISO() }}",
+              "grace_minutes": 120,
+              "priority": 3
+            }
+          },
+          "options": {}
+        },
+        "onError": "continueRegularOutput"
+      },
+      {
+        "id": "e07a2c3f-e7b1-4ae5-a467-4fc7769cf11b",
+        "name": "Prepare knowledge promotion review",
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.5,
+        "position": [
+          560,
+          220
+        ],
+        "parameters": {
+          "mode": "manual",
+          "assignments": {
+            "assignments": [
+              {
+                "id": "work-id",
+                "name": "work_id",
+                "type": "string",
+                "value": "={{ 'knowledge_promotion:week-of-' + $now.setZone('Asia/Shanghai').startOf('week').toFormat('yyyy-LL-dd') }}"
+              },
+              {
+                "id": "worker",
+                "name": "worker",
+                "type": "string",
+                "value": "weekly"
+              },
+              {
+                "id": "kind",
+                "name": "kind",
+                "type": "string",
+                "value": "knowledge_promotion_review"
+              },
+              {
+                "id": "priority",
+                "name": "priority",
+                "type": "number",
+                "value": 30
+              },
+              {
+                "id": "source-event-id",
+                "name": "source_event_id",
+                "type": "string",
+                "value": "={{ 'knowledge.promotion.scheduled:week-of-' + $now.setZone('Asia/Shanghai').startOf('week').toFormat('yyyy-LL-dd') }}"
+              },
+              {
+                "id": "correlation-id",
+                "name": "correlation_id",
+                "type": "string",
+                "value": "={{ 'knowledge-promotion:week-of-' + $now.setZone('Asia/Shanghai').startOf('week').toFormat('yyyy-LL-dd') }}"
+              },
+              {
+                "id": "project",
+                "name": "project",
+                "type": "string",
+                "value": "agentic-work-atlas"
+              },
+              {
+                "id": "input-ref",
+                "name": "input_ref",
+                "type": "string",
+                "value": "={{ 'knowledge://promotion/weekly?week_start=' + $now.setZone('Asia/Shanghai').startOf('week').toFormat('yyyy-LL-dd') + '&window_days=7' }}"
+              },
+              {
+                "id": "summary",
+                "name": "summary",
+                "type": "string",
+                "value": "Review the last 7 days of already-processed Daily intelligence, decide what deserves durable retention, and enqueue bounded Hourly wiki execution work."
+              },
+              {
+                "id": "not-before",
+                "name": "not_before",
+                "type": "string",
+                "value": "={{ $now.toISO() }}"
+              },
+              {
+                "id": "deadline",
+                "name": "deadline",
+                "type": "string",
+                "value": ""
+              },
+              {
+                "id": "event-id",
+                "name": "event_id",
+                "type": "string",
+                "value": "={{ 'knowledge.promotion.scheduled:week-of-' + $now.setZone('Asia/Shanghai').startOf('week').toFormat('yyyy-LL-dd') }}"
+              },
+              {
+                "id": "event-time",
+                "name": "event_occurred_at",
+                "type": "string",
+                "value": "={{ $now.toISO() }}"
+              },
+              {
+                "id": "event-source",
+                "name": "event_source",
+                "type": "string",
+                "value": "n8n:knowledge-metabolism"
+              },
+              {
+                "id": "event-category",
+                "name": "event_category",
+                "type": "string",
+                "value": "knowledge.promotion.scheduled"
+              },
+              {
+                "id": "event-title",
+                "name": "event_title",
+                "type": "string",
+                "value": "Weekly knowledge promotion review scheduled"
+              },
+              {
+                "id": "event-description",
+                "name": "event_description",
+                "type": "string",
+                "value": "Weekly is the promotion gate over already-processed intelligence; repository-side integration is executed separately as Hourly wiki work."
+              },
+              {
+                "id": "event-status",
+                "name": "event_status",
+                "type": "string",
+                "value": "scheduled"
+              },
+              {
+                "id": "event-url",
+                "name": "event_url",
+                "type": "string",
+                "value": ""
+              },
+              {
+                "id": "event-meta",
+                "name": "event_metadata_object",
+                "type": "string",
+                "value": "={{ ({ architecture_version: 2, window_days: 7, sources: ['NTLx/daily-artifacts:tech-intel-json','NTLx/daily-artifacts:github-trends-json','work_events'], worker: 'weekly', execution_worker: 'hourly', target: 'agentic-work-atlas', max_promotion_candidates: 3, decisions: ['promote','research_needed','ignore'], principle: 'weekly_decides_hourly_executes' }).toJsonString() }}"
+              }
+            ]
+          },
+          "includeOtherFields": false,
+          "options": {}
+        }
+      },
+      {
+        "id": "6b71a89d-9288-4ab7-91e1-0377b635e831",
+        "name": "Enqueue knowledge promotion review",
+        "type": "n8n-nodes-base.executeWorkflow",
+        "typeVersion": 1.4,
+        "position": [
+          840,
+          220
+        ],
+        "parameters": {
+          "source": "database",
+          "workflowId": {
+            "__rl": true,
+            "mode": "id",
+            "value": "oe8KZW4nLbYUUDzA"
+          },
+          "workflowInputs": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "work_id": "={{ $('Prepare knowledge promotion review').item.json.work_id }}",
+              "worker": "={{ $('Prepare knowledge promotion review').item.json.worker }}",
+              "kind": "={{ $('Prepare knowledge promotion review').item.json.kind }}",
+              "priority": "={{ $('Prepare knowledge promotion review').item.json.priority }}",
+              "source_event_id": "={{ $('Prepare knowledge promotion review').item.json.source_event_id }}",
+              "correlation_id": "={{ $('Prepare knowledge promotion review').item.json.correlation_id }}",
+              "project": "={{ $('Prepare knowledge promotion review').item.json.project }}",
+              "input_ref": "={{ $('Prepare knowledge promotion review').item.json.input_ref }}",
+              "summary": "={{ $('Prepare knowledge promotion review').item.json.summary }}",
+              "not_before": "={{ $('Prepare knowledge promotion review').item.json.not_before }}",
+              "deadline": "={{ $('Prepare knowledge promotion review').item.json.deadline }}",
+              "event_id": "={{ $('Prepare knowledge promotion review').item.json.event_id }}",
+              "event_occurred_at": "={{ $('Prepare knowledge promotion review').item.json.event_occurred_at }}",
+              "event_source": "={{ $('Prepare knowledge promotion review').item.json.event_source }}",
+              "event_category": "={{ $('Prepare knowledge promotion review').item.json.event_category }}",
+              "event_title": "={{ $('Prepare knowledge promotion review').item.json.event_title }}",
+              "event_description": "={{ $('Prepare knowledge promotion review').item.json.event_description }}",
+              "event_status": "={{ $('Prepare knowledge promotion review').item.json.event_status }}",
+              "event_url": "={{ $('Prepare knowledge promotion review').item.json.event_url }}",
+              "event_metadata_object": "={{ $('Prepare knowledge promotion review').item.json.event_metadata_object }}"
+            },
+            "schema": [
+              {
+                "id": "work_id",
+                "displayName": "work_id",
+                "type": "string"
+              },
+              {
+                "id": "worker",
+                "displayName": "worker",
+                "type": "string"
+              },
+              {
+                "id": "kind",
+                "displayName": "kind",
+                "type": "string"
+              },
+              {
+                "id": "priority",
+                "displayName": "priority",
+                "type": "number"
+              },
+              {
+                "id": "source_event_id",
+                "displayName": "source_event_id",
+                "type": "string"
+              },
+              {
+                "id": "correlation_id",
+                "displayName": "correlation_id",
+                "type": "string"
+              },
+              {
+                "id": "project",
+                "displayName": "project",
+                "type": "string"
+              },
+              {
+                "id": "input_ref",
+                "displayName": "input_ref",
+                "type": "string"
+              },
+              {
+                "id": "summary",
+                "displayName": "summary",
+                "type": "string"
+              },
+              {
+                "id": "not_before",
+                "displayName": "not_before",
+                "type": "string"
+              },
+              {
+                "id": "deadline",
+                "displayName": "deadline",
+                "type": "string"
+              },
+              {
+                "id": "event_id",
+                "displayName": "event_id",
+                "type": "string"
+              },
+              {
+                "id": "event_occurred_at",
+                "displayName": "event_occurred_at",
+                "type": "string"
+              },
+              {
+                "id": "event_source",
+                "displayName": "event_source",
+                "type": "string"
+              },
+              {
+                "id": "event_category",
+                "displayName": "event_category",
+                "type": "string"
+              },
+              {
+                "id": "event_title",
+                "displayName": "event_title",
+                "type": "string"
+              },
+              {
+                "id": "event_description",
+                "displayName": "event_description",
+                "type": "string"
+              },
+              {
+                "id": "event_status",
+                "displayName": "event_status",
+                "type": "string"
+              },
+              {
+                "id": "event_url",
+                "displayName": "event_url",
+                "type": "string"
+              },
+              {
+                "id": "event_metadata_object",
+                "displayName": "event_metadata_object",
+                "type": "string"
+              }
+            ]
+          },
+          "mode": "each",
+          "options": {
+            "waitForSubWorkflow": true
+          }
+        }
+      }
+    ],
+    "connections": {
+      "Weekly Monday 10:50": {
+        "main": [
+          [
+            {
+              "node": "Record knowledge metabolism heartbeat",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Record knowledge metabolism heartbeat": {
+        "main": [
+          [
+            {
+              "node": "Prepare knowledge promotion review",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prepare knowledge promotion review": {
+        "main": [
+          [
+            {
+              "node": "Enqueue knowledge promotion review",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "nodeGroups": [],
+    "authors": "Administrator NTLx (via MCP)",
+    "name": "Route promotion to Weekly V2",
+    "description": "Align knowledge promotion with the five-Worker architecture. Weekly owns promotion decisions; actual wiki compile/research/maintenance work is delegated to Hourly. Update metadata to architecture_version=2 and prefer machine-readable Daily sidecars.",
+    "autosaved": false,
+    "createdAt": "2026-10-23T16:12:35.476Z",
+    "updatedAt": "2026-10-23T16:12:35.476Z"
+  }
+}
