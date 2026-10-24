@@ -1,0 +1,134 @@
+{
+  "id": "1pjliTvkvaiNLCZv",
+  "name": "Cleanup malformed knowledge promotion test",
+  "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-10-23T15:52:49.581Z",
+  "updatedAt": "2026-10-23T15:53:01.476Z",
+  "isArchived": true,
+  "versionId": "ebe36c6c-7b61-4d2e-b07d-86d43f2b26b0",
+  "triggerCount": 0,
+  "nodes": [
+    {
+      "id": "20b06228-a5af-49eb-a00f-bd5e2689a63a",
+      "name": "Manual cleanup",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "74d4c2ee-d51a-4cab-bfa5-6f131d120bfc",
+      "name": "Delete malformed test work",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        280,
+        0
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "deleteRows",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "OxI5fJ0yqAgyyHze"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "work_id",
+              "condition": "eq",
+              "keyValue": "knowledge_promotion:2026-ww"
+            }
+          ]
+        },
+        "options": {
+          "dryRun": false
+        }
+      }
+    },
+    {
+      "id": "d7d9582f-1853-4363-93e7-db0f7df9f631",
+      "name": "Delete malformed test event",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        560,
+        0
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "deleteRows",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "OogYD9bkN1KIqtSp"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "event_id",
+              "condition": "eq",
+              "keyValue": "knowledge.promotion.scheduled:2026-ww"
+            }
+          ]
+        },
+        "options": {
+          "dryRun": false
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Manual cleanup": {
+      "main": [
+        [
+          {
+            "node": "Delete malformed test work",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete malformed test work": {
+      "main": [
+        [
+          {
+            "node": "Delete malformed test event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "1pjliTvkvaiNLCZv",
+      "projectId": "cNMj0K6AdJmi0OAZ",
+      "createdAt": "2026-10-23T15:52:49.581Z",
+      "updatedAt": "2026-10-23T15:52:49.581Z"
+    }
+  ],
+  "activeVersion": null
+}
