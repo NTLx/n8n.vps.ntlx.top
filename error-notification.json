@@ -2,11 +2,11 @@
   "id": "3LE3BnPfHSuIZCVR",
   "name": "Error Notification",
   "active": true,
-  "activeVersionId": "d24f37a5-7e59-46b9-a0a3-d9f271c3ed50",
+  "activeVersionId": "e38338e4-b5d0-4583-90aa-6d15344a9ff3",
   "createdAt": "2026-02-12T08:00:08.087Z",
-  "updatedAt": "2026-10-22T16:39:43.253Z",
+  "updatedAt": "2026-10-23T16:17:40.171Z",
   "isArchived": false,
-  "versionId": "d24f37a5-7e59-46b9-a0a3-d9f271c3ed50",
+  "versionId": "e38338e4-b5d0-4583-90aa-6d15344a9ff3",
   "triggerCount": 0,
   "nodes": [
     {
@@ -47,45 +47,6 @@
       "retryOnFail": true,
       "maxTries": 3,
       "waitBetweenTries": 5000
-    },
-    {
-      "parameters": {
-        "authentication": "oAuth2",
-        "resource": "message",
-        "guildId": {
-          "__rl": true,
-          "value": "1223272555885105264",
-          "mode": "id"
-        },
-        "channelId": {
-          "__rl": true,
-          "value": "1224990958718812170",
-          "mode": "list",
-          "cachedResultName": "service-status",
-          "cachedResultUrl": "https://discord.com/channels/1223272555885105264/1224990958718812170"
-        },
-        "content": "={{ $json.discordMessage }}",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.discord",
-      "typeVersion": 2,
-      "position": [
-        704,
-        304
-      ],
-      "id": "79e60af0-8edc-4a75-93bb-a02315ef2213",
-      "name": "Discord Primary Alert",
-      "webhookId": "32359dd1-65c8-496a-ab0b-d53b85eb58c2",
-      "retryOnFail": true,
-      "waitBetweenTries": 5000,
-      "credentials": {
-        "discordOAuth2Api": {
-          "id": "ep3LAXJ2M9XUjEj1",
-          "name": "NTLx"
-        }
-      },
-      "onError": "continueErrorOutput",
-      "maxTries": 3
     },
     {
       "id": "c6686195-ea59-4de0-8cca-a40ba647bd1b",
@@ -481,6 +442,32 @@
           "ignoreCase": false
         }
       }
+    },
+    {
+      "id": "e46db210-125a-4637-bd0d-82b2c6bacfce",
+      "name": "DingTalk Primary Alert",
+      "type": "@cryozerolabs/n8n-nodes-dingtalk.dingtalkNode",
+      "typeVersion": 1,
+      "position": [
+        704,
+        304
+      ],
+      "parameters": {
+        "resource": "robot",
+        "operation": "robot.send",
+        "sendBody": "json",
+        "jsonBody": "={{ ({ msgtype: 'actionCard', actionCard: { title: '🚨 n8n · ' + ($json.workflow_name || 'Unknown workflow') + ' 运行失败', text: '### 🚨 n8n 工作流运行失败\\n\\n**工作流**：' + ($json.workflow_name || 'Unknown workflow') + '\\n\\n**出错节点**：`' + ($json.error_node || 'Unknown') + '`\\n\\n**发生时间**：' + $now.setZone('Asia/Shanghai').toFormat('yyyy-LL-dd HH:mm:ss') + '\\n\\n> **错误类型**：`' + ($json.error_name || 'Error') + '`\\n> **HTTP**：`' + ($json.http_code || '-') + '` · **模式**：`' + ($json.execution_mode || '-') + '`\\n> **详情**：' + String($json.error_message || 'No message').replace(/\\s+/g, ' ').slice(0, 900) + '\\n\\n**Execution**：`' + ($json.execution_id || '-') + '`', singleTitle: '查看执行详情', singleURL: $json.execution_url || 'https://n8n.vps.ntlx.top/' } }) }}"
+      },
+      "credentials": {
+        "dingtalkRobotApi": {
+          "id": "94fIrOuZ6EAtktb4",
+          "name": "四有青年-Notifications-加签通知"
+        }
+      },
+      "onError": "continueErrorOutput",
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000
     }
   ],
   "connections": {
@@ -499,24 +486,12 @@
       "main": [
         [
           {
-            "node": "Discord Primary Alert",
+            "node": "Skip Recursive Queue Failures",
             "type": "main",
             "index": 0
           },
           {
-            "node": "Skip Recursive Queue Failures",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Discord Primary Alert": {
-      "main": [
-        null,
-        [
-          {
-            "node": "Telegram Fallback",
+            "node": "DingTalk Primary Alert",
             "type": "main",
             "index": 0
           }
@@ -539,6 +514,18 @@
         [
           {
             "node": "Prepare Failure AI Work",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DingTalk Primary Alert": {
+      "main": [
+        null,
+        [
+          {
+            "node": "Telegram Fallback",
             "type": "main",
             "index": 0
           }
@@ -579,28 +566,28 @@
   },
   "tags": [
     {
-      "id": "BlGRvaSWqnmTk53i",
-      "name": "event-producer",
-      "createdAt": "2026-10-22T09:14:35.370Z",
-      "updatedAt": "2026-10-22T09:14:35.370Z"
-    },
-    {
       "id": "9jw9Bhya2Ylf8E4D",
       "name": "ai-work-producer",
       "createdAt": "2026-10-22T09:14:35.367Z",
       "updatedAt": "2026-10-22T09:14:35.367Z"
     },
     {
-      "id": "YwjTMUhE83IXTCRg",
-      "name": "monitoring",
-      "createdAt": "2026-10-22T08:38:34.124Z",
-      "updatedAt": "2026-10-22T08:38:34.124Z"
+      "id": "BlGRvaSWqnmTk53i",
+      "name": "event-producer",
+      "createdAt": "2026-10-22T09:14:35.370Z",
+      "updatedAt": "2026-10-22T09:14:35.370Z"
     },
     {
       "id": "twNsKNALbdWLw0Ox",
       "name": "automation",
       "createdAt": "2026-10-22T08:25:54.546Z",
       "updatedAt": "2026-10-22T08:25:54.546Z"
+    },
+    {
+      "id": "YwjTMUhE83IXTCRg",
+      "name": "monitoring",
+      "createdAt": "2026-10-22T08:38:34.124Z",
+      "updatedAt": "2026-10-22T08:38:34.124Z"
     }
   ],
   "shared": [
@@ -613,7 +600,7 @@
     }
   ],
   "activeVersion": {
-    "versionId": "d24f37a5-7e59-46b9-a0a3-d9f271c3ed50",
+    "versionId": "e38338e4-b5d0-4583-90aa-6d15344a9ff3",
     "workflowId": "3LE3BnPfHSuIZCVR",
     "nodes": [
       {
@@ -654,45 +641,6 @@
         "retryOnFail": true,
         "maxTries": 3,
         "waitBetweenTries": 5000
-      },
-      {
-        "parameters": {
-          "authentication": "oAuth2",
-          "resource": "message",
-          "guildId": {
-            "__rl": true,
-            "value": "1223272555885105264",
-            "mode": "id"
-          },
-          "channelId": {
-            "__rl": true,
-            "value": "1224990958718812170",
-            "mode": "list",
-            "cachedResultName": "service-status",
-            "cachedResultUrl": "https://discord.com/channels/1223272555885105264/1224990958718812170"
-          },
-          "content": "={{ $json.discordMessage }}",
-          "options": {}
-        },
-        "type": "n8n-nodes-base.discord",
-        "typeVersion": 2,
-        "position": [
-          704,
-          304
-        ],
-        "id": "79e60af0-8edc-4a75-93bb-a02315ef2213",
-        "name": "Discord Primary Alert",
-        "webhookId": "32359dd1-65c8-496a-ab0b-d53b85eb58c2",
-        "retryOnFail": true,
-        "waitBetweenTries": 5000,
-        "credentials": {
-          "discordOAuth2Api": {
-            "id": "ep3LAXJ2M9XUjEj1",
-            "name": "NTLx"
-          }
-        },
-        "onError": "continueErrorOutput",
-        "maxTries": 3
       },
       {
         "id": "c6686195-ea59-4de0-8cca-a40ba647bd1b",
@@ -1088,6 +1036,32 @@
             "ignoreCase": false
           }
         }
+      },
+      {
+        "id": "e46db210-125a-4637-bd0d-82b2c6bacfce",
+        "name": "DingTalk Primary Alert",
+        "type": "@cryozerolabs/n8n-nodes-dingtalk.dingtalkNode",
+        "typeVersion": 1,
+        "position": [
+          704,
+          304
+        ],
+        "parameters": {
+          "resource": "robot",
+          "operation": "robot.send",
+          "sendBody": "json",
+          "jsonBody": "={{ ({ msgtype: 'actionCard', actionCard: { title: '🚨 n8n · ' + ($json.workflow_name || 'Unknown workflow') + ' 运行失败', text: '### 🚨 n8n 工作流运行失败\\n\\n**工作流**：' + ($json.workflow_name || 'Unknown workflow') + '\\n\\n**出错节点**：`' + ($json.error_node || 'Unknown') + '`\\n\\n**发生时间**：' + $now.setZone('Asia/Shanghai').toFormat('yyyy-LL-dd HH:mm:ss') + '\\n\\n> **错误类型**：`' + ($json.error_name || 'Error') + '`\\n> **HTTP**：`' + ($json.http_code || '-') + '` · **模式**：`' + ($json.execution_mode || '-') + '`\\n> **详情**：' + String($json.error_message || 'No message').replace(/\\s+/g, ' ').slice(0, 900) + '\\n\\n**Execution**：`' + ($json.execution_id || '-') + '`', singleTitle: '查看执行详情', singleURL: $json.execution_url || 'https://n8n.vps.ntlx.top/' } }) }}"
+        },
+        "credentials": {
+          "dingtalkRobotApi": {
+            "id": "94fIrOuZ6EAtktb4",
+            "name": "四有青年-Notifications-加签通知"
+          }
+        },
+        "onError": "continueErrorOutput",
+        "retryOnFail": true,
+        "maxTries": 3,
+        "waitBetweenTries": 5000
       }
     ],
     "connections": {
@@ -1106,24 +1080,12 @@
         "main": [
           [
             {
-              "node": "Discord Primary Alert",
+              "node": "Skip Recursive Queue Failures",
               "type": "main",
               "index": 0
             },
             {
-              "node": "Skip Recursive Queue Failures",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Discord Primary Alert": {
-        "main": [
-          null,
-          [
-            {
-              "node": "Telegram Fallback",
+              "node": "DingTalk Primary Alert",
               "type": "main",
               "index": 0
             }
@@ -1151,6 +1113,18 @@
             }
           ]
         ]
+      },
+      "DingTalk Primary Alert": {
+        "main": [
+          null,
+          [
+            {
+              "node": "Telegram Fallback",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
       }
     },
     "nodeGroups": [
@@ -1166,10 +1140,10 @@
       }
     ],
     "authors": "Administrator NTLx (via MCP)",
-    "name": "Guard recursive queue failures",
-    "description": "Prevents Error Notification and Enqueue AI work failures from recursively re-entering the AI Work queue while preserving immediate Discord/Telegram alerts for those failures.",
+    "name": "Use DingTalk ActionCard alerts",
+    "description": "Productionize the verified DingTalk ActionCard alert: remove temporary manual test nodes and restore the workflow's original execution-data retention settings. The primary alert now renders Markdown inside an ActionCard and links directly to execution details; Telegram remains fallback.",
     "autosaved": false,
-    "createdAt": "2026-10-22T16:39:43.257Z",
-    "updatedAt": "2026-10-22T16:39:43.257Z"
+    "createdAt": "2026-10-23T16:17:40.174Z",
+    "updatedAt": "2026-10-23T16:17:40.174Z"
   }
 }
