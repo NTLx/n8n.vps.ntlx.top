@@ -1,0 +1,943 @@
+{
+  "id": "nYk3nu9KmnRbjkcF",
+  "name": "Upload Daily HTML artifact to GitHub",
+  "active": true,
+  "activeVersionId": "b6b49228-21f4-4f29-8dda-265c47d6eae4",
+  "createdAt": "2026-10-23T02:30:35.708Z",
+  "updatedAt": "2026-10-23T16:20:27.128Z",
+  "isArchived": false,
+  "versionId": "b6b49228-21f4-4f29-8dda-265c47d6eae4",
+  "triggerCount": 1,
+  "nodes": [
+    {
+      "id": "d3adff41-37fd-4547-8263-454b4d88dbae",
+      "name": "Upload Daily HTML",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.2,
+      "position": [
+        0,
+        96
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "daily-artifacts-upload",
+        "authentication": "headerAuth",
+        "responseMode": "responseNode"
+      },
+      "webhookId": "8d4ea890-6f1a-4712-9159-e5f637a27829",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "RvmfH6qWSIUABPQO",
+          "name": "n8n Webhook（Bearer Auth）"
+        }
+      }
+    },
+    {
+      "id": "18247139-72d9-4460-8a28-ad892de9fa1a",
+      "name": "Normalize artifact request",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        224,
+        96
+      ],
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "artifact-path",
+              "name": "filePath",
+              "value": "={{ $json.body?.path ?? $json.path ?? \"\" }}",
+              "type": "string"
+            },
+            {
+              "id": "artifact-content",
+              "name": "fileContent",
+              "value": "={{ $json.body?.content ?? $json.content ?? \"\" }}",
+              "type": "string"
+            },
+            {
+              "id": "commit-message",
+              "name": "commitMessage",
+              "value": "={{ $json.body?.commit_message ?? $json.commit_message ?? (\"Upload Daily artifact: \" + ($json.body?.path ?? $json.path ?? \"unknown\")) }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": false
+      }
+    },
+    {
+      "id": "af61f154-3aaf-4932-b5d2-785499453f08",
+      "name": "Validate artifact request",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.4,
+      "position": [
+        448,
+        96
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ ($json.filePath && $json.fileContent && ($json.filePath.endsWith(\".html\") || $json.filePath.endsWith(\".json\")) && !$json.filePath.includes(\"..\") && [\"test/\", \"rss/\", \"github-trends/\", \"email/\", \"ai/\", \"tech-intel/\", \"n8n/\"].some(prefix => $json.filePath.startsWith(prefix))) ? \"valid\" : \"invalid\" }}",
+              "rightValue": "valid",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      }
+    },
+    {
+      "id": "2c42c2c8-f9e8-429f-ba59-947d8a0e19aa",
+      "name": "Check existing artifact",
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1.1,
+      "position": [
+        720,
+        208
+      ],
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "file",
+        "operation": "get",
+        "owner": {
+          "__rl": true,
+          "mode": "name",
+          "value": "NTLx"
+        },
+        "repository": {
+          "__rl": true,
+          "mode": "name",
+          "value": "daily-artifacts"
+        },
+        "filePath": "={{ $(\"Normalize artifact request\").item.json.filePath }}",
+        "asBinaryProperty": false
+      },
+      "credentials": {
+        "githubOAuth2Api": {
+          "id": "stt7O3UtIsjdKCqg",
+          "name": "NTLx"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "onError": "continueErrorOutput",
+      "webhookId": "9a2561b6-1080-4d0c-9f0f-56ed519b7e53"
+    },
+    {
+      "id": "a56795db-c3a1-4228-a4aa-88642a2fba19",
+      "name": "Update GitHub artifact",
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1.1,
+      "position": [
+        944,
+        208
+      ],
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "file",
+        "operation": "edit",
+        "owner": {
+          "__rl": true,
+          "mode": "name",
+          "value": "NTLx"
+        },
+        "repository": {
+          "__rl": true,
+          "mode": "name",
+          "value": "daily-artifacts"
+        },
+        "filePath": "={{ $(\"Normalize artifact request\").item.json.filePath }}",
+        "binaryData": false,
+        "fileContent": "={{ $(\"Normalize artifact request\").item.json.fileContent }}",
+        "commitMessage": "={{ $(\"Normalize artifact request\").item.json.commitMessage }}"
+      },
+      "credentials": {
+        "githubOAuth2Api": {
+          "id": "stt7O3UtIsjdKCqg",
+          "name": "NTLx"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "onError": "continueErrorOutput",
+      "webhookId": "ac3992eb-e477-402c-914e-00f23a545ec1"
+    },
+    {
+      "id": "7613a242-f5cb-446a-80db-3e0267e9a041",
+      "name": "Return updated artifact",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1168,
+        128
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { ok: true, action: \"updated\", repository: \"NTLx/daily-artifacts\", path: $(\"Normalize artifact request\").item.json.filePath, html_url: $json.content?.html_url ?? null, commit_sha: $json.commit?.sha ?? null } }}",
+        "options": {
+          "responseCode": 200
+        }
+      }
+    },
+    {
+      "id": "0dfb53cf-f7d3-4496-a9f4-98e3fde9a5fc",
+      "name": "Return GitHub error",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1616,
+        352
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { ok: false, error: \"github_upstream_error\", message: \"GitHub operation failed; inspect the n8n execution for details.\", path: $(\"Normalize artifact request\").item.json.filePath } }}",
+        "options": {
+          "responseCode": 502
+        }
+      }
+    },
+    {
+      "id": "cbf88b8d-da0b-4fef-b184-7be04082e3f6",
+      "name": "Artifact missing?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.4,
+      "position": [
+        1168,
+        448
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ (() => { const e = $('Check existing artifact').item.json; const msg = String(e.error?.message ?? e.error ?? e.message ?? '').toLowerCase(); return /404|not found|could not be found/.test(msg) ? 'missing' : 'error'; })() }}",
+              "rightValue": "missing",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      }
+    },
+    {
+      "id": "0622cd24-b660-4067-86ee-be577dd9bd28",
+      "name": "Create GitHub artifact",
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1.1,
+      "position": [
+        1392,
+        448
+      ],
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "file",
+        "operation": "create",
+        "owner": {
+          "__rl": true,
+          "mode": "name",
+          "value": "NTLx"
+        },
+        "repository": {
+          "__rl": true,
+          "mode": "name",
+          "value": "daily-artifacts"
+        },
+        "filePath": "={{ $(\"Normalize artifact request\").item.json.filePath }}",
+        "binaryData": false,
+        "fileContent": "={{ $(\"Normalize artifact request\").item.json.fileContent }}",
+        "commitMessage": "={{ $(\"Normalize artifact request\").item.json.commitMessage }}"
+      },
+      "credentials": {
+        "githubOAuth2Api": {
+          "id": "stt7O3UtIsjdKCqg",
+          "name": "NTLx"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "onError": "continueErrorOutput",
+      "webhookId": "2c36db5f-93eb-40ff-b6b7-7256b15496db"
+    },
+    {
+      "id": "0dfe84ee-9bf7-466d-8aa3-d1f6be6b6e39",
+      "name": "Return created artifact",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1616,
+        544
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { ok: true, action: \"created\", repository: \"NTLx/daily-artifacts\", path: $(\"Normalize artifact request\").item.json.filePath, html_url: $json.content?.html_url ?? null, commit_sha: $json.commit?.sha ?? null } }}",
+        "options": {
+          "responseCode": 201
+        }
+      }
+    },
+    {
+      "id": "f9dc878e-170e-4db8-b512-4b164a955416",
+      "name": "Reject invalid request",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        832,
+        192
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { ok: false, error: \"validation_error\", message: \"Expected non-empty artifact content and a controlled path under test/, rss/, github-trends/, email/, ai/, tech-intel/, or n8n/ ending in .html or .json.\" } }}",
+        "options": {
+          "responseCode": 400
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Upload Daily HTML": {
+      "main": [
+        [
+          {
+            "node": "Normalize artifact request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize artifact request": {
+      "main": [
+        [
+          {
+            "node": "Validate artifact request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate artifact request": {
+      "main": [
+        [
+          {
+            "node": "Check existing artifact",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Reject invalid request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check existing artifact": {
+      "main": [
+        [
+          {
+            "node": "Update GitHub artifact",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Artifact missing?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update GitHub artifact": {
+      "main": [
+        [
+          {
+            "node": "Return updated artifact",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Return GitHub error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Artifact missing?": {
+      "main": [
+        [
+          {
+            "node": "Create GitHub artifact",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Return GitHub error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create GitHub artifact": {
+      "main": [
+        [
+          {
+            "node": "Return created artifact",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Return GitHub error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [
+    {
+      "id": "b6156821-8e83-4e0b-8b22-b6f502b00cf3",
+      "name": "Persist artifact",
+      "nodeIds": [
+        "2c42c2c8-f9e8-429f-ba59-947d8a0e19aa",
+        "cbf88b8d-da0b-4fef-b184-7be04082e3f6",
+        "0622cd24-b660-4067-86ee-be577dd9bd28",
+        "a56795db-c3a1-4228-a4aa-88642a2fba19",
+        "0dfe84ee-9bf7-466d-8aa3-d1f6be6b6e39",
+        "7613a242-f5cb-446a-80db-3e0267e9a041",
+        "0dfb53cf-f7d3-4496-a9f4-98e3fde9a5fc"
+      ],
+      "description": "Upsert the Daily artifact file (.html or .json) into NTLx/daily-artifacts and return a structured GitHub result or upstream error."
+    }
+  ],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true,
+    "errorWorkflow": "3LE3BnPfHSuIZCVR",
+    "timezone": "Asia/Shanghai",
+    "saveManualExecutions": true,
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all"
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [
+    {
+      "id": "j2GRa6L6FW78gTO3",
+      "name": "daily-artifact",
+      "createdAt": "2026-10-23T02:30:52.072Z",
+      "updatedAt": "2026-10-23T02:30:52.072Z"
+    },
+    {
+      "id": "ZB1OFuryVXrNRjEy",
+      "name": "github",
+      "createdAt": "2026-10-23T02:30:52.063Z",
+      "updatedAt": "2026-10-23T02:30:52.063Z"
+    },
+    {
+      "id": "twNsKNALbdWLw0Ox",
+      "name": "automation",
+      "createdAt": "2026-10-22T08:25:54.546Z",
+      "updatedAt": "2026-10-22T08:25:54.546Z"
+    }
+  ],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "nYk3nu9KmnRbjkcF",
+      "projectId": "cNMj0K6AdJmi0OAZ",
+      "createdAt": "2026-10-23T02:30:35.708Z",
+      "updatedAt": "2026-10-23T02:30:35.708Z"
+    }
+  ],
+  "activeVersion": {
+    "versionId": "b6b49228-21f4-4f29-8dda-265c47d6eae4",
+    "workflowId": "nYk3nu9KmnRbjkcF",
+    "nodes": [
+      {
+        "id": "d3adff41-37fd-4547-8263-454b4d88dbae",
+        "name": "Upload Daily HTML",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.2,
+        "position": [
+          0,
+          96
+        ],
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "daily-artifacts-upload",
+          "authentication": "headerAuth",
+          "responseMode": "responseNode"
+        },
+        "webhookId": "8d4ea890-6f1a-4712-9159-e5f637a27829",
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "RvmfH6qWSIUABPQO",
+            "name": "n8n Webhook（Bearer Auth）"
+          }
+        }
+      },
+      {
+        "id": "18247139-72d9-4460-8a28-ad892de9fa1a",
+        "name": "Normalize artifact request",
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.5,
+        "position": [
+          224,
+          96
+        ],
+        "parameters": {
+          "mode": "manual",
+          "assignments": {
+            "assignments": [
+              {
+                "id": "artifact-path",
+                "name": "filePath",
+                "value": "={{ $json.body?.path ?? $json.path ?? \"\" }}",
+                "type": "string"
+              },
+              {
+                "id": "artifact-content",
+                "name": "fileContent",
+                "value": "={{ $json.body?.content ?? $json.content ?? \"\" }}",
+                "type": "string"
+              },
+              {
+                "id": "commit-message",
+                "name": "commitMessage",
+                "value": "={{ $json.body?.commit_message ?? $json.commit_message ?? (\"Upload Daily artifact: \" + ($json.body?.path ?? $json.path ?? \"unknown\")) }}",
+                "type": "string"
+              }
+            ]
+          },
+          "includeOtherFields": false
+        }
+      },
+      {
+        "id": "af61f154-3aaf-4932-b5d2-785499453f08",
+        "name": "Validate artifact request",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.4,
+        "position": [
+          448,
+          96
+        ],
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 2
+            },
+            "conditions": [
+              {
+                "leftValue": "={{ ($json.filePath && $json.fileContent && ($json.filePath.endsWith(\".html\") || $json.filePath.endsWith(\".json\")) && !$json.filePath.includes(\"..\") && [\"test/\", \"rss/\", \"github-trends/\", \"email/\", \"ai/\", \"tech-intel/\", \"n8n/\"].some(prefix => $json.filePath.startsWith(prefix))) ? \"valid\" : \"invalid\" }}",
+                "rightValue": "valid",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals"
+                }
+              }
+            ],
+            "combinator": "and"
+          }
+        }
+      },
+      {
+        "id": "2c42c2c8-f9e8-429f-ba59-947d8a0e19aa",
+        "name": "Check existing artifact",
+        "type": "n8n-nodes-base.github",
+        "typeVersion": 1.1,
+        "position": [
+          720,
+          208
+        ],
+        "parameters": {
+          "authentication": "oAuth2",
+          "resource": "file",
+          "operation": "get",
+          "owner": {
+            "__rl": true,
+            "mode": "name",
+            "value": "NTLx"
+          },
+          "repository": {
+            "__rl": true,
+            "mode": "name",
+            "value": "daily-artifacts"
+          },
+          "filePath": "={{ $(\"Normalize artifact request\").item.json.filePath }}",
+          "asBinaryProperty": false
+        },
+        "credentials": {
+          "githubOAuth2Api": {
+            "id": "stt7O3UtIsjdKCqg",
+            "name": "NTLx"
+          }
+        },
+        "retryOnFail": true,
+        "maxTries": 3,
+        "waitBetweenTries": 5000,
+        "onError": "continueErrorOutput",
+        "webhookId": "9a2561b6-1080-4d0c-9f0f-56ed519b7e53"
+      },
+      {
+        "id": "a56795db-c3a1-4228-a4aa-88642a2fba19",
+        "name": "Update GitHub artifact",
+        "type": "n8n-nodes-base.github",
+        "typeVersion": 1.1,
+        "position": [
+          944,
+          208
+        ],
+        "parameters": {
+          "authentication": "oAuth2",
+          "resource": "file",
+          "operation": "edit",
+          "owner": {
+            "__rl": true,
+            "mode": "name",
+            "value": "NTLx"
+          },
+          "repository": {
+            "__rl": true,
+            "mode": "name",
+            "value": "daily-artifacts"
+          },
+          "filePath": "={{ $(\"Normalize artifact request\").item.json.filePath }}",
+          "binaryData": false,
+          "fileContent": "={{ $(\"Normalize artifact request\").item.json.fileContent }}",
+          "commitMessage": "={{ $(\"Normalize artifact request\").item.json.commitMessage }}"
+        },
+        "credentials": {
+          "githubOAuth2Api": {
+            "id": "stt7O3UtIsjdKCqg",
+            "name": "NTLx"
+          }
+        },
+        "retryOnFail": true,
+        "maxTries": 3,
+        "waitBetweenTries": 5000,
+        "onError": "continueErrorOutput",
+        "webhookId": "ac3992eb-e477-402c-914e-00f23a545ec1"
+      },
+      {
+        "id": "7613a242-f5cb-446a-80db-3e0267e9a041",
+        "name": "Return updated artifact",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.5,
+        "position": [
+          1168,
+          128
+        ],
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ { ok: true, action: \"updated\", repository: \"NTLx/daily-artifacts\", path: $(\"Normalize artifact request\").item.json.filePath, html_url: $json.content?.html_url ?? null, commit_sha: $json.commit?.sha ?? null } }}",
+          "options": {
+            "responseCode": 200
+          }
+        }
+      },
+      {
+        "id": "0dfb53cf-f7d3-4496-a9f4-98e3fde9a5fc",
+        "name": "Return GitHub error",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.5,
+        "position": [
+          1616,
+          352
+        ],
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ { ok: false, error: \"github_upstream_error\", message: \"GitHub operation failed; inspect the n8n execution for details.\", path: $(\"Normalize artifact request\").item.json.filePath } }}",
+          "options": {
+            "responseCode": 502
+          }
+        }
+      },
+      {
+        "id": "cbf88b8d-da0b-4fef-b184-7be04082e3f6",
+        "name": "Artifact missing?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.4,
+        "position": [
+          1168,
+          448
+        ],
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": false,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 2
+            },
+            "conditions": [
+              {
+                "leftValue": "={{ (() => { const e = $('Check existing artifact').item.json; const msg = String(e.error?.message ?? e.error ?? e.message ?? '').toLowerCase(); return /404|not found|could not be found/.test(msg) ? 'missing' : 'error'; })() }}",
+                "rightValue": "missing",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals"
+                }
+              }
+            ],
+            "combinator": "and"
+          }
+        }
+      },
+      {
+        "id": "0622cd24-b660-4067-86ee-be577dd9bd28",
+        "name": "Create GitHub artifact",
+        "type": "n8n-nodes-base.github",
+        "typeVersion": 1.1,
+        "position": [
+          1392,
+          448
+        ],
+        "parameters": {
+          "authentication": "oAuth2",
+          "resource": "file",
+          "operation": "create",
+          "owner": {
+            "__rl": true,
+            "mode": "name",
+            "value": "NTLx"
+          },
+          "repository": {
+            "__rl": true,
+            "mode": "name",
+            "value": "daily-artifacts"
+          },
+          "filePath": "={{ $(\"Normalize artifact request\").item.json.filePath }}",
+          "binaryData": false,
+          "fileContent": "={{ $(\"Normalize artifact request\").item.json.fileContent }}",
+          "commitMessage": "={{ $(\"Normalize artifact request\").item.json.commitMessage }}"
+        },
+        "credentials": {
+          "githubOAuth2Api": {
+            "id": "stt7O3UtIsjdKCqg",
+            "name": "NTLx"
+          }
+        },
+        "retryOnFail": true,
+        "maxTries": 3,
+        "waitBetweenTries": 5000,
+        "onError": "continueErrorOutput",
+        "webhookId": "2c36db5f-93eb-40ff-b6b7-7256b15496db"
+      },
+      {
+        "id": "0dfe84ee-9bf7-466d-8aa3-d1f6be6b6e39",
+        "name": "Return created artifact",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.5,
+        "position": [
+          1616,
+          544
+        ],
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ { ok: true, action: \"created\", repository: \"NTLx/daily-artifacts\", path: $(\"Normalize artifact request\").item.json.filePath, html_url: $json.content?.html_url ?? null, commit_sha: $json.commit?.sha ?? null } }}",
+          "options": {
+            "responseCode": 201
+          }
+        }
+      },
+      {
+        "id": "f9dc878e-170e-4db8-b512-4b164a955416",
+        "name": "Reject invalid request",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.5,
+        "position": [
+          832,
+          192
+        ],
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ { ok: false, error: \"validation_error\", message: \"Expected non-empty artifact content and a controlled path under test/, rss/, github-trends/, email/, ai/, tech-intel/, or n8n/ ending in .html or .json.\" } }}",
+          "options": {
+            "responseCode": 400
+          }
+        }
+      }
+    ],
+    "connections": {
+      "Upload Daily HTML": {
+        "main": [
+          [
+            {
+              "node": "Normalize artifact request",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Normalize artifact request": {
+        "main": [
+          [
+            {
+              "node": "Validate artifact request",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Validate artifact request": {
+        "main": [
+          [
+            {
+              "node": "Check existing artifact",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Reject invalid request",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Check existing artifact": {
+        "main": [
+          [
+            {
+              "node": "Update GitHub artifact",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Artifact missing?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Update GitHub artifact": {
+        "main": [
+          [
+            {
+              "node": "Return updated artifact",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Return GitHub error",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Artifact missing?": {
+        "main": [
+          [
+            {
+              "node": "Create GitHub artifact",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Return GitHub error",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Create GitHub artifact": {
+        "main": [
+          [
+            {
+              "node": "Return created artifact",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Return GitHub error",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "nodeGroups": [
+      {
+        "id": "b6156821-8e83-4e0b-8b22-b6f502b00cf3",
+        "name": "Persist artifact",
+        "nodeIds": [
+          "2c42c2c8-f9e8-429f-ba59-947d8a0e19aa",
+          "cbf88b8d-da0b-4fef-b184-7be04082e3f6",
+          "0622cd24-b660-4067-86ee-be577dd9bd28",
+          "a56795db-c3a1-4228-a4aa-88642a2fba19",
+          "0dfe84ee-9bf7-466d-8aa3-d1f6be6b6e39",
+          "7613a242-f5cb-446a-80db-3e0267e9a041",
+          "0dfb53cf-f7d3-4496-a9f4-98e3fde9a5fc"
+        ],
+        "description": "Upsert the Daily artifact file (.html or .json) into NTLx/daily-artifacts and return a structured GitHub result or upstream error."
+      }
+    ],
+    "authors": "Administrator NTLx (via MCP)",
+    "name": "Align artifact group wording",
+    "description": "Cosmetic consistency update after adding JSON sidecars: the persistence node group now describes generic artifact upsert rather than HTML-only upsert. No execution behavior changes.",
+    "autosaved": false,
+    "createdAt": "2026-10-23T16:20:27.132Z",
+    "updatedAt": "2026-10-23T16:20:27.132Z"
+  }
+}
