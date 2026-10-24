@@ -1,0 +1,805 @@
+{
+  "id": "YDRL5WVBbuB998TS",
+  "name": "Monitor n8n changelog",
+  "active": true,
+  "activeVersionId": "c5d6232f-e5aa-45c7-a395-1fa894853ee1",
+  "createdAt": "2026-10-23T15:19:36.939Z",
+  "updatedAt": "2026-10-23T15:20:33.707Z",
+  "isArchived": false,
+  "versionId": "c5d6232f-e5aa-45c7-a395-1fa894853ee1",
+  "triggerCount": 1,
+  "nodes": [
+    {
+      "id": "dc007e10-be05-4e66-aaca-e83c0303f7a9",
+      "name": "Every 15 minutes",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 15
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "1929bba7-3e40-4e88-b333-47531ad4a2f2",
+      "name": "Fetch n8n changelog",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        280,
+        0
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "https://docs.n8n.io/changelog/readme.md",
+        "authentication": "none",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text",
+              "outputPropertyName": "markdown"
+            }
+          }
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000
+    },
+    {
+      "id": "e005e275-9148-4532-8d0e-9ead63909650",
+      "name": "Parse latest changelog snapshot",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        560,
+        0
+      ],
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={{ (() => { const md = $(\"Fetch n8n changelog\").item.json.markdown || \"\"; const versions = md.match(/Current `stable`:\\s*([^\\s]+)\\s+Current `beta`:\\s*([^\\s]+)/) || []; const headings = [...md.matchAll(/^##\\s+(.+)$/gm)]; if (!headings.length) throw new Error(\"No changelog entry heading found\"); const first = headings[0]; const second = headings[1]; const entry = md.slice(first.index, second ? second.index : md.length).trim(); const releasedMatch = entry.match(/\\*\\*Released:\\*\\*\\s*([^\\n]+)/) || []; const title = first[1].replace(/\\[([^\\]]+)\\]\\([^)]+\\)/g, \"$1\").trim(); const stable = versions[1] || \"\"; const beta = versions[2] || \"\"; const normalizedEntry = entry.replace(/\\s+/g, \" \").trim(); return { source_url: \"https://docs.n8n.io/changelog/\", markdown_url: \"https://docs.n8n.io/changelog/readme.md\", stable_version: stable, beta_version: beta, title, released: (releasedMatch[1] || \"\").trim(), entry_markdown: entry, snapshot_text: `stable=${stable}\\nbeta=${beta}\\n${normalizedEntry}` }; })() }}",
+        "includeOtherFields": false
+      }
+    },
+    {
+      "id": "dfb26994-1552-43fd-a7af-ab5b933f22ba",
+      "name": "Hash changelog snapshot",
+      "type": "n8n-nodes-base.crypto",
+      "typeVersion": 2,
+      "position": [
+        840,
+        0
+      ],
+      "parameters": {
+        "action": "hash",
+        "binaryData": false,
+        "type": "SHA256",
+        "value": "={{ $(\"Parse latest changelog snapshot\").item.json.snapshot_text }}",
+        "dataPropertyName": "snapshot_hash",
+        "encoding": "hex"
+      }
+    },
+    {
+      "id": "8e0d0fed-6aa1-46ab-ab64-b8dc3e184a8e",
+      "name": "Enqueue changelog review",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.4,
+      "position": [
+        1120,
+        0
+      ],
+      "parameters": {
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "oe8KZW4nLbYUUDzA",
+          "cachedResultName": "Enqueue AI work"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "work_id": "={{ \"n8n-changelog:\" + $(\"Hash changelog snapshot\").item.json.snapshot_hash }}",
+            "kind": "n8n_changelog_review",
+            "priority": 2,
+            "source_event_id": "={{ \"n8n-changelog:\" + $(\"Hash changelog snapshot\").item.json.snapshot_hash }}",
+            "correlation_id": "={{ \"n8n-changelog:\" + $(\"Hash changelog snapshot\").item.json.snapshot_hash }}",
+            "project": "n8n",
+            "input_ref": "https://docs.n8n.io/changelog/",
+            "summary": "={{ \"n8n Changelog update: \" + $(\"Parse latest changelog snapshot\").item.json.title + \" | stable \" + $(\"Parse latest changelog snapshot\").item.json.stable_version + \", beta \" + $(\"Parse latest changelog snapshot\").item.json.beta_version + \" | \" + $(\"Parse latest changelog snapshot\").item.json.released }}",
+            "not_before": "={{ $now.toISO() }}",
+            "deadline": "",
+            "event_id": "={{ \"n8n-changelog:\" + $(\"Hash changelog snapshot\").item.json.snapshot_hash }}",
+            "event_occurred_at": "={{ $now.toISO() }}",
+            "event_source": "n8n_changelog",
+            "event_category": "n8n.changelog.updated",
+            "event_title": "={{ $(\"Parse latest changelog snapshot\").item.json.title }}",
+            "event_description": "={{ $(\"Parse latest changelog snapshot\").item.json.entry_markdown }}",
+            "event_status": "new",
+            "event_url": "https://docs.n8n.io/changelog/",
+            "event_metadata_object": "={{ JSON.stringify({ snapshot_hash: $(\"Hash changelog snapshot\").item.json.snapshot_hash, stable_version: $(\"Parse latest changelog snapshot\").item.json.stable_version, beta_version: $(\"Parse latest changelog snapshot\").item.json.beta_version, title: $(\"Parse latest changelog snapshot\").item.json.title, released: $(\"Parse latest changelog snapshot\").item.json.released, entry_markdown: $(\"Parse latest changelog snapshot\").item.json.entry_markdown, detected_at: $now.toISO(), source_url: $(\"Parse latest changelog snapshot\").item.json.source_url, markdown_url: $(\"Parse latest changelog snapshot\").item.json.markdown_url }) }}"
+          },
+          "schema": [
+            {
+              "id": "work_id",
+              "displayName": "work_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "kind",
+              "displayName": "kind",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "priority",
+              "displayName": "priority",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "source_event_id",
+              "displayName": "source_event_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "correlation_id",
+              "displayName": "correlation_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "project",
+              "displayName": "project",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "input_ref",
+              "displayName": "input_ref",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "summary",
+              "displayName": "summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "not_before",
+              "displayName": "not_before",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "deadline",
+              "displayName": "deadline",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "event_id",
+              "displayName": "event_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "event_occurred_at",
+              "displayName": "event_occurred_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "event_source",
+              "displayName": "event_source",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "event_category",
+              "displayName": "event_category",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "event_title",
+              "displayName": "event_title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "event_description",
+              "displayName": "event_description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "event_status",
+              "displayName": "event_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "event_url",
+              "displayName": "event_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "event_metadata_object",
+              "displayName": "event_metadata_object",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "mode": "once",
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "disabled": false
+    }
+  ],
+  "connections": {
+    "Every 15 minutes": {
+      "main": [
+        [
+          {
+            "node": "Fetch n8n changelog",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch n8n changelog": {
+      "main": [
+        [
+          {
+            "node": "Parse latest changelog snapshot",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse latest changelog snapshot": {
+      "main": [
+        [
+          {
+            "node": "Hash changelog snapshot",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Hash changelog snapshot": {
+      "main": [
+        [
+          {
+            "node": "Enqueue changelog review",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [
+    {
+      "id": "2f884721-595d-4d34-8c5a-0580c836e59a",
+      "name": "Detect and enqueue n8n updates",
+      "nodeIds": [
+        "1929bba7-3e40-4e88-b333-47531ad4a2f2",
+        "e005e275-9148-4532-8d0e-9ead63909650",
+        "dfb26994-1552-43fd-a7af-ab5b933f22ba",
+        "8e0d0fed-6aa1-46ab-ab64-b8dc3e184a8e"
+      ],
+      "description": "Fetch the official n8n changelog, fingerprint the latest snapshot, and enqueue it once for ChatGPT review."
+    }
+  ],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true,
+    "errorWorkflow": "3LE3BnPfHSuIZCVR",
+    "timezone": "Asia/Shanghai",
+    "saveExecutionProgress": false,
+    "saveManualExecutions": false,
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "none",
+    "executionTimeout": 120,
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "staticData": {
+    "node:Every 15 minutes": {
+      "recurrenceRules": [
+        null
+      ],
+      "recurrenceRuleSignatures": [
+        null
+      ]
+    }
+  },
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [
+    {
+      "id": "twNsKNALbdWLw0Ox",
+      "name": "automation",
+      "createdAt": "2026-10-22T08:25:54.546Z",
+      "updatedAt": "2026-10-22T08:25:54.546Z"
+    },
+    {
+      "id": "BlGRvaSWqnmTk53i",
+      "name": "event-producer",
+      "createdAt": "2026-10-22T09:14:35.370Z",
+      "updatedAt": "2026-10-22T09:14:35.370Z"
+    },
+    {
+      "id": "9jw9Bhya2Ylf8E4D",
+      "name": "ai-work-producer",
+      "createdAt": "2026-10-22T09:14:35.367Z",
+      "updatedAt": "2026-10-22T09:14:35.367Z"
+    },
+    {
+      "id": "YwjTMUhE83IXTCRg",
+      "name": "monitoring",
+      "createdAt": "2026-10-22T08:38:34.124Z",
+      "updatedAt": "2026-10-22T08:38:34.124Z"
+    }
+  ],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "YDRL5WVBbuB998TS",
+      "projectId": "cNMj0K6AdJmi0OAZ",
+      "createdAt": "2026-10-23T15:19:36.939Z",
+      "updatedAt": "2026-10-23T15:19:36.939Z"
+    }
+  ],
+  "activeVersion": {
+    "versionId": "c5d6232f-e5aa-45c7-a395-1fa894853ee1",
+    "workflowId": "YDRL5WVBbuB998TS",
+    "nodes": [
+      {
+        "id": "dc007e10-be05-4e66-aaca-e83c0303f7a9",
+        "name": "Every 15 minutes",
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.4,
+        "position": [
+          0,
+          0
+        ],
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "minutes",
+                "minutesInterval": 15
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "1929bba7-3e40-4e88-b333-47531ad4a2f2",
+        "name": "Fetch n8n changelog",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.5,
+        "position": [
+          280,
+          0
+        ],
+        "parameters": {
+          "method": "GET",
+          "url": "https://docs.n8n.io/changelog/readme.md",
+          "authentication": "none",
+          "options": {
+            "response": {
+              "response": {
+                "responseFormat": "text",
+                "outputPropertyName": "markdown"
+              }
+            }
+          }
+        },
+        "retryOnFail": true,
+        "maxTries": 3,
+        "waitBetweenTries": 5000
+      },
+      {
+        "id": "e005e275-9148-4532-8d0e-9ead63909650",
+        "name": "Parse latest changelog snapshot",
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.5,
+        "position": [
+          560,
+          0
+        ],
+        "parameters": {
+          "mode": "raw",
+          "jsonOutput": "={{ (() => { const md = $(\"Fetch n8n changelog\").item.json.markdown || \"\"; const versions = md.match(/Current `stable`:\\s*([^\\s]+)\\s+Current `beta`:\\s*([^\\s]+)/) || []; const headings = [...md.matchAll(/^##\\s+(.+)$/gm)]; if (!headings.length) throw new Error(\"No changelog entry heading found\"); const first = headings[0]; const second = headings[1]; const entry = md.slice(first.index, second ? second.index : md.length).trim(); const releasedMatch = entry.match(/\\*\\*Released:\\*\\*\\s*([^\\n]+)/) || []; const title = first[1].replace(/\\[([^\\]]+)\\]\\([^)]+\\)/g, \"$1\").trim(); const stable = versions[1] || \"\"; const beta = versions[2] || \"\"; const normalizedEntry = entry.replace(/\\s+/g, \" \").trim(); return { source_url: \"https://docs.n8n.io/changelog/\", markdown_url: \"https://docs.n8n.io/changelog/readme.md\", stable_version: stable, beta_version: beta, title, released: (releasedMatch[1] || \"\").trim(), entry_markdown: entry, snapshot_text: `stable=${stable}\\nbeta=${beta}\\n${normalizedEntry}` }; })() }}",
+          "includeOtherFields": false
+        }
+      },
+      {
+        "id": "dfb26994-1552-43fd-a7af-ab5b933f22ba",
+        "name": "Hash changelog snapshot",
+        "type": "n8n-nodes-base.crypto",
+        "typeVersion": 2,
+        "position": [
+          840,
+          0
+        ],
+        "parameters": {
+          "action": "hash",
+          "binaryData": false,
+          "type": "SHA256",
+          "value": "={{ $(\"Parse latest changelog snapshot\").item.json.snapshot_text }}",
+          "dataPropertyName": "snapshot_hash",
+          "encoding": "hex"
+        }
+      },
+      {
+        "id": "8e0d0fed-6aa1-46ab-ab64-b8dc3e184a8e",
+        "name": "Enqueue changelog review",
+        "type": "n8n-nodes-base.executeWorkflow",
+        "typeVersion": 1.4,
+        "position": [
+          1120,
+          0
+        ],
+        "parameters": {
+          "source": "database",
+          "workflowId": {
+            "__rl": true,
+            "mode": "id",
+            "value": "oe8KZW4nLbYUUDzA",
+            "cachedResultName": "Enqueue AI work"
+          },
+          "workflowInputs": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "work_id": "={{ \"n8n-changelog:\" + $(\"Hash changelog snapshot\").item.json.snapshot_hash }}",
+              "kind": "n8n_changelog_review",
+              "priority": 2,
+              "source_event_id": "={{ \"n8n-changelog:\" + $(\"Hash changelog snapshot\").item.json.snapshot_hash }}",
+              "correlation_id": "={{ \"n8n-changelog:\" + $(\"Hash changelog snapshot\").item.json.snapshot_hash }}",
+              "project": "n8n",
+              "input_ref": "https://docs.n8n.io/changelog/",
+              "summary": "={{ \"n8n Changelog update: \" + $(\"Parse latest changelog snapshot\").item.json.title + \" | stable \" + $(\"Parse latest changelog snapshot\").item.json.stable_version + \", beta \" + $(\"Parse latest changelog snapshot\").item.json.beta_version + \" | \" + $(\"Parse latest changelog snapshot\").item.json.released }}",
+              "not_before": "={{ $now.toISO() }}",
+              "deadline": "",
+              "event_id": "={{ \"n8n-changelog:\" + $(\"Hash changelog snapshot\").item.json.snapshot_hash }}",
+              "event_occurred_at": "={{ $now.toISO() }}",
+              "event_source": "n8n_changelog",
+              "event_category": "n8n.changelog.updated",
+              "event_title": "={{ $(\"Parse latest changelog snapshot\").item.json.title }}",
+              "event_description": "={{ $(\"Parse latest changelog snapshot\").item.json.entry_markdown }}",
+              "event_status": "new",
+              "event_url": "https://docs.n8n.io/changelog/",
+              "event_metadata_object": "={{ JSON.stringify({ snapshot_hash: $(\"Hash changelog snapshot\").item.json.snapshot_hash, stable_version: $(\"Parse latest changelog snapshot\").item.json.stable_version, beta_version: $(\"Parse latest changelog snapshot\").item.json.beta_version, title: $(\"Parse latest changelog snapshot\").item.json.title, released: $(\"Parse latest changelog snapshot\").item.json.released, entry_markdown: $(\"Parse latest changelog snapshot\").item.json.entry_markdown, detected_at: $now.toISO(), source_url: $(\"Parse latest changelog snapshot\").item.json.source_url, markdown_url: $(\"Parse latest changelog snapshot\").item.json.markdown_url }) }}"
+            },
+            "schema": [
+              {
+                "id": "work_id",
+                "displayName": "work_id",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "kind",
+                "displayName": "kind",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "priority",
+                "displayName": "priority",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "number",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "source_event_id",
+                "displayName": "source_event_id",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "correlation_id",
+                "displayName": "correlation_id",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "project",
+                "displayName": "project",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "input_ref",
+                "displayName": "input_ref",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "summary",
+                "displayName": "summary",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "not_before",
+                "displayName": "not_before",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "deadline",
+                "displayName": "deadline",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "event_id",
+                "displayName": "event_id",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "event_occurred_at",
+                "displayName": "event_occurred_at",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "event_source",
+                "displayName": "event_source",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "event_category",
+                "displayName": "event_category",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "event_title",
+                "displayName": "event_title",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "event_description",
+                "displayName": "event_description",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "event_status",
+                "displayName": "event_status",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "event_url",
+                "displayName": "event_url",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "event_metadata_object",
+                "displayName": "event_metadata_object",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              }
+            ]
+          },
+          "mode": "once",
+          "options": {
+            "waitForSubWorkflow": true
+          }
+        },
+        "disabled": false
+      }
+    ],
+    "connections": {
+      "Every 15 minutes": {
+        "main": [
+          [
+            {
+              "node": "Fetch n8n changelog",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Fetch n8n changelog": {
+        "main": [
+          [
+            {
+              "node": "Parse latest changelog snapshot",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Parse latest changelog snapshot": {
+        "main": [
+          [
+            {
+              "node": "Hash changelog snapshot",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Hash changelog snapshot": {
+        "main": [
+          [
+            {
+              "node": "Enqueue changelog review",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "nodeGroups": [
+      {
+        "id": "2f884721-595d-4d34-8c5a-0580c836e59a",
+        "name": "Detect and enqueue n8n updates",
+        "nodeIds": [
+          "1929bba7-3e40-4e88-b333-47531ad4a2f2",
+          "e005e275-9148-4532-8d0e-9ead63909650",
+          "dfb26994-1552-43fd-a7af-ab5b933f22ba",
+          "8e0d0fed-6aa1-46ab-ab64-b8dc3e184a8e"
+        ],
+        "description": "Fetch the official n8n changelog, fingerprint the latest snapshot, and enqueue it once for ChatGPT review."
+      }
+    ],
+    "authors": "Administrator NTLx (via MCP)",
+    "name": "Enable queue handoff",
+    "description": "Re-enables the validated Enqueue AI work handoff after the side-effect-free parsing/hash test passed.",
+    "autosaved": false,
+    "createdAt": "2026-10-23T15:20:33.713Z",
+    "updatedAt": "2026-10-23T15:20:33.713Z"
+  }
+}
