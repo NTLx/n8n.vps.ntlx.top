@@ -1,0 +1,92 @@
+{
+  "id": "PebMrPdGE9Da2FNM",
+  "name": "Probe DingTalk Card v0.3 error details",
+  "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-10-24T13:10:27.111Z",
+  "updatedAt": "2026-10-24T13:14:10.377Z",
+  "isArchived": true,
+  "versionId": "d133c8dd-7c89-4882-8935-7692ec248fca",
+  "triggerCount": 0,
+  "nodes": [
+    {
+      "id": "33a38232-47ab-4bba-b15c-b3e4f3d105b7",
+      "name": "Start",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "0bac7964-a46f-428a-831e-8a8d7532b91b",
+      "name": "Capture Validation Error",
+      "type": "n8n-nodes-dingtalk-card.dingTalkCard",
+      "typeVersion": 1,
+      "position": [
+        224,
+        0
+      ],
+      "parameters": {
+        "operation": "update",
+        "inputMode": "form",
+        "outTrackId": "v030-live-acceptance-missing-card-20261024",
+        "cardDataMode": "form",
+        "cardParameters": {
+          "parameters": [
+            {
+              "name": "config",
+              "valueMode": "json",
+              "value": "{\"autoLayout\":true}"
+            }
+          ]
+        },
+        "updateByKey": true
+      },
+      "credentials": {
+        "dingTalkCardApi": {
+          "id": "qYZQszWAxbIfLPnQ",
+          "name": "四有青年 DingTalk Card API"
+        }
+      },
+      "onError": "continueRegularOutput"
+    }
+  ],
+  "connections": {
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "Capture Validation Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "PebMrPdGE9Da2FNM",
+      "projectId": "cNMj0K6AdJmi0OAZ",
+      "createdAt": "2026-10-24T13:10:27.111Z",
+      "updatedAt": "2026-10-24T13:10:27.111Z"
+    }
+  ],
+  "activeVersion": null
+}
