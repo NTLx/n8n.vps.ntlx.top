@@ -1,0 +1,100 @@
+{
+  "id": "oa7anai4EmwjaMgs",
+  "name": "Probe external task runners",
+  "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-10-24T13:01:51.208Z",
+  "updatedAt": "2026-10-24T13:14:04.426Z",
+  "isArchived": true,
+  "versionId": "42127642-6c69-4212-bc1f-42a3950b11e2",
+  "triggerCount": 0,
+  "nodes": [
+    {
+      "id": "6a299ff3-2bb7-4ba8-9b5f-5a06a6cd07b3",
+      "name": "Start",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "e6c6f4db-cae0-48f8-8f42-1c6c10fd5a8a",
+      "name": "JavaScript Probe",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        0
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "return [{ json: { javascript: 'ok', sequence: 1 } }];"
+      }
+    },
+    {
+      "id": "cb7e8296-6c4e-4def-95c5-e2318cd4e87f",
+      "name": "Python Probe",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        0
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "pythonNative",
+        "pythonCode": "return [{\"json\": {\"python\": \"ok\", \"sequence\": 2}}]"
+      }
+    }
+  ],
+  "connections": {
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "JavaScript Probe",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "JavaScript Probe": {
+      "main": [
+        [
+          {
+            "node": "Python Probe",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "oa7anai4EmwjaMgs",
+      "projectId": "cNMj0K6AdJmi0OAZ",
+      "createdAt": "2026-10-24T13:01:51.208Z",
+      "updatedAt": "2026-10-24T13:01:51.208Z"
+    }
+  ],
+  "activeVersion": null
+}
