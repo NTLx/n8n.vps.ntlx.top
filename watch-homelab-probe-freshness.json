@@ -1,10 +1,10 @@
 {
   "id": "pT1U1uDfXorshiPG",
   "name": "Watch Homelab probe freshness",
-  "active": false,
-  "activeVersionId": null,
+  "active": true,
+  "activeVersionId": "9991c7f8-91fb-4ddb-beb1-7b6d50b676a3",
   "createdAt": "2026-10-23T16:55:54.615Z",
-  "updatedAt": "2026-10-23T17:05:03.285Z",
+  "updatedAt": "2026-10-24T07:41:05.367Z",
   "isArchived": false,
   "versionId": "9991c7f8-91fb-4ddb-beb1-7b6d50b676a3",
   "triggerCount": 1,
@@ -393,10 +393,10 @@
       "updatedAt": "2026-10-22T16:27:37.208Z"
     },
     {
-      "id": "YwjTMUhE83IXTCRg",
-      "name": "monitoring",
-      "createdAt": "2026-10-22T08:38:34.124Z",
-      "updatedAt": "2026-10-22T08:38:34.124Z"
+      "id": "9jw9Bhya2Ylf8E4D",
+      "name": "ai-work-producer",
+      "createdAt": "2026-10-22T09:14:35.367Z",
+      "updatedAt": "2026-10-22T09:14:35.367Z"
     },
     {
       "id": "fKoxhQDd26tREjYf",
@@ -405,16 +405,16 @@
       "updatedAt": "2026-10-22T16:21:02.698Z"
     },
     {
+      "id": "YwjTMUhE83IXTCRg",
+      "name": "monitoring",
+      "createdAt": "2026-10-22T08:38:34.124Z",
+      "updatedAt": "2026-10-22T08:38:34.124Z"
+    },
+    {
       "id": "twNsKNALbdWLw0Ox",
       "name": "automation",
       "createdAt": "2026-10-22T08:25:54.546Z",
       "updatedAt": "2026-10-22T08:25:54.546Z"
-    },
-    {
-      "id": "9jw9Bhya2Ylf8E4D",
-      "name": "ai-work-producer",
-      "createdAt": "2026-10-22T09:14:35.367Z",
-      "updatedAt": "2026-10-22T09:14:35.367Z"
     }
   ],
   "shared": [
@@ -426,5 +426,364 @@
       "updatedAt": "2026-10-23T16:55:54.615Z"
     }
   ],
-  "activeVersion": null
+  "activeVersion": {
+    "versionId": "9991c7f8-91fb-4ddb-beb1-7b6d50b676a3",
+    "workflowId": "pT1U1uDfXorshiPG",
+    "nodes": [
+      {
+        "id": "b8a59978-9747-4a8b-a988-6f02153604da",
+        "name": "Every 30 minutes",
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.3,
+        "position": [
+          0,
+          0
+        ],
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "minutes",
+                "minutesInterval": 30
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "b6d840be-63c8-48d3-90eb-8bd78d91f067",
+        "name": "Get Homelab Current State",
+        "type": "n8n-nodes-base.dataTable",
+        "typeVersion": 1.1,
+        "position": [
+          224,
+          0
+        ],
+        "parameters": {
+          "resource": "row",
+          "operation": "get",
+          "dataTableId": {
+            "__rl": true,
+            "mode": "id",
+            "value": "yEs82vz7cxHgduTi"
+          },
+          "returnAll": true,
+          "orderBy": true,
+          "orderByColumn": "state_key",
+          "orderByDirection": "ASC"
+        }
+      },
+      {
+        "id": "ba971c34-36a4-4e79-bf76-9e5f6059f9f2",
+        "name": "Detect Stale Probe Coverage",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          448,
+          0
+        ],
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "language": "javaScript",
+          "jsCode": "const now = Date.now();\nconst nowIso = new Date(now).toISOString();\nconst out = [];\nfor (const item of $input.all()) {\n  const r = item.json || {};\n  if (!r.state_key || !r.node_id || !r.scope || !r.last_seen_at) continue;\n  const last = Date.parse(r.last_seen_at);\n  if (!Number.isFinite(last)) continue;\n  const thresholdMs = r.scope === 'health' ? 45 * 60 * 1000 : 30 * 60 * 60 * 1000;\n  if (now - last <= thresholdMs) continue;\n  if (String(r.coverage_status || '') === 'stale' && String(r.incident_id || '').startsWith('homelab-stale:')) continue;\n  const stamp = String(r.last_seen_at).replace(/[^0-9]/g, '').slice(0,14);\n  const incidentId = 'homelab-stale:' + r.state_key + ':' + stamp;\n  const eventId = 'homelab.ops.coverage_change:' + r.state_key + ':stale:' + stamp;\n  const deadline = new Date(now + (r.scope === 'health' ? 3 : 26) * 3600000).toISOString();\n  const workId = 'homelab_ops:' + r.node_id + ':' + r.scope + ':probe_stale:' + stamp;\n  const ageMinutes = Math.floor((now - last) / 60000);\n  out.push({ json: { ...r, status: 'coverage_degraded', coverage_status: 'stale', consecutive_failures: Math.max(Number(r.consecutive_failures || 0) + 1, 2), consecutive_successes: 0, incident_id: incidentId, incident_started_at: nowIso, last_change_at: nowIso, worker: 'hourly', kind: 'homelab_ops_review', priority: r.scope === 'health' ? 8 : 12, source_event_id: eventId, correlation_id: incidentId, project: 'home-infrastructure', input_ref: 'homelab://state/' + r.state_key + '?reason=probe_stale&last_seen_at=' + encodeURIComponent(r.last_seen_at) + '&incident_id=' + encodeURIComponent(incidentId), summary: 'Homelab probe coverage stale for ' + r.node_id + ' / ' + r.scope + '; last_seen_at=' + r.last_seen_at + '; age_minutes=' + ageMinutes + '.', deadline, event_id: eventId, event_occurred_at: nowIso, event_source: 'n8n:homelab-probe-deadman', event_category: 'homelab.ops.coverage_change', event_title: 'Homelab probe coverage stale: ' + r.node_id + ' / ' + r.scope, event_description: 'Deterministic probe deadman detected stale coverage. Last seen ' + r.last_seen_at + '; age_minutes=' + ageMinutes + '.', event_status: 'coverage_degraded', event_url: '', event_metadata_object: JSON.stringify({ node_id: r.node_id, scope: r.scope, reason: 'probe_stale', last_seen_at: r.last_seen_at, detected_at: nowIso, age_minutes: ageMinutes, incident_id: incidentId, prior_status: r.status || null, prior_coverage_status: r.coverage_status || null }) }});\n}\nreturn out;"
+        }
+      },
+      {
+        "id": "29880d15-234e-4ad4-8e43-6fda09279f86",
+        "name": "Mark Probe Coverage Stale",
+        "type": "n8n-nodes-base.dataTable",
+        "typeVersion": 1.1,
+        "position": [
+          672,
+          0
+        ],
+        "parameters": {
+          "resource": "row",
+          "operation": "upsert",
+          "dataTableId": {
+            "__rl": true,
+            "mode": "id",
+            "value": "yEs82vz7cxHgduTi"
+          },
+          "matchType": "allConditions",
+          "filters": {
+            "conditions": [
+              {
+                "keyName": "state_key",
+                "condition": "eq",
+                "keyValue": "={{ $json.state_key }}"
+              }
+            ]
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "state_key": "={{ $json.state_key }}",
+              "node_id": "={{ $json.node_id }}",
+              "scope": "={{ $json.scope }}",
+              "observed_at": "={{ $json.observed_at }}",
+              "last_seen_at": "={{ $json.last_seen_at }}",
+              "status": "={{ $json.status }}",
+              "coverage_status": "={{ $json.coverage_status }}",
+              "state_hash": "={{ $json.state_hash }}",
+              "probe_version": "={{ $json.probe_version }}",
+              "consecutive_failures": "={{ $json.consecutive_failures }}",
+              "consecutive_successes": "={{ $json.consecutive_successes }}",
+              "incident_id": "={{ $json.incident_id }}",
+              "incident_started_at": "={{ $json.incident_started_at }}",
+              "last_change_at": "={{ $json.last_change_at }}",
+              "snapshot_json": "={{ $json.snapshot_json }}",
+              "blind_spots": "={{ $json.blind_spots }}",
+              "backup_configured": "={{ $json.backup_configured }}",
+              "backup_fresh_artifact": "={{ $json.backup_fresh_artifact }}",
+              "backup_correct_destination": "={{ $json.backup_correct_destination }}",
+              "backup_recoverability": "={{ $json.backup_recoverability }}"
+            }
+          },
+          "options": {}
+        }
+      },
+      {
+        "id": "00342f13-4c1e-4dfb-810f-f94dab203267",
+        "name": "Restore Deadman Context",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          896,
+          0
+        ],
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "language": "javaScript",
+          "jsCode": "return $('Detect Stale Probe Coverage').all();"
+        }
+      },
+      {
+        "id": "b2245f30-67f7-4aad-a9cd-760a9b0a87d7",
+        "name": "Enqueue Stale Probe Review",
+        "type": "n8n-nodes-base.executeWorkflow",
+        "typeVersion": 1.4,
+        "position": [
+          1120,
+          0
+        ],
+        "parameters": {
+          "source": "database",
+          "workflowId": {
+            "__rl": true,
+            "mode": "id",
+            "value": "oe8KZW4nLbYUUDzA"
+          },
+          "workflowInputs": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "work_id": "={{ $json.work_id }}",
+              "worker": "={{ $json.worker }}",
+              "kind": "={{ $json.kind }}",
+              "priority": "={{ $json.priority }}",
+              "source_event_id": "={{ $json.source_event_id }}",
+              "correlation_id": "={{ $json.correlation_id }}",
+              "project": "={{ $json.project }}",
+              "input_ref": "={{ $json.input_ref }}",
+              "summary": "={{ $json.summary }}",
+              "not_before": "={{ $now.toISO() }}",
+              "deadline": "={{ $json.deadline }}",
+              "event_id": "={{ $json.event_id }}",
+              "event_occurred_at": "={{ $json.event_occurred_at }}",
+              "event_source": "={{ $json.event_source }}",
+              "event_category": "={{ $json.event_category }}",
+              "event_title": "={{ $json.event_title }}",
+              "event_description": "={{ $json.event_description }}",
+              "event_status": "={{ $json.event_status }}",
+              "event_url": "={{ $json.event_url }}",
+              "event_metadata_object": "={{ $json.event_metadata_object }}"
+            },
+            "schema": [
+              {
+                "id": "work_id",
+                "displayName": "work_id",
+                "type": "string"
+              },
+              {
+                "id": "worker",
+                "displayName": "worker",
+                "type": "string"
+              },
+              {
+                "id": "kind",
+                "displayName": "kind",
+                "type": "string"
+              },
+              {
+                "id": "priority",
+                "displayName": "priority",
+                "type": "number"
+              },
+              {
+                "id": "source_event_id",
+                "displayName": "source_event_id",
+                "type": "string"
+              },
+              {
+                "id": "correlation_id",
+                "displayName": "correlation_id",
+                "type": "string"
+              },
+              {
+                "id": "project",
+                "displayName": "project",
+                "type": "string"
+              },
+              {
+                "id": "input_ref",
+                "displayName": "input_ref",
+                "type": "string"
+              },
+              {
+                "id": "summary",
+                "displayName": "summary",
+                "type": "string"
+              },
+              {
+                "id": "not_before",
+                "displayName": "not_before",
+                "type": "string"
+              },
+              {
+                "id": "deadline",
+                "displayName": "deadline",
+                "type": "string"
+              },
+              {
+                "id": "event_id",
+                "displayName": "event_id",
+                "type": "string"
+              },
+              {
+                "id": "event_occurred_at",
+                "displayName": "event_occurred_at",
+                "type": "string"
+              },
+              {
+                "id": "event_source",
+                "displayName": "event_source",
+                "type": "string"
+              },
+              {
+                "id": "event_category",
+                "displayName": "event_category",
+                "type": "string"
+              },
+              {
+                "id": "event_title",
+                "displayName": "event_title",
+                "type": "string"
+              },
+              {
+                "id": "event_description",
+                "displayName": "event_description",
+                "type": "string"
+              },
+              {
+                "id": "event_status",
+                "displayName": "event_status",
+                "type": "string"
+              },
+              {
+                "id": "event_url",
+                "displayName": "event_url",
+                "type": "string"
+              },
+              {
+                "id": "event_metadata_object",
+                "displayName": "event_metadata_object",
+                "type": "string"
+              }
+            ]
+          },
+          "mode": "each",
+          "options": {
+            "waitForSubWorkflow": true
+          }
+        }
+      }
+    ],
+    "connections": {
+      "Every 30 minutes": {
+        "main": [
+          [
+            {
+              "node": "Get Homelab Current State",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get Homelab Current State": {
+        "main": [
+          [
+            {
+              "node": "Detect Stale Probe Coverage",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Detect Stale Probe Coverage": {
+        "main": [
+          [
+            {
+              "node": "Mark Probe Coverage Stale",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Mark Probe Coverage Stale": {
+        "main": [
+          [
+            {
+              "node": "Restore Deadman Context",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Restore Deadman Context": {
+        "main": [
+          [
+            {
+              "node": "Enqueue Stale Probe Review",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "nodeGroups": [
+      {
+        "id": "17df8d4d-db8a-482d-9394-000fc7630e20",
+        "name": "Probe freshness state machine",
+        "nodeIds": [
+          "b6d840be-63c8-48d3-90eb-8bd78d91f067",
+          "ba971c34-36a4-4e79-bf76-9e5f6059f9f2",
+          "29880d15-234e-4ad4-8e43-6fda09279f86",
+          "00342f13-4c1e-4dfb-810f-f94dab203267",
+          "b2245f30-67f7-4aad-a9cd-760a9b0a87d7"
+        ],
+        "description": "Turn stale deterministic probe coverage into one stable Hourly incident."
+      }
+    ],
+    "authors": "Administrator NTLx (via MCP)",
+    "name": "Production safeguards",
+    "description": "Adds Asia/Shanghai timezone, shared error workflow, lean execution retention, and monitoring/infrastructure tags.",
+    "autosaved": false,
+    "createdAt": "2026-10-23T16:56:03.354Z",
+    "updatedAt": "2026-10-23T16:56:03.354Z"
+  }
 }
