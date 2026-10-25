@@ -1,0 +1,93 @@
+{
+  "id": "dCZkrAO6oU3VHciH",
+  "name": "DingTalk Card v0.4 Template Contract Test",
+  "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-10-24T17:14:53.927Z",
+  "updatedAt": "2026-10-24T17:17:09.127Z",
+  "isArchived": true,
+  "versionId": "fb69bf79-302c-4baf-a894-f281ba218a94",
+  "triggerCount": 0,
+  "nodes": [
+    {
+      "id": "98962812-4982-4d47-bb5c-898e0543324f",
+      "name": "Contract Test Input",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.2,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "dingtalk-card-v040-template-contract-test",
+        "authentication": "none",
+        "responseMode": "lastNode",
+        "responseData": "firstEntryJson"
+      },
+      "webhookId": "19c3ba81-bbb2-4475-b247-e96282a986f1"
+    },
+    {
+      "id": "6e381b3a-396c-405c-89ac-5a4548db52cf",
+      "name": "Create Test Card",
+      "type": "n8n-nodes-dingtalk-card.dingTalkCard",
+      "typeVersion": 1,
+      "position": [
+        224,
+        0
+      ],
+      "parameters": {
+        "operation": "createAndDeliver",
+        "inputMode": "form",
+        "cardTemplateId": "93d79300-7152-4edd-a59e-b64fd758a430.schema",
+        "cardDataMode": "json",
+        "cardData": "{\"cardParamMap\":{\"__v040_unknown_probe__\":\"THIS_VARIABLE_SHOULD_NOT_EXIST_IN_TEMPLATE\"}}",
+        "target": "group",
+        "spaceId": "cidtGz0XVJxopM5nzYAHEz5Lw==",
+        "robotCode": "",
+        "outTrackId": "={{ $('Contract Test Input').item.json.body.outTrackId }}"
+      },
+      "credentials": {
+        "dingTalkCardApi": {
+          "id": "qYZQszWAxbIfLPnQ",
+          "name": "四有青年 DingTalk Card API"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Contract Test Input": {
+      "main": [
+        [
+          {
+            "node": "Create Test Card",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "dCZkrAO6oU3VHciH",
+      "projectId": "cNMj0K6AdJmi0OAZ",
+      "createdAt": "2026-10-24T17:14:53.927Z",
+      "updatedAt": "2026-10-24T17:14:53.927Z"
+    }
+  ],
+  "activeVersion": null
+}
