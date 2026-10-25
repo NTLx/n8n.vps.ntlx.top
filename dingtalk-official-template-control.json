@@ -1,0 +1,93 @@
+{
+  "id": "wHvDbqK5aTRhwpUu",
+  "name": "DingTalk Official Template Control",
+  "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-10-24T17:45:02.732Z",
+  "updatedAt": "2026-10-24T17:45:24.866Z",
+  "isArchived": true,
+  "versionId": "a1ef4a74-ba5a-404d-8cb0-c2ffcf0af6e1",
+  "triggerCount": 0,
+  "nodes": [
+    {
+      "id": "f583a13f-56ea-422a-972d-7fce702a05c4",
+      "name": "Control Input",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.2,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "dingtalk-official-template-control",
+        "authentication": "none",
+        "responseMode": "lastNode",
+        "responseData": "firstEntryJson"
+      },
+      "webhookId": "a9c05090-8347-4c2a-b843-36a00e95bf59"
+    },
+    {
+      "id": "aaa1cb70-4106-439e-ba70-13b40f832ca9",
+      "name": "Official HelloWorld Control",
+      "type": "n8n-nodes-dingtalk-card.dingTalkCard",
+      "typeVersion": 1,
+      "position": [
+        224,
+        0
+      ],
+      "parameters": {
+        "operation": "createAndDeliver",
+        "inputMode": "form",
+        "cardTemplateId": "2c278d79-fc0b-41b4-b14e-8b8089dc08e8.schema",
+        "cardDataMode": "json",
+        "cardData": "{\"cardParamMap\":{\"title\":\"Official DingTalk control\",\"tag\":\"CONTROL\",\"markdown\":\"# Official template rendering OK\\nIf you can read this, plugin/API transport is correct.\",\"submitted\":\"false\"}}",
+        "target": "group",
+        "spaceId": "cidtGz0XVJxopM5nzYAHEz5Lw==",
+        "robotCode": "",
+        "outTrackId": ""
+      },
+      "credentials": {
+        "dingTalkCardApi": {
+          "id": "qYZQszWAxbIfLPnQ",
+          "name": "四有青年 DingTalk Card API"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Control Input": {
+      "main": [
+        [
+          {
+            "node": "Official HelloWorld Control",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "wHvDbqK5aTRhwpUu",
+      "projectId": "cNMj0K6AdJmi0OAZ",
+      "createdAt": "2026-10-24T17:45:02.732Z",
+      "updatedAt": "2026-10-24T17:45:02.732Z"
+    }
+  ],
+  "activeVersion": null
+}
