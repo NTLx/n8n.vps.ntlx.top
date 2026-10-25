@@ -1,0 +1,57 @@
+{
+  "id": "tP67XyQWCqCGztf9",
+  "name": "DingTalk Card Stream Discovery",
+  "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-10-24T09:09:12.354Z",
+  "updatedAt": "2026-10-24T10:08:37.949Z",
+  "isArchived": true,
+  "versionId": "a949cab8-8bb7-49fc-9c96-7add502617f9",
+  "triggerCount": 1,
+  "nodes": [
+    {
+      "id": "7d971824-aab7-461c-b4e8-fac84a492fa2",
+      "name": "DingTalk Stream",
+      "type": "@cryozerolabs/n8n-nodes-dingtalk.dingtalkNodeTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "event": "stream.push"
+      },
+      "credentials": {
+        "dingtalkApi": {
+          "id": "1NhTEAlJ9NX9Qn8b",
+          "name": "四有青年 DingTalk API（Card 应用）"
+        }
+      }
+    }
+  ],
+  "connections": {},
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true,
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all"
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "tP67XyQWCqCGztf9",
+      "projectId": "cNMj0K6AdJmi0OAZ",
+      "createdAt": "2026-10-24T09:09:12.354Z",
+      "updatedAt": "2026-10-24T09:09:12.354Z"
+    }
+  ],
+  "activeVersion": null
+}
