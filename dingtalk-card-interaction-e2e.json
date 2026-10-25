@@ -1,0 +1,176 @@
+{
+  "id": "kOZB4ztPUyXjXeuT",
+  "name": "DingTalk Card Interaction E2E",
+  "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-10-24T11:49:09.302Z",
+  "updatedAt": "2026-10-24T11:49:09.302Z",
+  "isArchived": false,
+  "versionId": "ec6fa6b4-83b6-4747-be3b-0010d533845c",
+  "triggerCount": 1,
+  "nodes": [
+    {
+      "id": "495d800c-ecce-4ff3-b2e1-741d89d31144",
+      "name": "Card Callback",
+      "type": "n8n-nodes-dingtalk-card.dingTalkCardTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {},
+      "credentials": {
+        "dingTalkCardApi": {
+          "id": "qYZQszWAxbIfLPnQ",
+          "name": "四有青年 DingTalk Card API"
+        }
+      }
+    },
+    {
+      "id": "c7a2db89-b8b5-4214-bdd6-7e94a92e4286",
+      "name": "Mark Callback Received",
+      "type": "n8n-nodes-dingtalk-card.dingTalkCard",
+      "typeVersion": 1,
+      "position": [
+        224,
+        0
+      ],
+      "parameters": {
+        "operation": "update",
+        "inputMode": "form",
+        "outTrackId": "={{ $json.outTrackId }}",
+        "cardDataMode": "form",
+        "cardParameters": {
+          "parameters": [
+            {
+              "name": "flowStatus",
+              "value": "3"
+            },
+            {
+              "name": "staticMsgContent",
+              "value": "={{ '✅ n8n 已收到卡片回调\\n\\nmessageId: ' + ($json.messageId || '') + '\\n\\nparams: ' + JSON.stringify($json.params || {}) }}"
+            },
+            {
+              "name": "sys_full_json_obj",
+              "value": "{\"order\":[\"staticMsgContent\"]}"
+            },
+            {
+              "name": "config",
+              "value": "{\"autoLayout\":true,\"enableForward\":false}"
+            }
+          ]
+        },
+        "updateByKey": true
+      },
+      "credentials": {
+        "dingTalkCardApi": {
+          "id": "qYZQszWAxbIfLPnQ",
+          "name": "四有青年 DingTalk Card API"
+        }
+      }
+    },
+    {
+      "id": "8fd7cc06-57c1-4133-af9b-86853bea2d34",
+      "name": "Send Test Card",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        224
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "27b1391f-13ea-4b50-a3ca-022c5a5254c0",
+      "name": "Send Interaction Card",
+      "type": "n8n-nodes-dingtalk-card.dingTalkCard",
+      "typeVersion": 1,
+      "position": [
+        224,
+        224
+      ],
+      "parameters": {
+        "operation": "createAndDeliver",
+        "inputMode": "form",
+        "enableStreamCallbacks": true,
+        "cardTemplateId": "382e4302-551d-4880-bf29-a30acfab2e71.schema",
+        "cardDataMode": "form",
+        "cardParameters": {
+          "parameters": [
+            {
+              "name": "flowStatus",
+              "value": "3"
+            },
+            {
+              "name": "staticMsgContent",
+              "value": "### DingTalk Card Trigger E2E\\n\\n请点击下方按钮。点击后，如果回调链路正常，这张卡片会被 n8n 更新为“回调已收到”。"
+            },
+            {
+              "name": "sys_full_json_obj",
+              "value": "{\"order\":[\"staticMsgContent\",\"msgButtons\"],\"msgButtons\":[{\"text\":\"点击完成 E2E\",\"color\":\"blue\",\"id\":\"n8n_e2e_accept\",\"request\":true}]}"
+            },
+            {
+              "name": "config",
+              "value": "{\"autoLayout\":true,\"enableForward\":false}"
+            }
+          ]
+        },
+        "target": "group",
+        "spaceId": "cidtGz0XVJxopM5nzYAHEz5Lw==",
+        "robotCode": ""
+      },
+      "credentials": {
+        "dingTalkCardApi": {
+          "id": "qYZQszWAxbIfLPnQ",
+          "name": "四有青年 DingTalk Card API"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Card Callback": {
+      "main": [
+        [
+          {
+            "node": "Mark Callback Received",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Test Card": {
+      "main": [
+        [
+          {
+            "node": "Send Interaction Card",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "kOZB4ztPUyXjXeuT",
+      "projectId": "cNMj0K6AdJmi0OAZ",
+      "createdAt": "2026-10-24T11:49:09.302Z",
+      "updatedAt": "2026-10-24T11:49:09.302Z"
+    }
+  ],
+  "activeVersion": null
+}
