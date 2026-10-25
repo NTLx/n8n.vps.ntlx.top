@@ -1,0 +1,287 @@
+{
+  "id": "tX2F6DqJVxPE6rvO",
+  "name": "DingTalk Card E2E Acceptance",
+  "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-10-24T10:03:26.796Z",
+  "updatedAt": "2026-10-24T17:03:04.881Z",
+  "isArchived": false,
+  "versionId": "8218679b-2630-435a-b1c2-54a62a0a27b6",
+  "triggerCount": 0,
+  "nodes": [
+    {
+      "id": "697b8582-2b28-4de7-ba55-499f936b7770",
+      "name": "E2E Input",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.2,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "dingtalk-card-e2e-acceptance",
+        "authentication": "none",
+        "responseMode": "lastNode",
+        "responseData": "firstEntryJson"
+      },
+      "webhookId": "ca00c53c-9059-4830-bbb5-c3b2f0467c97"
+    },
+    {
+      "id": "0957078f-e9f3-4699-b3b9-136ef3c0dec3",
+      "name": "Create & Deliver",
+      "type": "n8n-nodes-dingtalk-card.dingTalkCard",
+      "typeVersion": 1,
+      "position": [
+        224,
+        0
+      ],
+      "parameters": {
+        "operation": "createAndDeliver",
+        "inputMode": "form",
+        "cardTemplateId": "={{ $json.body.cardTemplateId }}",
+        "cardDataMode": "presentation",
+        "cardParameters": {},
+        "target": "group",
+        "spaceId": "cidtGz0XVJxopM5nzYAHEz5Lw==",
+        "robotCode": "",
+        "outTrackId": "={{ $json.body.outTrackId }}",
+        "presentationDescriptor": "{\"version\":\"1\",\"family\":\"status\",\"title\":\"v0.4 Presentation Create acceptance\",\"summary\":\"Connected-instance transport and lifecycle compatibility check.\",\"tone\":\"info\",\"state\":\"running\",\"details\":\"Legacy AI template is used only as transport; visual Presentation rendering is not claimed.\"}"
+      },
+      "credentials": {
+        "dingTalkCardApi": {
+          "id": "qYZQszWAxbIfLPnQ",
+          "name": "四有青年 DingTalk Card API"
+        }
+      }
+    },
+    {
+      "id": "919d5217-e7f2-4c9a-b418-1195ffb20246",
+      "name": "Update",
+      "type": "n8n-nodes-dingtalk-card.dingTalkCard",
+      "typeVersion": 1,
+      "position": [
+        448,
+        0
+      ],
+      "parameters": {
+        "operation": "update",
+        "inputMode": "form",
+        "outTrackId": "={{ $('Create & Deliver').item.json.outTrackId }}",
+        "cardDataMode": "presentation",
+        "cardParameters": {},
+        "updateByKey": true,
+        "presentationDescriptor": "{\"version\":\"1\",\"family\":\"status\",\"title\":\"v0.4 Presentation Update acceptance\",\"summary\":\"Presentation Update reached the connected DingTalk Card API path.\",\"tone\":\"success\",\"state\":\"success\",\"details\":\"The next legacy streaming steps verify backward compatibility.\"}"
+      },
+      "credentials": {
+        "dingTalkCardApi": {
+          "id": "qYZQszWAxbIfLPnQ",
+          "name": "四有青年 DingTalk Card API"
+        }
+      }
+    },
+    {
+      "id": "5d995eb6-a724-4e7c-9b1a-94bf928da16a",
+      "name": "Streaming Update",
+      "type": "n8n-nodes-dingtalk-card.dingTalkCard",
+      "typeVersion": 1,
+      "position": [
+        896,
+        0
+      ],
+      "parameters": {
+        "operation": "stream",
+        "inputMode": "form",
+        "outTrackId": "={{ $json.outTrackId }}",
+        "content": "Streaming Update OK",
+        "isFull": true,
+        "isFinalize": false,
+        "isError": false
+      },
+      "credentials": {
+        "dingTalkCardApi": {
+          "id": "qYZQszWAxbIfLPnQ",
+          "name": "四有青年 DingTalk Card API"
+        }
+      }
+    },
+    {
+      "id": "18a1dbd4-2d69-4651-8561-2d421d6af8a7",
+      "name": "Finalize",
+      "type": "n8n-nodes-dingtalk-card.dingTalkCard",
+      "typeVersion": 1,
+      "position": [
+        1344,
+        0
+      ],
+      "parameters": {
+        "operation": "finalize",
+        "inputMode": "form",
+        "outTrackId": "={{ $json.outTrackId }}",
+        "content": "Finalize OK",
+        "isFull": true,
+        "isError": false
+      },
+      "credentials": {
+        "dingTalkCardApi": {
+          "id": "qYZQszWAxbIfLPnQ",
+          "name": "四有青年 DingTalk Card API"
+        }
+      }
+    },
+    {
+      "id": "6d1b0dad-0503-4ec0-a862-6c419becad95",
+      "name": "Wait before streaming",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        672,
+        0
+      ],
+      "parameters": {
+        "resume": "timeInterval",
+        "amount": 1,
+        "unit": "seconds"
+      },
+      "webhookId": "6cec7466-41a0-40e0-a998-06812c4ee915"
+    },
+    {
+      "id": "f5fae872-b8a5-42be-b5ac-6135bda232d8",
+      "name": "Wait before finalize",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1120,
+        0
+      ],
+      "parameters": {
+        "resume": "timeInterval",
+        "amount": 1,
+        "unit": "seconds"
+      },
+      "webhookId": "9b987dd4-704d-4b08-a3f1-eb71dcee27fc"
+    },
+    {
+      "id": "ee36bee4-6dbc-4887-9e7d-a732a39ec573",
+      "name": "Mark Finished",
+      "type": "n8n-nodes-dingtalk-card.dingTalkCard",
+      "typeVersion": 1,
+      "position": [
+        1568,
+        0
+      ],
+      "parameters": {
+        "operation": "update",
+        "inputMode": "json",
+        "requestBody": "={{ JSON.stringify({ outTrackId: $json.outTrackId, cardData: { cardParamMap: { flowStatus: '3', msgContent: 'JSON mode update OK', staticMsgContent: '', sys_full_json_obj: '{\"order\":[\"msgContent\"]}', config: '{\"autoLayout\":true}' } }, cardUpdateOptions: { updateCardDataByKey: true } }) }}"
+      },
+      "credentials": {
+        "dingTalkCardApi": {
+          "id": "qYZQszWAxbIfLPnQ",
+          "name": "四有青年 DingTalk Card API"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "E2E Input": {
+      "main": [
+        [
+          {
+            "node": "Create & Deliver",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create & Deliver": {
+      "main": [
+        [
+          {
+            "node": "Update",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update": {
+      "main": [
+        [
+          {
+            "node": "Wait before streaming",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait before streaming": {
+      "main": [
+        [
+          {
+            "node": "Streaming Update",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Streaming Update": {
+      "main": [
+        [
+          {
+            "node": "Wait before finalize",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait before finalize": {
+      "main": [
+        [
+          {
+            "node": "Finalize",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Finalize": {
+      "main": [
+        [
+          {
+            "node": "Mark Finished",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "tX2F6DqJVxPE6rvO",
+      "projectId": "cNMj0K6AdJmi0OAZ",
+      "createdAt": "2026-10-24T10:03:26.796Z",
+      "updatedAt": "2026-10-24T10:03:26.796Z"
+    }
+  ],
+  "activeVersion": null
+}
