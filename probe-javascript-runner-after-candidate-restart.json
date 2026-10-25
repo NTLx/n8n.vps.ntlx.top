@@ -1,0 +1,74 @@
+{
+  "id": "ShpyCdfIQVn2atYk",
+  "name": "Probe JavaScript runner after candidate restart",
+  "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-10-24T13:17:30.592Z",
+  "updatedAt": "2026-10-24T13:18:11.460Z",
+  "isArchived": true,
+  "versionId": "80fa6fc1-eb91-4a4a-ac21-bf51f8b34c30",
+  "triggerCount": 0,
+  "nodes": [
+    {
+      "id": "431a9df5-728d-491b-8827-546013870ed7",
+      "name": "Start",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "d5934ef0-6169-4ed4-9e37-a9c5fee14c3f",
+      "name": "JavaScript Probe",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        0
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "return [{ json: { javascript: 'ok-after-candidate-restart' } }];"
+      }
+    }
+  ],
+  "connections": {
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "JavaScript Probe",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "ShpyCdfIQVn2atYk",
+      "projectId": "cNMj0K6AdJmi0OAZ",
+      "createdAt": "2026-10-24T13:17:30.592Z",
+      "updatedAt": "2026-10-24T13:17:30.592Z"
+    }
+  ],
+  "activeVersion": null
+}
