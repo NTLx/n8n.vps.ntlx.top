@@ -1,0 +1,49 @@
+{
+  "id": "FcR83sCNbUvZzSzP",
+  "name": "测试专用",
+  "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-10-24T08:24:18.819Z",
+  "updatedAt": "2026-10-24T09:18:27.964Z",
+  "isArchived": false,
+  "versionId": "88b00c79-edcd-4de8-ad9f-fa5b9fbbfcd8",
+  "triggerCount": 0,
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "598bd761-928c-4b07-ba01-ce07c821d08f",
+      "name": "When clicking ‘Execute workflow’"
+    }
+  ],
+  "connections": {},
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "FcR83sCNbUvZzSzP",
+      "projectId": "cNMj0K6AdJmi0OAZ",
+      "createdAt": "2026-10-24T08:24:18.819Z",
+      "updatedAt": "2026-10-24T08:24:18.819Z"
+    }
+  ],
+  "activeVersion": null
+}
