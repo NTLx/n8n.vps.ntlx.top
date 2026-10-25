@@ -1,0 +1,1096 @@
+{
+  "id": "bKSaJgjF1wuMYVqC",
+  "name": "Monitor OpenAI status",
+  "active": true,
+  "activeVersionId": "f3b36543-c782-4a03-9d31-b6d9fcffd70f",
+  "createdAt": "2026-10-24T02:33:44.170Z",
+  "updatedAt": "2026-10-24T02:34:26.574Z",
+  "isArchived": false,
+  "versionId": "f3b36543-c782-4a03-9d31-b6d9fcffd70f",
+  "triggerCount": 1,
+  "nodes": [
+    {
+      "id": "75be9f1f-d0d5-4cb5-9fa4-ca76e7b169a7",
+      "name": "Every 5 minutes",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        160
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 5
+            }
+          ]
+        },
+        "misfirePolicy": "coalesce",
+        "misfireGraceSeconds": 900
+      }
+    },
+    {
+      "id": "108e213c-c1ea-4861-8e14-d7eb0b9ad6c2",
+      "name": "Fetch OpenAI incidents",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        240,
+        160
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "https://status.openai.com/api/v2/incidents.json",
+        "authentication": "none",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          },
+          "timeout": 15000
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000
+    },
+    {
+      "id": "5597ed44-6adc-4ac4-a615-8ce3058b2cb7",
+      "name": "Read OpenAI status cursor",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        480,
+        160
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "reVeylA30dhZV4wV",
+          "cachedResultName": "openai_status_watch_state"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "monitorKey",
+              "condition": "eq",
+              "keyValue": "openai-status"
+            }
+          ]
+        },
+        "returnAll": false,
+        "limit": 1
+      }
+    },
+    {
+      "id": "c0560392-5ec0-4681-a206-202c7f066ce3",
+      "name": "Extract OpenAI status changes",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        720,
+        160
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const payload = $('Fetch OpenAI incidents').first().json;\nconst state = $input.first().json;\nconst fromMs = new Date(state.lastPollAt).getTime();\nconst pollStartedAt = new Date().toISOString();\nconst toMs = new Date(pollStartedAt).getTime();\nconst output = [];\nconst incidents = Array.isArray(payload.incidents) ? payload.incidents : [];\nfor (const incident of incidents) {\n  const updates = Array.isArray(incident.incident_updates) ? incident.incident_updates : [];\n  for (const update of updates) {\n    const revisionAt = update.updated_at || update.created_at || incident.updated_at;\n    const revisionMs = new Date(revisionAt).getTime();\n    if (!Number.isFinite(revisionMs) || revisionMs < fromMs || revisionMs > toMs) continue;\n    const eventId = `openai-status:${update.id}:${revisionAt}`;\n    output.push({ json: {\n      item_type: 'event',\n      poll_started_at: pollStartedAt,\n      event_id: eventId,\n      update_id: update.id,\n      incident_id: incident.id,\n      incident_name: incident.name,\n      incident_status: update.status || incident.status || 'unknown',\n      incident_impact: incident.impact || 'unknown',\n      revision_at: revisionAt,\n      display_at: update.display_at || update.created_at || revisionAt,\n      body: update.body || '',\n      source_url: 'https://status.openai.com/'\n    }});\n  }\n}\noutput.sort((a, b) => new Date(a.json.revision_at).getTime() - new Date(b.json.revision_at).getTime());\noutput.push({ json: { item_type: 'cursor', poll_started_at: pollStartedAt } });\nreturn output;"
+      }
+    },
+    {
+      "id": "2c80c5bb-876c-4cb7-bf23-01842ae332c9",
+      "name": "Route status item",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.4,
+      "position": [
+        960,
+        160
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.item_type }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              },
+              "rightValue": "event"
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {
+          "ignoreCase": false
+        }
+      }
+    },
+    {
+      "id": "6d4793c9-c483-478d-8048-b3477c21de71",
+      "name": "Unseen status update",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        1200,
+        0
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "rowNotExists",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "OogYD9bkN1KIqtSp",
+          "cachedResultName": "work_events"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "event_id",
+              "keyValue": "={{ $(\"Extract OpenAI status changes\").item.json.event_id }}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "01ca332a-a151-4eaa-9ee0-8129671e9f41",
+      "name": "Enqueue OpenAI status review",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.4,
+      "position": [
+        1440,
+        0
+      ],
+      "parameters": {
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "oe8KZW4nLbYUUDzA",
+          "cachedResultName": "Enqueue AI work"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "work_id": "={{ $(\"Unseen status update\").item.json.event_id }}",
+            "worker": "hourly",
+            "kind": "openai_status_update",
+            "priority": "={{ [\"major\",\"critical\"].includes($(\"Unseen status update\").item.json.incident_impact) ? 1 : 2 }}",
+            "source_event_id": "={{ $(\"Unseen status update\").item.json.event_id }}",
+            "correlation_id": "={{ \"openai-status:\" + $(\"Unseen status update\").item.json.incident_id }}",
+            "project": "openai",
+            "input_ref": "={{ $(\"Unseen status update\").item.json.source_url }}",
+            "summary": "={{ \"OpenAI status \" + $(\"Unseen status update\").item.json.incident_status + \": \" + $(\"Unseen status update\").item.json.incident_name + \" (impact=\" + $(\"Unseen status update\").item.json.incident_impact + \")\" }}",
+            "not_before": "={{ $now.toISO() }}",
+            "deadline": "",
+            "event_id": "={{ $(\"Unseen status update\").item.json.event_id }}",
+            "event_occurred_at": "={{ $(\"Unseen status update\").item.json.revision_at }}",
+            "event_source": "openai_status",
+            "event_category": "={{ \"openai.status.\" + $(\"Unseen status update\").item.json.incident_status }}",
+            "event_title": "={{ $(\"Unseen status update\").item.json.incident_name }}",
+            "event_description": "={{ $(\"Unseen status update\").item.json.body }}",
+            "event_status": "={{ $(\"Unseen status update\").item.json.incident_status }}",
+            "event_url": "={{ $(\"Unseen status update\").item.json.source_url }}",
+            "event_metadata_object": "={{ JSON.stringify({ incident_id: $(\"Unseen status update\").item.json.incident_id, update_id: $(\"Unseen status update\").item.json.update_id, impact: $(\"Unseen status update\").item.json.incident_impact, status: $(\"Unseen status update\").item.json.incident_status, revision_at: $(\"Unseen status update\").item.json.revision_at, display_at: $(\"Unseen status update\").item.json.display_at, detected_at: $now.toISO() }) }}"
+          },
+          "schema": [
+            {
+              "id": "work_id",
+              "displayName": "work_id",
+              "type": "string"
+            },
+            {
+              "id": "worker",
+              "displayName": "worker",
+              "type": "string"
+            },
+            {
+              "id": "kind",
+              "displayName": "kind",
+              "type": "string"
+            },
+            {
+              "id": "priority",
+              "displayName": "priority",
+              "type": "number"
+            },
+            {
+              "id": "source_event_id",
+              "displayName": "source_event_id",
+              "type": "string"
+            },
+            {
+              "id": "correlation_id",
+              "displayName": "correlation_id",
+              "type": "string"
+            },
+            {
+              "id": "project",
+              "displayName": "project",
+              "type": "string"
+            },
+            {
+              "id": "input_ref",
+              "displayName": "input_ref",
+              "type": "string"
+            },
+            {
+              "id": "summary",
+              "displayName": "summary",
+              "type": "string"
+            },
+            {
+              "id": "not_before",
+              "displayName": "not_before",
+              "type": "string"
+            },
+            {
+              "id": "deadline",
+              "displayName": "deadline",
+              "type": "string"
+            },
+            {
+              "id": "event_id",
+              "displayName": "event_id",
+              "type": "string"
+            },
+            {
+              "id": "event_occurred_at",
+              "displayName": "event_occurred_at",
+              "type": "string"
+            },
+            {
+              "id": "event_source",
+              "displayName": "event_source",
+              "type": "string"
+            },
+            {
+              "id": "event_category",
+              "displayName": "event_category",
+              "type": "string"
+            },
+            {
+              "id": "event_title",
+              "displayName": "event_title",
+              "type": "string"
+            },
+            {
+              "id": "event_description",
+              "displayName": "event_description",
+              "type": "string"
+            },
+            {
+              "id": "event_status",
+              "displayName": "event_status",
+              "type": "string"
+            },
+            {
+              "id": "event_url",
+              "displayName": "event_url",
+              "type": "string"
+            },
+            {
+              "id": "event_metadata_object",
+              "displayName": "event_metadata_object",
+              "type": "string"
+            }
+          ]
+        },
+        "mode": "each",
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      }
+    },
+    {
+      "id": "3140447d-d0d0-453f-884a-e2243406227c",
+      "name": "Advance OpenAI status cursor",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        1200,
+        320
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "reVeylA30dhZV4wV",
+          "cachedResultName": "openai_status_watch_state"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "monitorKey",
+              "condition": "eq",
+              "keyValue": "openai-status"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "lastPollAt": "={{ $(\"Extract OpenAI status changes\").item.json.poll_started_at }}"
+          }
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "b0518658-5b02-4d17-bb50-6dd060233a72",
+      "name": "Heartbeat OpenAI status watch",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        1440,
+        320
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "upsert",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "QSQYHfztTUCh4hrv",
+          "cachedResultName": "automation_heartbeats"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "monitor_key",
+              "condition": "eq",
+              "keyValue": "openai-status-watch"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "monitor_key": "openai-status-watch",
+            "workflow_id": "={{ $workflow.id }}",
+            "workflow_name": "={{ $workflow.name }}",
+            "last_seen_at": "={{ $(\"Extract OpenAI status changes\").item.json.poll_started_at }}",
+            "next_expected_at": "={{ DateTime.fromISO($(\"Extract OpenAI status changes\").item.json.poll_started_at).plus({ minutes: 5 }).toISO() }}",
+            "grace_minutes": 10,
+            "priority": 1
+          }
+        },
+        "options": {}
+      }
+    }
+  ],
+  "connections": {
+    "Every 5 minutes": {
+      "main": [
+        [
+          {
+            "node": "Fetch OpenAI incidents",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch OpenAI incidents": {
+      "main": [
+        [
+          {
+            "node": "Read OpenAI status cursor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read OpenAI status cursor": {
+      "main": [
+        [
+          {
+            "node": "Extract OpenAI status changes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract OpenAI status changes": {
+      "main": [
+        [
+          {
+            "node": "Route status item",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route status item": {
+      "main": [
+        [
+          {
+            "node": "Unseen status update",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Advance OpenAI status cursor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Unseen status update": {
+      "main": [
+        [
+          {
+            "node": "Enqueue OpenAI status review",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Advance OpenAI status cursor": {
+      "main": [
+        [
+          {
+            "node": "Heartbeat OpenAI status watch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [
+    {
+      "id": "9c405747-f279-4f05-96b6-91acd0054496",
+      "name": "Detect new OpenAI status updates",
+      "nodeIds": [
+        "108e213c-c1ea-4861-8e14-d7eb0b9ad6c2",
+        "5597ed44-6adc-4ac4-a615-8ce3058b2cb7",
+        "c0560392-5ec0-4681-a206-202c7f066ce3",
+        "2c80c5bb-876c-4cb7-bf23-01842ae332c9"
+      ],
+      "description": "Poll OpenAI Status, compare against the durable cursor, and route status events separately from the successful-poll cursor."
+    },
+    {
+      "id": "f9fc76b0-38cd-4bf7-a9ac-2d902f53860b",
+      "name": "Enqueue unseen status events",
+      "nodeIds": [
+        "6d4793c9-c483-478d-8048-b3477c21de71",
+        "01ca332a-a151-4eaa-9ee0-8129671e9f41"
+      ],
+      "description": "Deduplicate against the shared Event Ledger, then enqueue each new OpenAI status update to the Hourly ChatGPT worker."
+    },
+    {
+      "id": "e938957c-989d-489b-9dc7-e05e0aad95b6",
+      "name": "Advance monitoring state",
+      "nodeIds": [
+        "3140447d-d0d0-453f-884a-e2243406227c",
+        "b0518658-5b02-4d17-bb50-6dd060233a72"
+      ],
+      "description": "Advance the poll cursor only after event handling succeeds and refresh the shared deadman heartbeat."
+    }
+  ],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true,
+    "errorWorkflow": "3LE3BnPfHSuIZCVR",
+    "timezone": "Asia/Shanghai",
+    "saveExecutionProgress": false,
+    "saveManualExecutions": false,
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "none",
+    "executionTimeout": 120
+  },
+  "staticData": {
+    "node:Every 5 minutes": {
+      "recurrenceRules": [
+        null
+      ],
+      "recurrenceRuleSignatures": [
+        null
+      ]
+    }
+  },
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [
+    {
+      "id": "twNsKNALbdWLw0Ox",
+      "name": "automation",
+      "createdAt": "2026-10-22T08:25:54.546Z",
+      "updatedAt": "2026-10-22T08:25:54.546Z"
+    },
+    {
+      "id": "BlGRvaSWqnmTk53i",
+      "name": "event-producer",
+      "createdAt": "2026-10-22T09:14:35.370Z",
+      "updatedAt": "2026-10-22T09:14:35.370Z"
+    },
+    {
+      "id": "9jw9Bhya2Ylf8E4D",
+      "name": "ai-work-producer",
+      "createdAt": "2026-10-22T09:14:35.367Z",
+      "updatedAt": "2026-10-22T09:14:35.367Z"
+    },
+    {
+      "id": "YwjTMUhE83IXTCRg",
+      "name": "monitoring",
+      "createdAt": "2026-10-22T08:38:34.124Z",
+      "updatedAt": "2026-10-22T08:38:34.124Z"
+    }
+  ],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "bKSaJgjF1wuMYVqC",
+      "projectId": "cNMj0K6AdJmi0OAZ",
+      "createdAt": "2026-10-24T02:33:44.170Z",
+      "updatedAt": "2026-10-24T02:33:44.170Z"
+    }
+  ],
+  "activeVersion": {
+    "versionId": "f3b36543-c782-4a03-9d31-b6d9fcffd70f",
+    "workflowId": "bKSaJgjF1wuMYVqC",
+    "nodes": [
+      {
+        "id": "75be9f1f-d0d5-4cb5-9fa4-ca76e7b169a7",
+        "name": "Every 5 minutes",
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.4,
+        "position": [
+          0,
+          160
+        ],
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "minutes",
+                "minutesInterval": 5
+              }
+            ]
+          },
+          "misfirePolicy": "coalesce",
+          "misfireGraceSeconds": 900
+        }
+      },
+      {
+        "id": "108e213c-c1ea-4861-8e14-d7eb0b9ad6c2",
+        "name": "Fetch OpenAI incidents",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.5,
+        "position": [
+          240,
+          160
+        ],
+        "parameters": {
+          "method": "GET",
+          "url": "https://status.openai.com/api/v2/incidents.json",
+          "authentication": "none",
+          "options": {
+            "response": {
+              "response": {
+                "responseFormat": "json"
+              }
+            },
+            "timeout": 15000
+          }
+        },
+        "retryOnFail": true,
+        "maxTries": 3,
+        "waitBetweenTries": 5000
+      },
+      {
+        "id": "5597ed44-6adc-4ac4-a615-8ce3058b2cb7",
+        "name": "Read OpenAI status cursor",
+        "type": "n8n-nodes-base.dataTable",
+        "typeVersion": 1.1,
+        "position": [
+          480,
+          160
+        ],
+        "parameters": {
+          "resource": "row",
+          "operation": "get",
+          "dataTableId": {
+            "__rl": true,
+            "mode": "id",
+            "value": "reVeylA30dhZV4wV",
+            "cachedResultName": "openai_status_watch_state"
+          },
+          "matchType": "allConditions",
+          "filters": {
+            "conditions": [
+              {
+                "keyName": "monitorKey",
+                "condition": "eq",
+                "keyValue": "openai-status"
+              }
+            ]
+          },
+          "returnAll": false,
+          "limit": 1
+        }
+      },
+      {
+        "id": "c0560392-5ec0-4681-a206-202c7f066ce3",
+        "name": "Extract OpenAI status changes",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          720,
+          160
+        ],
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "language": "javaScript",
+          "jsCode": "const payload = $('Fetch OpenAI incidents').first().json;\nconst state = $input.first().json;\nconst fromMs = new Date(state.lastPollAt).getTime();\nconst pollStartedAt = new Date().toISOString();\nconst toMs = new Date(pollStartedAt).getTime();\nconst output = [];\nconst incidents = Array.isArray(payload.incidents) ? payload.incidents : [];\nfor (const incident of incidents) {\n  const updates = Array.isArray(incident.incident_updates) ? incident.incident_updates : [];\n  for (const update of updates) {\n    const revisionAt = update.updated_at || update.created_at || incident.updated_at;\n    const revisionMs = new Date(revisionAt).getTime();\n    if (!Number.isFinite(revisionMs) || revisionMs < fromMs || revisionMs > toMs) continue;\n    const eventId = `openai-status:${update.id}:${revisionAt}`;\n    output.push({ json: {\n      item_type: 'event',\n      poll_started_at: pollStartedAt,\n      event_id: eventId,\n      update_id: update.id,\n      incident_id: incident.id,\n      incident_name: incident.name,\n      incident_status: update.status || incident.status || 'unknown',\n      incident_impact: incident.impact || 'unknown',\n      revision_at: revisionAt,\n      display_at: update.display_at || update.created_at || revisionAt,\n      body: update.body || '',\n      source_url: 'https://status.openai.com/'\n    }});\n  }\n}\noutput.sort((a, b) => new Date(a.json.revision_at).getTime() - new Date(b.json.revision_at).getTime());\noutput.push({ json: { item_type: 'cursor', poll_started_at: pollStartedAt } });\nreturn output;"
+        }
+      },
+      {
+        "id": "2c80c5bb-876c-4cb7-bf23-01842ae332c9",
+        "name": "Route status item",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.4,
+        "position": [
+          960,
+          160
+        ],
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 2
+            },
+            "conditions": [
+              {
+                "leftValue": "={{ $json.item_type }}",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals"
+                },
+                "rightValue": "event"
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {
+            "ignoreCase": false
+          }
+        }
+      },
+      {
+        "id": "6d4793c9-c483-478d-8048-b3477c21de71",
+        "name": "Unseen status update",
+        "type": "n8n-nodes-base.dataTable",
+        "typeVersion": 1.1,
+        "position": [
+          1200,
+          0
+        ],
+        "parameters": {
+          "resource": "row",
+          "operation": "rowNotExists",
+          "dataTableId": {
+            "__rl": true,
+            "mode": "id",
+            "value": "OogYD9bkN1KIqtSp",
+            "cachedResultName": "work_events"
+          },
+          "matchType": "allConditions",
+          "filters": {
+            "conditions": [
+              {
+                "keyName": "event_id",
+                "keyValue": "={{ $(\"Extract OpenAI status changes\").item.json.event_id }}"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "01ca332a-a151-4eaa-9ee0-8129671e9f41",
+        "name": "Enqueue OpenAI status review",
+        "type": "n8n-nodes-base.executeWorkflow",
+        "typeVersion": 1.4,
+        "position": [
+          1440,
+          0
+        ],
+        "parameters": {
+          "source": "database",
+          "workflowId": {
+            "__rl": true,
+            "mode": "id",
+            "value": "oe8KZW4nLbYUUDzA",
+            "cachedResultName": "Enqueue AI work"
+          },
+          "workflowInputs": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "work_id": "={{ $(\"Unseen status update\").item.json.event_id }}",
+              "worker": "hourly",
+              "kind": "openai_status_update",
+              "priority": "={{ [\"major\",\"critical\"].includes($(\"Unseen status update\").item.json.incident_impact) ? 1 : 2 }}",
+              "source_event_id": "={{ $(\"Unseen status update\").item.json.event_id }}",
+              "correlation_id": "={{ \"openai-status:\" + $(\"Unseen status update\").item.json.incident_id }}",
+              "project": "openai",
+              "input_ref": "={{ $(\"Unseen status update\").item.json.source_url }}",
+              "summary": "={{ \"OpenAI status \" + $(\"Unseen status update\").item.json.incident_status + \": \" + $(\"Unseen status update\").item.json.incident_name + \" (impact=\" + $(\"Unseen status update\").item.json.incident_impact + \")\" }}",
+              "not_before": "={{ $now.toISO() }}",
+              "deadline": "",
+              "event_id": "={{ $(\"Unseen status update\").item.json.event_id }}",
+              "event_occurred_at": "={{ $(\"Unseen status update\").item.json.revision_at }}",
+              "event_source": "openai_status",
+              "event_category": "={{ \"openai.status.\" + $(\"Unseen status update\").item.json.incident_status }}",
+              "event_title": "={{ $(\"Unseen status update\").item.json.incident_name }}",
+              "event_description": "={{ $(\"Unseen status update\").item.json.body }}",
+              "event_status": "={{ $(\"Unseen status update\").item.json.incident_status }}",
+              "event_url": "={{ $(\"Unseen status update\").item.json.source_url }}",
+              "event_metadata_object": "={{ JSON.stringify({ incident_id: $(\"Unseen status update\").item.json.incident_id, update_id: $(\"Unseen status update\").item.json.update_id, impact: $(\"Unseen status update\").item.json.incident_impact, status: $(\"Unseen status update\").item.json.incident_status, revision_at: $(\"Unseen status update\").item.json.revision_at, display_at: $(\"Unseen status update\").item.json.display_at, detected_at: $now.toISO() }) }}"
+            },
+            "schema": [
+              {
+                "id": "work_id",
+                "displayName": "work_id",
+                "type": "string"
+              },
+              {
+                "id": "worker",
+                "displayName": "worker",
+                "type": "string"
+              },
+              {
+                "id": "kind",
+                "displayName": "kind",
+                "type": "string"
+              },
+              {
+                "id": "priority",
+                "displayName": "priority",
+                "type": "number"
+              },
+              {
+                "id": "source_event_id",
+                "displayName": "source_event_id",
+                "type": "string"
+              },
+              {
+                "id": "correlation_id",
+                "displayName": "correlation_id",
+                "type": "string"
+              },
+              {
+                "id": "project",
+                "displayName": "project",
+                "type": "string"
+              },
+              {
+                "id": "input_ref",
+                "displayName": "input_ref",
+                "type": "string"
+              },
+              {
+                "id": "summary",
+                "displayName": "summary",
+                "type": "string"
+              },
+              {
+                "id": "not_before",
+                "displayName": "not_before",
+                "type": "string"
+              },
+              {
+                "id": "deadline",
+                "displayName": "deadline",
+                "type": "string"
+              },
+              {
+                "id": "event_id",
+                "displayName": "event_id",
+                "type": "string"
+              },
+              {
+                "id": "event_occurred_at",
+                "displayName": "event_occurred_at",
+                "type": "string"
+              },
+              {
+                "id": "event_source",
+                "displayName": "event_source",
+                "type": "string"
+              },
+              {
+                "id": "event_category",
+                "displayName": "event_category",
+                "type": "string"
+              },
+              {
+                "id": "event_title",
+                "displayName": "event_title",
+                "type": "string"
+              },
+              {
+                "id": "event_description",
+                "displayName": "event_description",
+                "type": "string"
+              },
+              {
+                "id": "event_status",
+                "displayName": "event_status",
+                "type": "string"
+              },
+              {
+                "id": "event_url",
+                "displayName": "event_url",
+                "type": "string"
+              },
+              {
+                "id": "event_metadata_object",
+                "displayName": "event_metadata_object",
+                "type": "string"
+              }
+            ]
+          },
+          "mode": "each",
+          "options": {
+            "waitForSubWorkflow": true
+          }
+        }
+      },
+      {
+        "id": "3140447d-d0d0-453f-884a-e2243406227c",
+        "name": "Advance OpenAI status cursor",
+        "type": "n8n-nodes-base.dataTable",
+        "typeVersion": 1.1,
+        "position": [
+          1200,
+          320
+        ],
+        "parameters": {
+          "resource": "row",
+          "operation": "update",
+          "dataTableId": {
+            "__rl": true,
+            "mode": "id",
+            "value": "reVeylA30dhZV4wV",
+            "cachedResultName": "openai_status_watch_state"
+          },
+          "matchType": "allConditions",
+          "filters": {
+            "conditions": [
+              {
+                "keyName": "monitorKey",
+                "condition": "eq",
+                "keyValue": "openai-status"
+              }
+            ]
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "lastPollAt": "={{ $(\"Extract OpenAI status changes\").item.json.poll_started_at }}"
+            }
+          },
+          "options": {}
+        }
+      },
+      {
+        "id": "b0518658-5b02-4d17-bb50-6dd060233a72",
+        "name": "Heartbeat OpenAI status watch",
+        "type": "n8n-nodes-base.dataTable",
+        "typeVersion": 1.1,
+        "position": [
+          1440,
+          320
+        ],
+        "parameters": {
+          "resource": "row",
+          "operation": "upsert",
+          "dataTableId": {
+            "__rl": true,
+            "mode": "id",
+            "value": "QSQYHfztTUCh4hrv",
+            "cachedResultName": "automation_heartbeats"
+          },
+          "matchType": "allConditions",
+          "filters": {
+            "conditions": [
+              {
+                "keyName": "monitor_key",
+                "condition": "eq",
+                "keyValue": "openai-status-watch"
+              }
+            ]
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "monitor_key": "openai-status-watch",
+              "workflow_id": "={{ $workflow.id }}",
+              "workflow_name": "={{ $workflow.name }}",
+              "last_seen_at": "={{ $(\"Extract OpenAI status changes\").item.json.poll_started_at }}",
+              "next_expected_at": "={{ DateTime.fromISO($(\"Extract OpenAI status changes\").item.json.poll_started_at).plus({ minutes: 5 }).toISO() }}",
+              "grace_minutes": 10,
+              "priority": 1
+            }
+          },
+          "options": {}
+        }
+      }
+    ],
+    "connections": {
+      "Every 5 minutes": {
+        "main": [
+          [
+            {
+              "node": "Fetch OpenAI incidents",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Fetch OpenAI incidents": {
+        "main": [
+          [
+            {
+              "node": "Read OpenAI status cursor",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Read OpenAI status cursor": {
+        "main": [
+          [
+            {
+              "node": "Extract OpenAI status changes",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Extract OpenAI status changes": {
+        "main": [
+          [
+            {
+              "node": "Route status item",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Route status item": {
+        "main": [
+          [
+            {
+              "node": "Unseen status update",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Advance OpenAI status cursor",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Unseen status update": {
+        "main": [
+          [
+            {
+              "node": "Enqueue OpenAI status review",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Advance OpenAI status cursor": {
+        "main": [
+          [
+            {
+              "node": "Heartbeat OpenAI status watch",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "nodeGroups": [
+      {
+        "id": "9c405747-f279-4f05-96b6-91acd0054496",
+        "name": "Detect new OpenAI status updates",
+        "nodeIds": [
+          "108e213c-c1ea-4861-8e14-d7eb0b9ad6c2",
+          "5597ed44-6adc-4ac4-a615-8ce3058b2cb7",
+          "c0560392-5ec0-4681-a206-202c7f066ce3",
+          "2c80c5bb-876c-4cb7-bf23-01842ae332c9"
+        ],
+        "description": "Poll OpenAI Status, compare against the durable cursor, and route status events separately from the successful-poll cursor."
+      },
+      {
+        "id": "f9fc76b0-38cd-4bf7-a9ac-2d902f53860b",
+        "name": "Enqueue unseen status events",
+        "nodeIds": [
+          "6d4793c9-c483-478d-8048-b3477c21de71",
+          "01ca332a-a151-4eaa-9ee0-8129671e9f41"
+        ],
+        "description": "Deduplicate against the shared Event Ledger, then enqueue each new OpenAI status update to the Hourly ChatGPT worker."
+      },
+      {
+        "id": "e938957c-989d-489b-9dc7-e05e0aad95b6",
+        "name": "Advance monitoring state",
+        "nodeIds": [
+          "3140447d-d0d0-453f-884a-e2243406227c",
+          "b0518658-5b02-4d17-bb50-6dd060233a72"
+        ],
+        "description": "Advance the poll cursor only after event handling succeeds and refresh the shared deadman heartbeat."
+      }
+    ],
+    "authors": "Administrator NTLx (via MCP)",
+    "name": "Initial OpenAI status watch",
+    "description": "Adds a deterministic OpenAI Status producer using the official incident API, durable poll cursor, Event Ledger deduplication, shared AI work enqueue, and automation heartbeat.",
+    "autosaved": false,
+    "createdAt": "2026-10-24T02:33:44.170Z",
+    "updatedAt": "2026-10-24T02:33:44.170Z"
+  }
+}
