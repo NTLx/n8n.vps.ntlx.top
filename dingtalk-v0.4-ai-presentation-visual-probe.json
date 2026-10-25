@@ -1,0 +1,110 @@
+{
+  "id": "dTbPzzUTyxVSdBNl",
+  "name": "DingTalk v0.4 AI Presentation Visual Probe",
+  "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-10-24T17:57:01.809Z",
+  "updatedAt": "2026-10-24T17:57:17.667Z",
+  "isArchived": true,
+  "versionId": "c876eefa-fadf-4a9f-b3e4-769c9c8c8b47",
+  "triggerCount": 0,
+  "nodes": [
+    {
+      "id": "1bb1df1b-3368-497a-8f4f-bf31efc394c5",
+      "name": "Probe Input",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.2,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "dingtalk-v040-ai-presentation-visual-probe",
+        "authentication": "none",
+        "responseMode": "lastNode",
+        "responseData": "firstEntryJson"
+      },
+      "webhookId": "f9846731-a3df-4cf4-baf1-5a23fc053cce"
+    },
+    {
+      "id": "4e0ac2ab-5f49-4bf1-a6f5-77734ed3dd92",
+      "name": "Deliver Status Probe",
+      "type": "n8n-nodes-dingtalk-card.dingTalkCard",
+      "typeVersion": 1,
+      "position": [
+        224,
+        0
+      ],
+      "parameters": {
+        "operation": "createAndDeliver",
+        "inputMode": "form",
+        "cardTemplateId": "66c0a66c-ef45-42e1-a70a-add394afcc1d.schema",
+        "cardDataMode": "json",
+        "cardData": {
+          "cardParamMap": {
+            "flowStatus": "3",
+            "presentationVersion": "1",
+            "presentationFamily": "status",
+            "title": "v0.4 Presentation visual probe",
+            "summary": "## PRESENTATION V1 TEMPLATE OK\n\nIf this text is visible, the AI-card completed-state Presentation binding is working.",
+            "tone": "info",
+            "source": "n8n-dingtalk-card",
+            "occurredAt": "2026-10-25T09:00:00+08:00",
+            "state": "running",
+            "details": "Explicit flowStatus=3 probe on production beta.1",
+            "items": "[{\"title\":\"Item A\",\"summary\":\"Digest sample\",\"tone\":\"info\"}]",
+            "label": "Open details",
+            "description": "Display metadata only",
+            "sections": "[{\"heading\":\"Overview\",\"body\":\"Report sample\"}]"
+          }
+        },
+        "target": "group",
+        "spaceId": "cidtGz0XVJxopM5nzYAHEz5Lw==",
+        "robotCode": "",
+        "outTrackId": ""
+      },
+      "credentials": {
+        "dingTalkCardApi": {
+          "id": "qYZQszWAxbIfLPnQ",
+          "name": "四有青年 DingTalk Card API"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Probe Input": {
+      "main": [
+        [
+          {
+            "node": "Deliver Status Probe",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "dTbPzzUTyxVSdBNl",
+      "projectId": "cNMj0K6AdJmi0OAZ",
+      "createdAt": "2026-10-24T17:57:01.809Z",
+      "updatedAt": "2026-10-24T17:57:01.809Z"
+    }
+  ],
+  "activeVersion": null
+}
