@@ -1,0 +1,81 @@
+{
+  "id": "eDBFLyZtvkDS6JoD",
+  "name": "TEMP - DingTalk Group Discovery",
+  "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-10-24T09:08:16.937Z",
+  "updatedAt": "2026-10-24T09:11:09.422Z",
+  "isArchived": true,
+  "versionId": "d0091f3d-c069-42a2-bbff-f06e8493dc00",
+  "triggerCount": 0,
+  "nodes": [
+    {
+      "id": "79ff39a4-f943-40f2-bb13-5314b3dec00e",
+      "name": "Start",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "16e00ebd-a535-4054-8e46-b9e5d711fbdb",
+      "name": "List DingTalk groups",
+      "type": "@cryozerolabs/n8n-nodes-dingtalk.dingtalkNode",
+      "typeVersion": 1,
+      "position": [
+        224,
+        0
+      ],
+      "parameters": {
+        "resource": "api",
+        "operation": "api.request",
+        "method": "GET",
+        "url": "https://oapi.dingtalk.com/chat/list"
+      },
+      "credentials": {
+        "dingtalkApi": {
+          "id": "1NhTEAlJ9NX9Qn8b",
+          "name": "四有青年 DingTalk API（Card 应用）"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "List DingTalk groups",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "eDBFLyZtvkDS6JoD",
+      "projectId": "cNMj0K6AdJmi0OAZ",
+      "createdAt": "2026-10-24T09:08:16.937Z",
+      "updatedAt": "2026-10-24T09:08:16.937Z"
+    }
+  ],
+  "activeVersion": null
+}
