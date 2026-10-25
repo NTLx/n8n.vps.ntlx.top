@@ -464,6 +464,12 @@
   },
   "tags": [
     {
+      "id": "twNsKNALbdWLw0Ox",
+      "name": "automation",
+      "createdAt": "2026-10-22T08:25:54.546Z",
+      "updatedAt": "2026-10-22T08:25:54.546Z"
+    },
+    {
       "id": "j2GRa6L6FW78gTO3",
       "name": "daily-artifact",
       "createdAt": "2026-10-23T02:30:52.072Z",
@@ -474,12 +480,6 @@
       "name": "github",
       "createdAt": "2026-10-23T02:30:52.063Z",
       "updatedAt": "2026-10-23T02:30:52.063Z"
-    },
-    {
-      "id": "twNsKNALbdWLw0Ox",
-      "name": "automation",
-      "createdAt": "2026-10-22T08:25:54.546Z",
-      "updatedAt": "2026-10-22T08:25:54.546Z"
     }
   ],
   "shared": [
