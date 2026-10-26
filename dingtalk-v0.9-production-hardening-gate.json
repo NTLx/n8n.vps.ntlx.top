@@ -1,0 +1,121 @@
+{
+  "id": "060Rp2Vrynm6S5rw",
+  "name": "DingTalk v0.9 Production Hardening Gate",
+  "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-10-25T06:13:51.571Z",
+  "updatedAt": "2026-10-25T12:35:59.852Z",
+  "isArchived": false,
+  "versionId": "953d3f9a-8be5-45b5-9961-8606b4bc2c3e",
+  "triggerCount": 0,
+  "nodes": [
+    {
+      "id": "c4734b8a-718b-4348-968a-5ce70b12dc00",
+      "name": "Run Visual Gate",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "d8260c6c-15f5-469a-8d9a-d04730bc746f",
+      "name": "Create A2UI Report Pattern Card",
+      "type": "n8n-nodes-dingtalk-card.dingTalkCard",
+      "typeVersion": 1,
+      "position": [
+        224,
+        0
+      ],
+      "parameters": {
+        "operation": "createAndDeliver",
+        "inputMode": "form",
+        "cardTemplateId": "ff4f49b1-384b-4b4a-b9f3-98379959f923.schema",
+        "cardDataMode": "a2ui",
+        "a2uiDescriptor": "{\"version\":\"1\",\"profile\":\"universal-v1\",\"title\":\"v0.9 beta.1 production-hardening gate\",\"summary\":\"Community Nodes upgrade acceptance on the saved v0.8 workflow contract.\",\"tone\":\"info\",\"blocks\":[{\"type\":\"keyValue\",\"label\":\"Upgrade\",\"value\":\"0.8.0 → 0.9.0-beta.1 via n8n UI\"},{\"type\":\"text\",\"text\":\"Saved workflow identifiers, parameters and deterministic A2UI mapping remain compatible.\"},{\"type\":\"list\",\"items\":[\"Existing saved workflow loaded\",\"Create & Deliver\",\"Same-card replacement Update\"]}]}",
+        "target": "group",
+        "spaceId": "cidtGz0XVJxopM5nzYAHEz5Lw==",
+        "robotCode": "",
+        "enableStreamCallbacks": false
+      },
+      "credentials": {
+        "dingTalkCardApi": {
+          "id": "qYZQszWAxbIfLPnQ",
+          "name": "四有青年 DingTalk Card API"
+        }
+      }
+    },
+    {
+      "id": "438684b2-c5c6-4af7-84bc-276b319afa5f",
+      "name": "Replace With A2UI Status Card",
+      "type": "n8n-nodes-dingtalk-card.dingTalkCard",
+      "typeVersion": 1,
+      "position": [
+        448,
+        0
+      ],
+      "parameters": {
+        "operation": "update",
+        "inputMode": "form",
+        "outTrackId": "={{ $json.outTrackId }}",
+        "cardDataMode": "a2ui",
+        "a2uiDescriptor": "{\"version\":\"1\",\"profile\":\"universal-v1\",\"title\":\"✅ v0.9 upgrade smoke passed\",\"summary\":\"The saved v0.8 workflow executed successfully after the Community Nodes beta upgrade.\",\"tone\":\"success\",\"blocks\":[{\"type\":\"keyValue\",\"label\":\"Compatibility\",\"value\":\"saved workflow contract preserved\"},{\"type\":\"text\",\"text\":\"Create → same-card Update completed on the installed v0.9 beta package.\"}]}",
+        "updateByKey": false
+      },
+      "credentials": {
+        "dingTalkCardApi": {
+          "id": "qYZQszWAxbIfLPnQ",
+          "name": "四有青年 DingTalk Card API"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Run Visual Gate": {
+      "main": [
+        [
+          {
+            "node": "Create A2UI Report Pattern Card",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create A2UI Report Pattern Card": {
+      "main": [
+        [
+          {
+            "node": "Replace With A2UI Status Card",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "060Rp2Vrynm6S5rw",
+      "projectId": "cNMj0K6AdJmi0OAZ",
+      "createdAt": "2026-10-25T06:13:51.571Z",
+      "updatedAt": "2026-10-25T06:13:51.571Z"
+    }
+  ],
+  "activeVersion": null
+}
