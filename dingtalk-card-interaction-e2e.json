@@ -4,9 +4,9 @@
   "active": false,
   "activeVersionId": null,
   "createdAt": "2026-10-24T11:49:09.302Z",
-  "updatedAt": "2026-10-24T11:49:09.302Z",
+  "updatedAt": "2026-10-25T12:36:25.899Z",
   "isArchived": false,
-  "versionId": "ec6fa6b4-83b6-4747-be3b-0010d533845c",
+  "versionId": "e591c8ae-1a99-49c1-9392-deb0a18a0c78",
   "triggerCount": 1,
   "nodes": [
     {
@@ -39,28 +39,9 @@
         "operation": "update",
         "inputMode": "form",
         "outTrackId": "={{ $json.outTrackId }}",
-        "cardDataMode": "form",
-        "cardParameters": {
-          "parameters": [
-            {
-              "name": "flowStatus",
-              "value": "3"
-            },
-            {
-              "name": "staticMsgContent",
-              "value": "={{ '✅ n8n 已收到卡片回调\\n\\nmessageId: ' + ($json.messageId || '') + '\\n\\nparams: ' + JSON.stringify($json.params || {}) }}"
-            },
-            {
-              "name": "sys_full_json_obj",
-              "value": "{\"order\":[\"staticMsgContent\"]}"
-            },
-            {
-              "name": "config",
-              "value": "{\"autoLayout\":true,\"enableForward\":false}"
-            }
-          ]
-        },
-        "updateByKey": true
+        "cardDataMode": "a2ui",
+        "a2uiDescriptor": "{\"version\":\"1\",\"profile\":\"universal-v1\",\"title\":\"✅ v0.9 lifecycle gate passed\",\"summary\":\"The upgraded saved workflow received a real callback after Trigger deactivate/reactivate.\",\"tone\":\"success\",\"blocks\":[{\"type\":\"text\",\"text\":\"Stream Trigger → normalized event → deterministic n8n flow → same-card replacement Update completed.\"},{\"type\":\"keyValue\",\"label\":\"Reliability boundary\",\"value\":\"process-local dedupe; durable exactly-once is not claimed\"}]}",
+        "updateByKey": false
       },
       "credentials": {
         "dingTalkCardApi": {
@@ -93,28 +74,9 @@
         "operation": "createAndDeliver",
         "inputMode": "form",
         "enableStreamCallbacks": true,
-        "cardTemplateId": "382e4302-551d-4880-bf29-a30acfab2e71.schema",
-        "cardDataMode": "form",
-        "cardParameters": {
-          "parameters": [
-            {
-              "name": "flowStatus",
-              "value": "3"
-            },
-            {
-              "name": "staticMsgContent",
-              "value": "### DingTalk Card Trigger E2E\\n\\n请点击下方按钮。点击后，如果回调链路正常，这张卡片会被 n8n 更新为“回调已收到”。"
-            },
-            {
-              "name": "sys_full_json_obj",
-              "value": "{\"order\":[\"staticMsgContent\",\"msgButtons\"],\"msgButtons\":[{\"text\":\"点击完成 E2E\",\"color\":\"blue\",\"id\":\"n8n_e2e_accept\",\"request\":true}]}"
-            },
-            {
-              "name": "config",
-              "value": "{\"autoLayout\":true,\"enableForward\":false}"
-            }
-          ]
-        },
+        "cardTemplateId": "ff4f49b1-384b-4b4a-b9f3-98379959f923.schema",
+        "cardDataMode": "a2ui",
+        "a2uiDescriptor": "{\"version\":\"1\",\"profile\":\"universal-v1\",\"title\":\"v0.9 beta.1 lifecycle gate\",\"summary\":\"Verify Stream Trigger survives deactivate/reactivate after Community Nodes upgrade.\",\"tone\":\"info\",\"blocks\":[{\"type\":\"text\",\"text\":\"Click once after the listener has been deactivated and reactivated.\"},{\"type\":\"keyValue\",\"label\":\"Scope\",\"value\":\"saved workflow + trigger lifecycle + normalized callback\"}],\"actions\":[{\"type\":\"request\",\"id\":\"hardening.acceptance\",\"label\":\"验证 v0.9 lifecycle\",\"params\":{\"source\":\"v0.9.0-beta.1\",\"gate\":\"production-hardening\"}}]}",
         "target": "group",
         "spaceId": "cidtGz0XVJxopM5nzYAHEz5Lw==",
         "robotCode": ""
