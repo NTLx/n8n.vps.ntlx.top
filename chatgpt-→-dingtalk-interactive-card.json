@@ -1,0 +1,175 @@
+{
+  "id": "lIYiupA0LyU58hNd",
+  "name": "ChatGPT → DingTalk Interactive Card",
+  "active": true,
+  "activeVersionId": "2f10f141-6edb-498b-8d9a-0ac94b43761c",
+  "createdAt": "2026-10-25T13:51:08.776Z",
+  "updatedAt": "2026-10-26T00:49:22.198Z",
+  "isArchived": false,
+  "versionId": "2f10f141-6edb-498b-8d9a-0ac94b43761c",
+  "triggerCount": 1,
+  "nodes": [
+    {
+      "id": "80a9d821-5430-492a-b29e-839b28939e49",
+      "name": "ChatGPT DingTalk Card",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.2,
+      "position": [
+        240,
+        300
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "chatgpt-dingtalk-card",
+        "authentication": "headerAuth",
+        "responseMode": "lastNode",
+        "responseData": "firstEntryJson"
+      },
+      "webhookId": "3fa1c48c-9f1e-4cc0-ad79-99cc7bd83a7b",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "RvmfH6qWSIUABPQO",
+          "name": "n8n Webhook（Bearer Auth）"
+        }
+      }
+    },
+    {
+      "id": "597936e0-a4a2-4709-a1ad-ae4009a8e796",
+      "name": "Send DingTalk DM Card",
+      "type": "n8n-nodes-dingtalk-card.dingTalkCard",
+      "typeVersion": 1,
+      "position": [
+        560,
+        300
+      ],
+      "parameters": {
+        "operation": "createAndDeliver",
+        "inputMode": "form",
+        "cardTemplateId": "ff4f49b1-384b-4b4a-b9f3-98379959f923.schema",
+        "cardDataMode": "a2ui",
+        "a2uiDescriptor": "={{ (() => { const d = $json.body.descriptor; if (!d || typeof d !== 'object' || Array.isArray(d)) return d; const blocks = Array.isArray(d.blocks) ? d.blocks.flatMap((b) => { if (!b || typeof b !== 'object' || Array.isArray(b) || typeof b.type === 'string') return [b]; if (typeof b.text === 'string') return [{ type: 'text', text: b.text }]; if (b.keyValue && typeof b.keyValue === 'object' && !Array.isArray(b.keyValue)) return Object.entries(b.keyValue).map(([label, value]) => ({ type: 'keyValue', label: String(label), value: value == null ? '' : String(value) })); if (Array.isArray(b.list)) return [{ type: 'list', items: b.list.map((v) => String(v)) }]; return [b]; }) : d.blocks; return { ...d, blocks }; })() }}",
+        "target": "robot",
+        "spaceId": "manager5845",
+        "outTrackId": "={{ $json.body.outTrackId || \"\" }}",
+        "enableStreamCallbacks": false
+      },
+      "credentials": {
+        "dingTalkCardApi": {
+          "id": "qYZQszWAxbIfLPnQ",
+          "name": "四有青年 DingTalk Card API"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "ChatGPT DingTalk Card": {
+      "main": [
+        [
+          {
+            "node": "Send DingTalk DM Card",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "lIYiupA0LyU58hNd",
+      "projectId": "cNMj0K6AdJmi0OAZ",
+      "createdAt": "2026-10-25T13:51:08.776Z",
+      "updatedAt": "2026-10-25T13:51:08.776Z"
+    }
+  ],
+  "activeVersion": {
+    "versionId": "2f10f141-6edb-498b-8d9a-0ac94b43761c",
+    "workflowId": "lIYiupA0LyU58hNd",
+    "nodes": [
+      {
+        "id": "80a9d821-5430-492a-b29e-839b28939e49",
+        "name": "ChatGPT DingTalk Card",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.2,
+        "position": [
+          240,
+          300
+        ],
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "chatgpt-dingtalk-card",
+          "authentication": "headerAuth",
+          "responseMode": "lastNode",
+          "responseData": "firstEntryJson"
+        },
+        "webhookId": "3fa1c48c-9f1e-4cc0-ad79-99cc7bd83a7b",
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "RvmfH6qWSIUABPQO",
+            "name": "n8n Webhook（Bearer Auth）"
+          }
+        }
+      },
+      {
+        "id": "597936e0-a4a2-4709-a1ad-ae4009a8e796",
+        "name": "Send DingTalk DM Card",
+        "type": "n8n-nodes-dingtalk-card.dingTalkCard",
+        "typeVersion": 1,
+        "position": [
+          560,
+          300
+        ],
+        "parameters": {
+          "operation": "createAndDeliver",
+          "inputMode": "form",
+          "cardTemplateId": "ff4f49b1-384b-4b4a-b9f3-98379959f923.schema",
+          "cardDataMode": "a2ui",
+          "a2uiDescriptor": "={{ (() => { const d = $json.body.descriptor; if (!d || typeof d !== 'object' || Array.isArray(d)) return d; const blocks = Array.isArray(d.blocks) ? d.blocks.flatMap((b) => { if (!b || typeof b !== 'object' || Array.isArray(b) || typeof b.type === 'string') return [b]; if (typeof b.text === 'string') return [{ type: 'text', text: b.text }]; if (b.keyValue && typeof b.keyValue === 'object' && !Array.isArray(b.keyValue)) return Object.entries(b.keyValue).map(([label, value]) => ({ type: 'keyValue', label: String(label), value: value == null ? '' : String(value) })); if (Array.isArray(b.list)) return [{ type: 'list', items: b.list.map((v) => String(v)) }]; return [b]; }) : d.blocks; return { ...d, blocks }; })() }}",
+          "target": "robot",
+          "spaceId": "manager5845",
+          "outTrackId": "={{ $json.body.outTrackId || \"\" }}",
+          "enableStreamCallbacks": false
+        },
+        "credentials": {
+          "dingTalkCardApi": {
+            "id": "qYZQszWAxbIfLPnQ",
+            "name": "四有青年 DingTalk Card API"
+          }
+        }
+      }
+    ],
+    "connections": {
+      "ChatGPT DingTalk Card": {
+        "main": [
+          [
+            {
+              "node": "Send DingTalk DM Card",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "nodeGroups": [],
+    "authors": "Administrator NTLx (via MCP)",
+    "name": "Harden A2UI input and delivery contract",
+    "description": "Normalize legacy shorthand blocks before plugin validation and document terminal delivery verification for all ChatGPT scheduled-worker callers.",
+    "autosaved": false,
+    "createdAt": "2026-10-26T00:49:22.204Z",
+    "updatedAt": "2026-10-26T00:49:22.204Z"
+  }
+}
