@@ -1,0 +1,263 @@
+{
+  "id": "Pyh5wvWV1I9g2BEZ",
+  "name": "DingTalk v1.0 Beta Notification Hub Acceptance",
+  "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-10-25T13:14:18.985Z",
+  "updatedAt": "2026-10-25T13:14:18.985Z",
+  "isArchived": false,
+  "versionId": "61ca014e-c15d-4f26-9796-96d3ae6abd97",
+  "triggerCount": 0,
+  "nodes": [
+    {
+      "id": "517b9c07-8016-45b4-be82-42b26bc7875f",
+      "name": "Run notification",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "inputSource": "workflowInputs",
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "title",
+              "type": "string"
+            },
+            {
+              "name": "summary",
+              "type": "string"
+            },
+            {
+              "name": "content",
+              "type": "string"
+            },
+            {
+              "name": "status",
+              "type": "string"
+            },
+            {
+              "name": "operation",
+              "type": "string"
+            },
+            {
+              "name": "cardTemplateId",
+              "type": "string"
+            },
+            {
+              "name": "spaceId",
+              "type": "string"
+            },
+            {
+              "name": "outTrackId",
+              "type": "string"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "98c50f89-e7bc-444c-b662-3191c498a6be",
+      "name": "Notification contract",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        280,
+        0
+      ],
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "descriptor",
+              "name": "descriptor",
+              "type": "object",
+              "value": "={{ ({ version: '1', profile: 'universal-v1', title: $('Run notification').item.json.title || 'Notification', summary: $('Run notification').item.json.summary || 'Replace with concise status.', tone: 'info', blocks: [{ type: 'keyValue', label: 'Status', value: $('Run notification').item.json.status || 'informational' }, { type: 'text', text: $('Run notification').item.json.content || 'Provide safe, concise details.' }] }) }}"
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "7a334e5d-58cc-4ab0-a73a-a5cfa8fff2af",
+      "name": "Create or update only",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.5,
+      "position": [
+        560,
+        0
+      ],
+      "parameters": {
+        "mode": "rules",
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Run notification').item.json.operation || '' }}",
+                    "rightValue": "create",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Run notification').item.json.operation || '' }}",
+                    "rightValue": "update",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "none"
+        }
+      }
+    },
+    {
+      "id": "e89be5d4-0fff-4428-9aee-f152dd98a34e",
+      "name": "Create A2UI card",
+      "type": "n8n-nodes-dingtalk-card.dingTalkCard",
+      "typeVersion": 1,
+      "position": [
+        840,
+        -120
+      ],
+      "parameters": {
+        "operation": "createAndDeliver",
+        "inputMode": "form",
+        "cardTemplateId": "={{ $('Run notification').item.json.cardTemplateId || '' }}",
+        "cardDataMode": "a2ui",
+        "a2uiDescriptor": "={{ $json.descriptor }}",
+        "target": "group",
+        "spaceId": "={{ $('Run notification').item.json.spaceId || '' }}",
+        "outTrackId": "={{ $('Run notification').item.json.outTrackId || '' }}",
+        "enableStreamCallbacks": false
+      },
+      "credentials": {
+        "dingTalkCardApi": {
+          "id": "qYZQszWAxbIfLPnQ",
+          "name": "四有青年 DingTalk Card API"
+        }
+      }
+    },
+    {
+      "id": "e92cb91f-441e-4994-a757-0ae96162cf6a",
+      "name": "Replace card with A2UI descriptor",
+      "type": "n8n-nodes-dingtalk-card.dingTalkCard",
+      "typeVersion": 1,
+      "position": [
+        840,
+        120
+      ],
+      "parameters": {
+        "operation": "update",
+        "inputMode": "form",
+        "cardDataMode": "a2ui",
+        "a2uiDescriptor": "={{ $json.descriptor }}",
+        "outTrackId": "={{ $('Run notification').item.json.outTrackId || '' }}",
+        "updateByKey": false
+      },
+      "credentials": {
+        "dingTalkCardApi": {
+          "id": "qYZQszWAxbIfLPnQ",
+          "name": "四有青年 DingTalk Card API"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Run notification": {
+      "main": [
+        [
+          {
+            "node": "Notification contract",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notification contract": {
+      "main": [
+        [
+          {
+            "node": "Create or update only",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create or update only": {
+      "main": [
+        [
+          {
+            "node": "Create A2UI card",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Replace card with A2UI descriptor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "Pyh5wvWV1I9g2BEZ",
+      "projectId": "cNMj0K6AdJmi0OAZ",
+      "createdAt": "2026-10-25T13:14:18.985Z",
+      "updatedAt": "2026-10-25T13:14:18.985Z"
+    }
+  ],
+  "activeVersion": null
+}
