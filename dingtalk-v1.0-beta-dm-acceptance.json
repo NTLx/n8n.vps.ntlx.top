@@ -1,0 +1,121 @@
+{
+  "id": "5QyETYT4zlPEerPd",
+  "name": "DingTalk v1.0 Beta DM Acceptance",
+  "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-10-25T13:17:08.103Z",
+  "updatedAt": "2026-10-25T13:17:08.103Z",
+  "isArchived": false,
+  "versionId": "f9617713-3003-4c61-9249-5e5c2bc3b01d",
+  "triggerCount": 0,
+  "nodes": [
+    {
+      "id": "9c9d35ca-c210-40d0-bf5d-8d918ea4751b",
+      "name": "Start",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "8ee61c76-14ad-41e6-a56f-6d26852759a5",
+      "name": "Create direct card",
+      "type": "n8n-nodes-dingtalk-card.dingTalkCard",
+      "typeVersion": 1,
+      "position": [
+        280,
+        0
+      ],
+      "parameters": {
+        "operation": "createAndDeliver",
+        "inputMode": "form",
+        "cardTemplateId": "ff4f49b1-384b-4b4a-b9f3-98379959f923.schema",
+        "cardDataMode": "a2ui",
+        "a2uiDescriptor": "{\"version\":\"1\",\"profile\":\"universal-v1\",\"title\":\"v1.0 beta DM acceptance\",\"summary\":\"Direct-message Create path on the upgraded community package.\",\"tone\":\"info\",\"blocks\":[{\"type\":\"text\",\"text\":\"This card verifies the staff-user direct delivery path.\"},{\"type\":\"keyValue\",\"label\":\"Phase\",\"value\":\"Create\"}]}",
+        "target": "robot",
+        "spaceId": "manager5845",
+        "outTrackId": "v1beta-dm-20261025",
+        "enableStreamCallbacks": false
+      },
+      "credentials": {
+        "dingTalkCardApi": {
+          "id": "qYZQszWAxbIfLPnQ",
+          "name": "四有青年 DingTalk Card API"
+        }
+      }
+    },
+    {
+      "id": "19c21c41-b7ec-4eb9-8f99-1fdb671d3606",
+      "name": "Update direct card",
+      "type": "n8n-nodes-dingtalk-card.dingTalkCard",
+      "typeVersion": 1,
+      "position": [
+        560,
+        0
+      ],
+      "parameters": {
+        "operation": "update",
+        "inputMode": "form",
+        "outTrackId": "v1beta-dm-20261025",
+        "cardDataMode": "a2ui",
+        "a2uiDescriptor": "{\"version\":\"1\",\"profile\":\"universal-v1\",\"title\":\"✅ v1.0 beta DM path passed\",\"summary\":\"Direct-message Create and replacement Update both completed.\",\"tone\":\"success\",\"blocks\":[{\"type\":\"text\",\"text\":\"DM delivery uses the same controlled A2UI contract as group cards.\"},{\"type\":\"keyValue\",\"label\":\"Phase\",\"value\":\"Update\"}]}",
+        "updateByKey": false
+      },
+      "credentials": {
+        "dingTalkCardApi": {
+          "id": "qYZQszWAxbIfLPnQ",
+          "name": "四有青年 DingTalk Card API"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "Create direct card",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create direct card": {
+      "main": [
+        [
+          {
+            "node": "Update direct card",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "5QyETYT4zlPEerPd",
+      "projectId": "cNMj0K6AdJmi0OAZ",
+      "createdAt": "2026-10-25T13:17:08.103Z",
+      "updatedAt": "2026-10-25T13:17:08.103Z"
+    }
+  ],
+  "activeVersion": null
+}
