@@ -1,0 +1,233 @@
+{
+  "id": "ZuaAXlMIFNjXbx3R",
+  "name": "DingTalk beta.2 five-family regression",
+  "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-10-25T04:02:43.500Z",
+  "updatedAt": "2026-10-25T04:03:03.534Z",
+  "isArchived": true,
+  "versionId": "1d5aca24-3856-4d53-98fb-e7d3b7b4d3e0",
+  "triggerCount": 0,
+  "nodes": [
+    {
+      "id": "595d6401-1c9d-45dc-8d69-53c578b1f060",
+      "name": "Run five-family regression",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "005754f7-59d5-4747-800d-3eeddec67f8c",
+      "name": "Deliver alert family",
+      "type": "n8n-nodes-dingtalk-card.dingTalkCard",
+      "typeVersion": 1,
+      "position": [
+        224,
+        0
+      ],
+      "parameters": {
+        "operation": "createAndDeliver",
+        "inputMode": "form",
+        "cardTemplateId": "3f687924-b306-49dd-8f5e-27d4a45d92a8.schema",
+        "cardDataMode": "presentation",
+        "presentationDescriptor": "{\"version\":\"1\",\"family\":\"alert\",\"title\":\"beta.2 Alert final regression\",\"summary\":\"Alert family rendered through true Presentation mode.\",\"tone\":\"warning\",\"source\":\"n8n-dingtalk-card beta.2\",\"occurredAt\":\"2026-10-25T11:58:00+08:00\"}",
+        "target": "group",
+        "spaceId": "cidtGz0XVJxopM5nzYAHEz5Lw==",
+        "robotCode": ""
+      },
+      "credentials": {
+        "dingTalkCardApi": {
+          "id": "qYZQszWAxbIfLPnQ",
+          "name": "四有青年 DingTalk Card API"
+        }
+      }
+    },
+    {
+      "id": "3354da56-ec8c-4129-9f61-50c1445c2637",
+      "name": "Deliver status family",
+      "type": "n8n-nodes-dingtalk-card.dingTalkCard",
+      "typeVersion": 1,
+      "position": [
+        448,
+        0
+      ],
+      "parameters": {
+        "operation": "createAndDeliver",
+        "inputMode": "form",
+        "cardTemplateId": "3f687924-b306-49dd-8f5e-27d4a45d92a8.schema",
+        "cardDataMode": "presentation",
+        "presentationDescriptor": "{\"version\":\"1\",\"family\":\"status\",\"title\":\"beta.2 Status final regression\",\"summary\":\"Status family rendered through true Presentation mode.\",\"tone\":\"success\",\"state\":\"success\",\"details\":\"Completed-state host metadata is injected by beta.2.\"}",
+        "target": "group",
+        "spaceId": "cidtGz0XVJxopM5nzYAHEz5Lw==",
+        "robotCode": ""
+      },
+      "credentials": {
+        "dingTalkCardApi": {
+          "id": "qYZQszWAxbIfLPnQ",
+          "name": "四有青年 DingTalk Card API"
+        }
+      }
+    },
+    {
+      "id": "d1464ff9-8093-4af3-959d-325949535028",
+      "name": "Deliver digest family",
+      "type": "n8n-nodes-dingtalk-card.dingTalkCard",
+      "typeVersion": 1,
+      "position": [
+        672,
+        0
+      ],
+      "parameters": {
+        "operation": "createAndDeliver",
+        "inputMode": "form",
+        "cardTemplateId": "3f687924-b306-49dd-8f5e-27d4a45d92a8.schema",
+        "cardDataMode": "presentation",
+        "presentationDescriptor": "{\"version\":\"1\",\"family\":\"digest\",\"title\":\"beta.2 Digest final regression\",\"summary\":\"Digest family with two structured items.\",\"tone\":\"info\",\"items\":[{\"title\":\"Signal A\",\"summary\":\"Digest item A\",\"tone\":\"info\"},{\"title\":\"Signal B\",\"summary\":\"Digest item B\",\"tone\":\"success\"}]}",
+        "target": "group",
+        "spaceId": "cidtGz0XVJxopM5nzYAHEz5Lw==",
+        "robotCode": ""
+      },
+      "credentials": {
+        "dingTalkCardApi": {
+          "id": "qYZQszWAxbIfLPnQ",
+          "name": "四有青年 DingTalk Card API"
+        }
+      }
+    },
+    {
+      "id": "086e83ac-e538-4e31-bc15-c24f9b0297c9",
+      "name": "Deliver action family",
+      "type": "n8n-nodes-dingtalk-card.dingTalkCard",
+      "typeVersion": 1,
+      "position": [
+        896,
+        0
+      ],
+      "parameters": {
+        "operation": "createAndDeliver",
+        "inputMode": "form",
+        "cardTemplateId": "3f687924-b306-49dd-8f5e-27d4a45d92a8.schema",
+        "cardDataMode": "presentation",
+        "presentationDescriptor": "{\"version\":\"1\",\"family\":\"action\",\"title\":\"beta.2 Action final regression\",\"summary\":\"Action family display metadata regression.\",\"tone\":\"neutral\",\"label\":\"Open details\",\"description\":\"Display-only action metadata; no callback routing is implied.\"}",
+        "target": "group",
+        "spaceId": "cidtGz0XVJxopM5nzYAHEz5Lw==",
+        "robotCode": ""
+      },
+      "credentials": {
+        "dingTalkCardApi": {
+          "id": "qYZQszWAxbIfLPnQ",
+          "name": "四有青年 DingTalk Card API"
+        }
+      }
+    },
+    {
+      "id": "44c04dcd-bab8-4f86-923b-69c9193f0ed0",
+      "name": "Deliver report family",
+      "type": "n8n-nodes-dingtalk-card.dingTalkCard",
+      "typeVersion": 1,
+      "position": [
+        1120,
+        0
+      ],
+      "parameters": {
+        "operation": "createAndDeliver",
+        "inputMode": "form",
+        "cardTemplateId": "3f687924-b306-49dd-8f5e-27d4a45d92a8.schema",
+        "cardDataMode": "presentation",
+        "presentationDescriptor": "{\"version\":\"1\",\"family\":\"report\",\"title\":\"beta.2 Report final regression\",\"summary\":\"Report family with two structured sections.\",\"tone\":\"info\",\"sections\":[{\"heading\":\"Availability\",\"body\":\"Healthy\"},{\"heading\":\"Regression\",\"body\":\"All beta.2 Presentation paths exercised\"}]}",
+        "target": "group",
+        "spaceId": "cidtGz0XVJxopM5nzYAHEz5Lw==",
+        "robotCode": ""
+      },
+      "credentials": {
+        "dingTalkCardApi": {
+          "id": "qYZQszWAxbIfLPnQ",
+          "name": "四有青年 DingTalk Card API"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Run five-family regression": {
+      "main": [
+        [
+          {
+            "node": "Deliver alert family",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Deliver alert family": {
+      "main": [
+        [
+          {
+            "node": "Deliver status family",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Deliver status family": {
+      "main": [
+        [
+          {
+            "node": "Deliver digest family",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Deliver digest family": {
+      "main": [
+        [
+          {
+            "node": "Deliver action family",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Deliver action family": {
+      "main": [
+        [
+          {
+            "node": "Deliver report family",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "ZuaAXlMIFNjXbx3R",
+      "projectId": "cNMj0K6AdJmi0OAZ",
+      "createdAt": "2026-10-25T04:02:43.500Z",
+      "updatedAt": "2026-10-25T04:02:43.500Z"
+    }
+  ],
+  "activeVersion": null
+}
