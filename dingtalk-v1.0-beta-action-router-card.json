@@ -1,0 +1,87 @@
+{
+  "id": "Xr1NQStS7byYKJ3T",
+  "name": "DingTalk v1.0 Beta Action Router Card",
+  "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-10-25T13:17:48.611Z",
+  "updatedAt": "2026-10-25T13:17:48.611Z",
+  "isArchived": false,
+  "versionId": "14294875-eb71-4fdb-b3c6-b631bf7b00c5",
+  "triggerCount": 0,
+  "nodes": [
+    {
+      "id": "78887b9a-0685-4810-86f4-e843002ca96b",
+      "name": "Start",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "c06e78b1-654c-4a6b-89dc-78475708d744",
+      "name": "Send v1 beta Action Router card",
+      "type": "n8n-nodes-dingtalk-card.dingTalkCard",
+      "typeVersion": 1,
+      "position": [
+        280,
+        0
+      ],
+      "parameters": {
+        "operation": "createAndDeliver",
+        "inputMode": "form",
+        "enableStreamCallbacks": true,
+        "cardTemplateId": "ff4f49b1-384b-4b4a-b9f3-98379959f923.schema",
+        "cardDataMode": "a2ui",
+        "a2uiDescriptor": "{\"version\":\"1\",\"profile\":\"universal-v1\",\"title\":\"v1.0 beta Action Router gate\",\"summary\":\"Listener has been deactivated and reactivated. Click once to verify the reusable router receives a real normalized callback.\",\"tone\":\"info\",\"blocks\":[{\"type\":\"text\",\"text\":\"Expected path: Stream Trigger → normalized.interaction.actionIds → ACK allowlist → deterministic contract.\"},{\"type\":\"keyValue\",\"label\":\"Gate\",\"value\":\"v1.0.0-beta.1 connected-instance\"}],\"actions\":[{\"type\":\"request\",\"id\":\"ACK\",\"label\":\"验证 v1.0 beta Action Router\",\"params\":{\"gate\":\"v1-beta-action-router\",\"source\":\"1.0.0-beta.1\"}}]}",
+        "target": "group",
+        "spaceId": "cidtGz0XVJxopM5nzYAHEz5Lw==",
+        "robotCode": "",
+        "outTrackId": "v1beta-action-router-20261025"
+      },
+      "credentials": {
+        "dingTalkCardApi": {
+          "id": "qYZQszWAxbIfLPnQ",
+          "name": "四有青年 DingTalk Card API"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "Send v1 beta Action Router card",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "Xr1NQStS7byYKJ3T",
+      "projectId": "cNMj0K6AdJmi0OAZ",
+      "createdAt": "2026-10-25T13:17:48.611Z",
+      "updatedAt": "2026-10-25T13:17:48.611Z"
+    }
+  ],
+  "activeVersion": null
+}
