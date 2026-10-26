@@ -1,0 +1,47 @@
+{
+  "id": "ZTZKjXOJ43SVzyTM",
+  "name": "Probe ServerFS bootstrap path",
+  "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-10-25T16:07:26.228Z",
+  "updatedAt": "2026-10-25T16:12:21.907Z",
+  "isArchived": true,
+  "versionId": "48d49453-b659-4e76-a618-d6ac11f2138c",
+  "triggerCount": 0,
+  "nodes": [
+    {
+      "id": "d2f5ee5e-8102-442d-abee-8eaa32571af9",
+      "name": "Start Probe",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    }
+  ],
+  "connections": {},
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "ZTZKjXOJ43SVzyTM",
+      "projectId": "cNMj0K6AdJmi0OAZ",
+      "createdAt": "2026-10-25T16:07:26.228Z",
+      "updatedAt": "2026-10-25T16:07:26.228Z"
+    }
+  ],
+  "activeVersion": null
+}
