@@ -4,9 +4,9 @@
   "active": false,
   "activeVersionId": null,
   "createdAt": "2026-10-24T10:03:26.796Z",
-  "updatedAt": "2026-10-24T17:03:04.881Z",
+  "updatedAt": "2026-10-25T05:52:10.236Z",
   "isArchived": false,
-  "versionId": "8218679b-2630-435a-b1c2-54a62a0a27b6",
+  "versionId": "462c469e-3d11-4e8e-8694-9466878d725d",
   "triggerCount": 0,
   "nodes": [
     {
@@ -40,13 +40,13 @@
         "operation": "createAndDeliver",
         "inputMode": "form",
         "cardTemplateId": "={{ $json.body.cardTemplateId }}",
-        "cardDataMode": "presentation",
-        "cardParameters": {},
+        "cardDataMode": "a2ui",
+        "a2uiDescriptor": "{\"version\":\"1\",\"profile\":\"universal-v1\",\"title\":\"v0.6 A2UI Create acceptance\",\"summary\":\"Connected-instance A2UI transport and lifecycle compatibility check.\",\"tone\":\"info\",\"blocks\":[{\"type\":\"text\",\"text\":\"A2UI descriptor reached the production DingTalk Card transport path.\"},{\"type\":\"keyValue\",\"label\":\"Phase\",\"value\":\"Create\"},{\"type\":\"list\",\"items\":[\"Schema loaded\",\"Mapper accepted\",\"No action in this transport gate\"]}]}",
         "target": "group",
         "spaceId": "cidtGz0XVJxopM5nzYAHEz5Lw==",
         "robotCode": "",
         "outTrackId": "={{ $json.body.outTrackId }}",
-        "presentationDescriptor": "{\"version\":\"1\",\"family\":\"status\",\"title\":\"v0.4 Presentation Create acceptance\",\"summary\":\"Connected-instance transport and lifecycle compatibility check.\",\"tone\":\"info\",\"state\":\"running\",\"details\":\"Legacy AI template is used only as transport; visual Presentation rendering is not claimed.\"}"
+        "enableStreamCallbacks": false
       },
       "credentials": {
         "dingTalkCardApi": {
@@ -68,10 +68,9 @@
         "operation": "update",
         "inputMode": "form",
         "outTrackId": "={{ $('Create & Deliver').item.json.outTrackId }}",
-        "cardDataMode": "presentation",
-        "cardParameters": {},
-        "updateByKey": true,
-        "presentationDescriptor": "{\"version\":\"1\",\"family\":\"status\",\"title\":\"v0.4 Presentation Update acceptance\",\"summary\":\"Presentation Update reached the connected DingTalk Card API path.\",\"tone\":\"success\",\"state\":\"success\",\"details\":\"The next legacy streaming steps verify backward compatibility.\"}"
+        "cardDataMode": "a2ui",
+        "a2uiDescriptor": "{\"version\":\"1\",\"profile\":\"universal-v1\",\"title\":\"v0.6 A2UI Update acceptance\",\"summary\":\"A2UI Update reached the connected DingTalk Card API path.\",\"tone\":\"success\",\"blocks\":[{\"type\":\"text\",\"text\":\"The A2UI mapper produced the fixed universal-v1 variable contract.\"},{\"type\":\"keyValue\",\"label\":\"Phase\",\"value\":\"Update\"},{\"type\":\"list\",\"items\":[\"Create succeeded\",\"Update succeeded\",\"Legacy stream/finalize compatibility follows\"]}]}",
+        "updateByKey": true
       },
       "credentials": {
         "dingTalkCardApi": {
