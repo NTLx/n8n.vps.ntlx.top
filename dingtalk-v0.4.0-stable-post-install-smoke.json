@@ -1,0 +1,85 @@
+{
+  "id": "KcTFFHfWgWly7hpI",
+  "name": "DingTalk v0.4.0 stable post-install smoke",
+  "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-10-25T04:22:55.994Z",
+  "updatedAt": "2026-10-25T04:23:29.838Z",
+  "isArchived": true,
+  "versionId": "5bbe6189-e7d8-4ffd-879d-553d15900406",
+  "triggerCount": 0,
+  "nodes": [
+    {
+      "id": "4cc6c737-4e50-4667-984a-5c24a97d27d1",
+      "name": "Run stable smoke",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "079ae837-6063-4c32-887d-111aa1e7e3d7",
+      "name": "Deliver stable Presentation status",
+      "type": "n8n-nodes-dingtalk-card.dingTalkCard",
+      "typeVersion": 1,
+      "position": [
+        224,
+        0
+      ],
+      "parameters": {
+        "operation": "createAndDeliver",
+        "inputMode": "form",
+        "cardTemplateId": "3f687924-b306-49dd-8f5e-27d4a45d92a8.schema",
+        "cardDataMode": "presentation",
+        "presentationDescriptor": "{\"version\":\"1\",\"family\":\"status\",\"title\":\"v0.4.0 stable post-install smoke\",\"summary\":\"Stable package post-install smoke test using true Presentation mode.\",\"tone\":\"success\",\"state\":\"success\",\"details\":\"Production n8n loaded stable 0.4.0 and delivered this card without workflow-supplied flowStatus.\"}",
+        "target": "group",
+        "spaceId": "cidtGz0XVJxopM5nzYAHEz5Lw==",
+        "robotCode": ""
+      },
+      "credentials": {
+        "dingTalkCardApi": {
+          "id": "qYZQszWAxbIfLPnQ",
+          "name": "四有青年 DingTalk Card API"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Run stable smoke": {
+      "main": [
+        [
+          {
+            "node": "Deliver stable Presentation status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "KcTFFHfWgWly7hpI",
+      "projectId": "cNMj0K6AdJmi0OAZ",
+      "createdAt": "2026-10-25T04:22:55.994Z",
+      "updatedAt": "2026-10-25T04:22:55.994Z"
+    }
+  ],
+  "activeVersion": null
+}
