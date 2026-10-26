@@ -4,7 +4,7 @@
   "active": true,
   "activeVersionId": "bf8c8298-ef90-4b4c-b8ef-28d59e55c4dc",
   "createdAt": "2026-10-23T15:44:54.531Z",
-  "updatedAt": "2026-10-23T16:12:35.470Z",
+  "updatedAt": "2026-10-25T12:31:11.352Z",
   "isArchived": false,
   "versionId": "bf8c8298-ef90-4b4c-b8ef-28d59e55c4dc",
   "triggerCount": 1,
@@ -427,10 +427,10 @@
   },
   "tags": [
     {
-      "id": "twNsKNALbdWLw0Ox",
-      "name": "automation",
-      "createdAt": "2026-10-22T08:25:54.546Z",
-      "updatedAt": "2026-10-22T08:25:54.546Z"
+      "id": "9jw9Bhya2Ylf8E4D",
+      "name": "ai-work-producer",
+      "createdAt": "2026-10-22T09:14:35.367Z",
+      "updatedAt": "2026-10-22T09:14:35.367Z"
     },
     {
       "id": "BlGRvaSWqnmTk53i",
@@ -445,10 +445,10 @@
       "updatedAt": "2026-10-22T08:33:58.714Z"
     },
     {
-      "id": "9jw9Bhya2Ylf8E4D",
-      "name": "ai-work-producer",
-      "createdAt": "2026-10-22T09:14:35.367Z",
-      "updatedAt": "2026-10-22T09:14:35.367Z"
+      "id": "twNsKNALbdWLw0Ox",
+      "name": "automation",
+      "createdAt": "2026-10-22T08:25:54.546Z",
+      "updatedAt": "2026-10-22T08:25:54.546Z"
     },
     {
       "id": "Kmfi1DI0MjIRkwfZ",
