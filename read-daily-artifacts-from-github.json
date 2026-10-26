@@ -1,0 +1,1217 @@
+{
+  "id": "2UcyiDz9EReRagvC",
+  "name": "Read Daily artifacts from GitHub",
+  "active": true,
+  "activeVersionId": "ea289caf-34cc-4fc6-b792-4e09458905d5",
+  "createdAt": "2026-10-25T13:03:22.146Z",
+  "updatedAt": "2026-10-25T13:03:41.714Z",
+  "isArchived": false,
+  "versionId": "ea289caf-34cc-4fc6-b792-4e09458905d5",
+  "triggerCount": 2,
+  "nodes": [
+    {
+      "id": "bdfd31f0-548d-432f-8fcc-030a2abb28fe",
+      "name": "Read Daily artifact",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.2,
+      "position": [
+        0,
+        120
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "daily-artifacts-read",
+        "authentication": "headerAuth",
+        "responseMode": "responseNode"
+      },
+      "webhookId": "fb6a73c3-a54a-4138-8ec3-a0bb8bed50a3",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "RvmfH6qWSIUABPQO",
+          "name": "n8n Webhook（Bearer Auth）"
+        }
+      }
+    },
+    {
+      "id": "90e0cd0f-cba9-4170-9e4f-fbcf62c63110",
+      "name": "Validate read path",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.4,
+      "position": [
+        240,
+        120
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ (() => { const p = String($('Read Daily artifact').item.json.body?.path ?? ''); const roots = ['test/','rss/','github-trends/','email/','ai/','tech-intel/','n8n/']; return p && roots.some(r => p.startsWith(r)) && !p.includes('..') && !p.includes('\\\\') && (p.endsWith('.html') || p.endsWith('.json')) ? 'valid' : 'invalid'; })() }}",
+              "rightValue": "valid",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      }
+    },
+    {
+      "id": "8418e167-98aa-4e2a-8e04-5a8917ba5cef",
+      "name": "Get GitHub artifact",
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1.1,
+      "position": [
+        520,
+        40
+      ],
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "file",
+        "operation": "get",
+        "owner": {
+          "__rl": true,
+          "mode": "name",
+          "value": "NTLx"
+        },
+        "repository": {
+          "__rl": true,
+          "mode": "name",
+          "value": "daily-artifacts"
+        },
+        "filePath": "={{ $('Read Daily artifact').item.json.body.path }}",
+        "asBinaryProperty": true,
+        "binaryPropertyName": "data"
+      },
+      "credentials": {
+        "githubOAuth2Api": {
+          "id": "stt7O3UtIsjdKCqg",
+          "name": "NTLx"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "onError": "continueErrorOutput",
+      "webhookId": "689b109d-eb85-4683-8c5b-6835cd869e18"
+    },
+    {
+      "id": "4b604a2d-d155-4bff-a8d5-3617cf1fca34",
+      "name": "Extract artifact text",
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.2,
+      "position": [
+        760,
+        40
+      ],
+      "parameters": {
+        "operation": "text",
+        "destinationKey": "content"
+      }
+    },
+    {
+      "id": "7cb3ed54-dca1-4e47-8582-b45b4b01026f",
+      "name": "Shape artifact response",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        1000,
+        40
+      ],
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ok",
+              "name": "ok",
+              "value": "={{ true }}",
+              "type": "boolean"
+            },
+            {
+              "id": "repo",
+              "name": "repository",
+              "value": "NTLx/daily-artifacts",
+              "type": "string"
+            },
+            {
+              "id": "path",
+              "name": "path",
+              "value": "={{ $('Read Daily artifact').item.json.body.path }}",
+              "type": "string"
+            },
+            {
+              "id": "name",
+              "name": "name",
+              "value": "={{ $('Get GitHub artifact').item.json.name ?? '' }}",
+              "type": "string"
+            },
+            {
+              "id": "sha",
+              "name": "sha",
+              "value": "={{ $('Get GitHub artifact').item.json.sha ?? '' }}",
+              "type": "string"
+            },
+            {
+              "id": "size",
+              "name": "size",
+              "value": "={{ $('Get GitHub artifact').item.json.size ?? 0 }}",
+              "type": "number"
+            },
+            {
+              "id": "html",
+              "name": "html_url",
+              "value": "={{ $('Get GitHub artifact').item.json.html_url ?? '' }}",
+              "type": "string"
+            },
+            {
+              "id": "content",
+              "name": "content",
+              "value": "={{ $('Extract artifact text').item.json.content ?? '' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": false
+      }
+    },
+    {
+      "id": "9ac454ec-8783-4c24-bd60-9c8a5c4c704f",
+      "name": "Return artifact",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1240,
+        40
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $('Shape artifact response').item.json }}",
+        "options": {
+          "responseCode": 200
+        }
+      }
+    },
+    {
+      "id": "6c7ac1ec-b3ce-4781-ab18-e096b9db145c",
+      "name": "Reject invalid read path",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        520,
+        220
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { ok: false, error: 'validation_error', message: 'Expected a .html or .json path under test/, rss/, github-trends/, email/, ai/, tech-intel/, or n8n/.' } }}",
+        "options": {
+          "responseCode": 400
+        }
+      }
+    },
+    {
+      "id": "fa40af01-8bc1-4e97-a504-1c0d433898a1",
+      "name": "Return GitHub read error",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        760,
+        220
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { ok: false, error: 'github_upstream_error', message: 'GitHub read failed; inspect the n8n execution for details.', path: $('Read Daily artifact').item.json.body?.path ?? null } }}",
+        "options": {
+          "responseCode": 502
+        }
+      }
+    },
+    {
+      "id": "6fec8e26-c558-49cb-8bab-b617ede9d1fe",
+      "name": "List Daily artifacts",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.2,
+      "position": [
+        0,
+        500
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "daily-artifacts-list",
+        "authentication": "headerAuth",
+        "responseMode": "responseNode"
+      },
+      "webhookId": "3d08a418-eb90-4b04-bcfc-79bbadddc3fc",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "RvmfH6qWSIUABPQO",
+          "name": "n8n Webhook（Bearer Auth）"
+        }
+      }
+    },
+    {
+      "id": "07d615c7-958f-491d-aa13-082e398859de",
+      "name": "Validate list path",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.4,
+      "position": [
+        240,
+        500
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ (() => { const p = String($('List Daily artifacts').item.json.body?.path ?? ''); const roots = ['test','rss','github-trends','email','ai','tech-intel','n8n']; return p && roots.some(r => p === r || p.startsWith(r + '/')) && !p.includes('..') && !p.includes('\\\\') ? 'valid' : 'invalid'; })() }}",
+              "rightValue": "valid",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      }
+    },
+    {
+      "id": "e3e655df-bec4-4657-8527-524edc2e6b21",
+      "name": "List GitHub folder",
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1.1,
+      "position": [
+        520,
+        420
+      ],
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "file",
+        "operation": "list",
+        "owner": {
+          "__rl": true,
+          "mode": "name",
+          "value": "NTLx"
+        },
+        "repository": {
+          "__rl": true,
+          "mode": "name",
+          "value": "daily-artifacts"
+        },
+        "filePath": "={{ $('List Daily artifacts').item.json.body.path }}"
+      },
+      "credentials": {
+        "githubOAuth2Api": {
+          "id": "stt7O3UtIsjdKCqg",
+          "name": "NTLx"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "alwaysOutputData": true,
+      "onError": "continueErrorOutput",
+      "webhookId": "e774815c-cc79-4352-b869-3fb9e80a869b"
+    },
+    {
+      "id": "bb3844cf-713d-4743-8660-22b945df238a",
+      "name": "Shape folder listing",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        760,
+        420
+      ],
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ok",
+              "name": "ok",
+              "value": "={{ true }}",
+              "type": "boolean"
+            },
+            {
+              "id": "repo",
+              "name": "repository",
+              "value": "NTLx/daily-artifacts",
+              "type": "string"
+            },
+            {
+              "id": "path",
+              "name": "path",
+              "value": "={{ $('List Daily artifacts').item.json.body.path }}",
+              "type": "string"
+            },
+            {
+              "id": "count",
+              "name": "count",
+              "value": "={{ $('List GitHub folder').all().filter(item => item.json.path).length }}",
+              "type": "number"
+            },
+            {
+              "id": "items",
+              "name": "items",
+              "value": "={{ $('List GitHub folder').all().filter(item => item.json.path).map(item => ({ name: item.json.name, path: item.json.path, type: item.json.type, size: item.json.size, sha: item.json.sha, html_url: item.json.html_url })) }}",
+              "type": "array"
+            }
+          ]
+        },
+        "includeOtherFields": false
+      },
+      "executeOnce": true
+    },
+    {
+      "id": "ba1b2164-69d4-49de-83cd-8c90dce6c9a8",
+      "name": "Return listing",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1000,
+        420
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $('Shape folder listing').item.json }}",
+        "options": {
+          "responseCode": 200
+        }
+      }
+    },
+    {
+      "id": "9be902ab-bd58-4c39-ab0d-b8f4dbc9617d",
+      "name": "Reject invalid list path",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        520,
+        600
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { ok: false, error: 'validation_error', message: 'Expected a folder path under test, rss, github-trends, email, ai, tech-intel, or n8n.' } }}",
+        "options": {
+          "responseCode": 400
+        }
+      }
+    },
+    {
+      "id": "e024284d-c0b6-41a9-a2c4-bb65b071cdfd",
+      "name": "Return GitHub list error",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        760,
+        600
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { ok: false, error: 'github_upstream_error', message: 'GitHub folder listing failed; inspect the n8n execution for details.', path: $('List Daily artifacts').item.json.body?.path ?? null } }}",
+        "options": {
+          "responseCode": 502
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Read Daily artifact": {
+      "main": [
+        [
+          {
+            "node": "Validate read path",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate read path": {
+      "main": [
+        [
+          {
+            "node": "Get GitHub artifact",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Reject invalid read path",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get GitHub artifact": {
+      "main": [
+        [
+          {
+            "node": "Extract artifact text",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Return GitHub read error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract artifact text": {
+      "main": [
+        [
+          {
+            "node": "Shape artifact response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Shape artifact response": {
+      "main": [
+        [
+          {
+            "node": "Return artifact",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "List Daily artifacts": {
+      "main": [
+        [
+          {
+            "node": "Validate list path",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate list path": {
+      "main": [
+        [
+          {
+            "node": "List GitHub folder",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Reject invalid list path",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "List GitHub folder": {
+      "main": [
+        [
+          {
+            "node": "Shape folder listing",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Return GitHub list error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Shape folder listing": {
+      "main": [
+        [
+          {
+            "node": "Return listing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [
+    {
+      "id": "3f3c6898-e5d7-4de6-957c-5443fdc11829",
+      "name": "Read artifact",
+      "nodeIds": [
+        "90e0cd0f-cba9-4170-9e4f-fbcf62c63110",
+        "8418e167-98aa-4e2a-8e04-5a8917ba5cef",
+        "4b604a2d-d155-4bff-a8d5-3617cf1fca34",
+        "7cb3ed54-dca1-4e47-8582-b45b4b01026f",
+        "9ac454ec-8783-4c24-bd60-9c8a5c4c704f",
+        "6c7ac1ec-b3ce-4781-ab18-e096b9db145c",
+        "fa40af01-8bc1-4e97-a504-1c0d433898a1"
+      ],
+      "description": "Validate a controlled artifact path, fetch it from private GitHub, decode UTF-8 text, and return a structured read-only response."
+    },
+    {
+      "id": "b7b85b09-4dd2-4fc1-ae53-fc9565272dcc",
+      "name": "List artifacts",
+      "nodeIds": [
+        "07d615c7-958f-491d-aa13-082e398859de",
+        "e3e655df-bec4-4657-8527-524edc2e6b21",
+        "bb3844cf-713d-4743-8660-22b945df238a",
+        "ba1b2164-69d4-49de-83cd-8c90dce6c9a8",
+        "9be902ab-bd58-4c39-ab0d-b8f4dbc9617d",
+        "e024284d-c0b6-41a9-a2c4-bb65b071cdfd"
+      ],
+      "description": "Validate a controlled folder path, list private GitHub contents, and return a structured read-only directory response."
+    }
+  ],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true,
+    "errorWorkflow": "3LE3BnPfHSuIZCVR",
+    "timezone": "Asia/Shanghai",
+    "saveManualExecutions": true,
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all"
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [
+    {
+      "id": "ZB1OFuryVXrNRjEy",
+      "name": "github",
+      "createdAt": "2026-10-23T02:30:52.063Z",
+      "updatedAt": "2026-10-23T02:30:52.063Z"
+    },
+    {
+      "id": "twNsKNALbdWLw0Ox",
+      "name": "automation",
+      "createdAt": "2026-10-22T08:25:54.546Z",
+      "updatedAt": "2026-10-22T08:25:54.546Z"
+    },
+    {
+      "id": "j2GRa6L6FW78gTO3",
+      "name": "daily-artifact",
+      "createdAt": "2026-10-23T02:30:52.072Z",
+      "updatedAt": "2026-10-23T02:30:52.072Z"
+    }
+  ],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "2UcyiDz9EReRagvC",
+      "projectId": "cNMj0K6AdJmi0OAZ",
+      "createdAt": "2026-10-25T13:03:22.146Z",
+      "updatedAt": "2026-10-25T13:03:22.146Z"
+    }
+  ],
+  "activeVersion": {
+    "versionId": "ea289caf-34cc-4fc6-b792-4e09458905d5",
+    "workflowId": "2UcyiDz9EReRagvC",
+    "nodes": [
+      {
+        "id": "bdfd31f0-548d-432f-8fcc-030a2abb28fe",
+        "name": "Read Daily artifact",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.2,
+        "position": [
+          0,
+          120
+        ],
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "daily-artifacts-read",
+          "authentication": "headerAuth",
+          "responseMode": "responseNode"
+        },
+        "webhookId": "fb6a73c3-a54a-4138-8ec3-a0bb8bed50a3",
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "RvmfH6qWSIUABPQO",
+            "name": "n8n Webhook（Bearer Auth）"
+          }
+        }
+      },
+      {
+        "id": "90e0cd0f-cba9-4170-9e4f-fbcf62c63110",
+        "name": "Validate read path",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.4,
+        "position": [
+          240,
+          120
+        ],
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 2
+            },
+            "conditions": [
+              {
+                "leftValue": "={{ (() => { const p = String($('Read Daily artifact').item.json.body?.path ?? ''); const roots = ['test/','rss/','github-trends/','email/','ai/','tech-intel/','n8n/']; return p && roots.some(r => p.startsWith(r)) && !p.includes('..') && !p.includes('\\\\') && (p.endsWith('.html') || p.endsWith('.json')) ? 'valid' : 'invalid'; })() }}",
+                "rightValue": "valid",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals"
+                }
+              }
+            ],
+            "combinator": "and"
+          }
+        }
+      },
+      {
+        "id": "8418e167-98aa-4e2a-8e04-5a8917ba5cef",
+        "name": "Get GitHub artifact",
+        "type": "n8n-nodes-base.github",
+        "typeVersion": 1.1,
+        "position": [
+          520,
+          40
+        ],
+        "parameters": {
+          "authentication": "oAuth2",
+          "resource": "file",
+          "operation": "get",
+          "owner": {
+            "__rl": true,
+            "mode": "name",
+            "value": "NTLx"
+          },
+          "repository": {
+            "__rl": true,
+            "mode": "name",
+            "value": "daily-artifacts"
+          },
+          "filePath": "={{ $('Read Daily artifact').item.json.body.path }}",
+          "asBinaryProperty": true,
+          "binaryPropertyName": "data"
+        },
+        "credentials": {
+          "githubOAuth2Api": {
+            "id": "stt7O3UtIsjdKCqg",
+            "name": "NTLx"
+          }
+        },
+        "retryOnFail": true,
+        "maxTries": 3,
+        "waitBetweenTries": 5000,
+        "onError": "continueErrorOutput",
+        "webhookId": "689b109d-eb85-4683-8c5b-6835cd869e18"
+      },
+      {
+        "id": "4b604a2d-d155-4bff-a8d5-3617cf1fca34",
+        "name": "Extract artifact text",
+        "type": "n8n-nodes-base.extractFromFile",
+        "typeVersion": 1.2,
+        "position": [
+          760,
+          40
+        ],
+        "parameters": {
+          "operation": "text",
+          "destinationKey": "content"
+        }
+      },
+      {
+        "id": "7cb3ed54-dca1-4e47-8582-b45b4b01026f",
+        "name": "Shape artifact response",
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.5,
+        "position": [
+          1000,
+          40
+        ],
+        "parameters": {
+          "mode": "manual",
+          "assignments": {
+            "assignments": [
+              {
+                "id": "ok",
+                "name": "ok",
+                "value": "={{ true }}",
+                "type": "boolean"
+              },
+              {
+                "id": "repo",
+                "name": "repository",
+                "value": "NTLx/daily-artifacts",
+                "type": "string"
+              },
+              {
+                "id": "path",
+                "name": "path",
+                "value": "={{ $('Read Daily artifact').item.json.body.path }}",
+                "type": "string"
+              },
+              {
+                "id": "name",
+                "name": "name",
+                "value": "={{ $('Get GitHub artifact').item.json.name ?? '' }}",
+                "type": "string"
+              },
+              {
+                "id": "sha",
+                "name": "sha",
+                "value": "={{ $('Get GitHub artifact').item.json.sha ?? '' }}",
+                "type": "string"
+              },
+              {
+                "id": "size",
+                "name": "size",
+                "value": "={{ $('Get GitHub artifact').item.json.size ?? 0 }}",
+                "type": "number"
+              },
+              {
+                "id": "html",
+                "name": "html_url",
+                "value": "={{ $('Get GitHub artifact').item.json.html_url ?? '' }}",
+                "type": "string"
+              },
+              {
+                "id": "content",
+                "name": "content",
+                "value": "={{ $('Extract artifact text').item.json.content ?? '' }}",
+                "type": "string"
+              }
+            ]
+          },
+          "includeOtherFields": false
+        }
+      },
+      {
+        "id": "9ac454ec-8783-4c24-bd60-9c8a5c4c704f",
+        "name": "Return artifact",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.5,
+        "position": [
+          1240,
+          40
+        ],
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ $('Shape artifact response').item.json }}",
+          "options": {
+            "responseCode": 200
+          }
+        }
+      },
+      {
+        "id": "6c7ac1ec-b3ce-4781-ab18-e096b9db145c",
+        "name": "Reject invalid read path",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.5,
+        "position": [
+          520,
+          220
+        ],
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ { ok: false, error: 'validation_error', message: 'Expected a .html or .json path under test/, rss/, github-trends/, email/, ai/, tech-intel/, or n8n/.' } }}",
+          "options": {
+            "responseCode": 400
+          }
+        }
+      },
+      {
+        "id": "fa40af01-8bc1-4e97-a504-1c0d433898a1",
+        "name": "Return GitHub read error",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.5,
+        "position": [
+          760,
+          220
+        ],
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ { ok: false, error: 'github_upstream_error', message: 'GitHub read failed; inspect the n8n execution for details.', path: $('Read Daily artifact').item.json.body?.path ?? null } }}",
+          "options": {
+            "responseCode": 502
+          }
+        }
+      },
+      {
+        "id": "6fec8e26-c558-49cb-8bab-b617ede9d1fe",
+        "name": "List Daily artifacts",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.2,
+        "position": [
+          0,
+          500
+        ],
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "daily-artifacts-list",
+          "authentication": "headerAuth",
+          "responseMode": "responseNode"
+        },
+        "webhookId": "3d08a418-eb90-4b04-bcfc-79bbadddc3fc",
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "RvmfH6qWSIUABPQO",
+            "name": "n8n Webhook（Bearer Auth）"
+          }
+        }
+      },
+      {
+        "id": "07d615c7-958f-491d-aa13-082e398859de",
+        "name": "Validate list path",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.4,
+        "position": [
+          240,
+          500
+        ],
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 2
+            },
+            "conditions": [
+              {
+                "leftValue": "={{ (() => { const p = String($('List Daily artifacts').item.json.body?.path ?? ''); const roots = ['test','rss','github-trends','email','ai','tech-intel','n8n']; return p && roots.some(r => p === r || p.startsWith(r + '/')) && !p.includes('..') && !p.includes('\\\\') ? 'valid' : 'invalid'; })() }}",
+                "rightValue": "valid",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals"
+                }
+              }
+            ],
+            "combinator": "and"
+          }
+        }
+      },
+      {
+        "id": "e3e655df-bec4-4657-8527-524edc2e6b21",
+        "name": "List GitHub folder",
+        "type": "n8n-nodes-base.github",
+        "typeVersion": 1.1,
+        "position": [
+          520,
+          420
+        ],
+        "parameters": {
+          "authentication": "oAuth2",
+          "resource": "file",
+          "operation": "list",
+          "owner": {
+            "__rl": true,
+            "mode": "name",
+            "value": "NTLx"
+          },
+          "repository": {
+            "__rl": true,
+            "mode": "name",
+            "value": "daily-artifacts"
+          },
+          "filePath": "={{ $('List Daily artifacts').item.json.body.path }}"
+        },
+        "credentials": {
+          "githubOAuth2Api": {
+            "id": "stt7O3UtIsjdKCqg",
+            "name": "NTLx"
+          }
+        },
+        "retryOnFail": true,
+        "maxTries": 3,
+        "waitBetweenTries": 5000,
+        "alwaysOutputData": true,
+        "onError": "continueErrorOutput",
+        "webhookId": "e774815c-cc79-4352-b869-3fb9e80a869b"
+      },
+      {
+        "id": "bb3844cf-713d-4743-8660-22b945df238a",
+        "name": "Shape folder listing",
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.5,
+        "position": [
+          760,
+          420
+        ],
+        "parameters": {
+          "mode": "manual",
+          "assignments": {
+            "assignments": [
+              {
+                "id": "ok",
+                "name": "ok",
+                "value": "={{ true }}",
+                "type": "boolean"
+              },
+              {
+                "id": "repo",
+                "name": "repository",
+                "value": "NTLx/daily-artifacts",
+                "type": "string"
+              },
+              {
+                "id": "path",
+                "name": "path",
+                "value": "={{ $('List Daily artifacts').item.json.body.path }}",
+                "type": "string"
+              },
+              {
+                "id": "count",
+                "name": "count",
+                "value": "={{ $('List GitHub folder').all().filter(item => item.json.path).length }}",
+                "type": "number"
+              },
+              {
+                "id": "items",
+                "name": "items",
+                "value": "={{ $('List GitHub folder').all().filter(item => item.json.path).map(item => ({ name: item.json.name, path: item.json.path, type: item.json.type, size: item.json.size, sha: item.json.sha, html_url: item.json.html_url })) }}",
+                "type": "array"
+              }
+            ]
+          },
+          "includeOtherFields": false
+        },
+        "executeOnce": true
+      },
+      {
+        "id": "ba1b2164-69d4-49de-83cd-8c90dce6c9a8",
+        "name": "Return listing",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.5,
+        "position": [
+          1000,
+          420
+        ],
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ $('Shape folder listing').item.json }}",
+          "options": {
+            "responseCode": 200
+          }
+        }
+      },
+      {
+        "id": "9be902ab-bd58-4c39-ab0d-b8f4dbc9617d",
+        "name": "Reject invalid list path",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.5,
+        "position": [
+          520,
+          600
+        ],
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ { ok: false, error: 'validation_error', message: 'Expected a folder path under test, rss, github-trends, email, ai, tech-intel, or n8n.' } }}",
+          "options": {
+            "responseCode": 400
+          }
+        }
+      },
+      {
+        "id": "e024284d-c0b6-41a9-a2c4-bb65b071cdfd",
+        "name": "Return GitHub list error",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.5,
+        "position": [
+          760,
+          600
+        ],
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ { ok: false, error: 'github_upstream_error', message: 'GitHub folder listing failed; inspect the n8n execution for details.', path: $('List Daily artifacts').item.json.body?.path ?? null } }}",
+          "options": {
+            "responseCode": 502
+          }
+        }
+      }
+    ],
+    "connections": {
+      "Read Daily artifact": {
+        "main": [
+          [
+            {
+              "node": "Validate read path",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Validate read path": {
+        "main": [
+          [
+            {
+              "node": "Get GitHub artifact",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Reject invalid read path",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get GitHub artifact": {
+        "main": [
+          [
+            {
+              "node": "Extract artifact text",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Return GitHub read error",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Extract artifact text": {
+        "main": [
+          [
+            {
+              "node": "Shape artifact response",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Shape artifact response": {
+        "main": [
+          [
+            {
+              "node": "Return artifact",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "List Daily artifacts": {
+        "main": [
+          [
+            {
+              "node": "Validate list path",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Validate list path": {
+        "main": [
+          [
+            {
+              "node": "List GitHub folder",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Reject invalid list path",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "List GitHub folder": {
+        "main": [
+          [
+            {
+              "node": "Shape folder listing",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Return GitHub list error",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Shape folder listing": {
+        "main": [
+          [
+            {
+              "node": "Return listing",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "nodeGroups": [
+      {
+        "id": "3f3c6898-e5d7-4de6-957c-5443fdc11829",
+        "name": "Read artifact",
+        "nodeIds": [
+          "90e0cd0f-cba9-4170-9e4f-fbcf62c63110",
+          "8418e167-98aa-4e2a-8e04-5a8917ba5cef",
+          "4b604a2d-d155-4bff-a8d5-3617cf1fca34",
+          "7cb3ed54-dca1-4e47-8582-b45b4b01026f",
+          "9ac454ec-8783-4c24-bd60-9c8a5c4c704f",
+          "6c7ac1ec-b3ce-4781-ab18-e096b9db145c",
+          "fa40af01-8bc1-4e97-a504-1c0d433898a1"
+        ],
+        "description": "Validate a controlled artifact path, fetch it from private GitHub, decode UTF-8 text, and return a structured read-only response."
+      },
+      {
+        "id": "b7b85b09-4dd2-4fc1-ae53-fc9565272dcc",
+        "name": "List artifacts",
+        "nodeIds": [
+          "07d615c7-958f-491d-aa13-082e398859de",
+          "e3e655df-bec4-4657-8527-524edc2e6b21",
+          "bb3844cf-713d-4743-8660-22b945df238a",
+          "ba1b2164-69d4-49de-83cd-8c90dce6c9a8",
+          "9be902ab-bd58-4c39-ab0d-b8f4dbc9617d",
+          "e024284d-c0b6-41a9-a2c4-bb65b071cdfd"
+        ],
+        "description": "Validate a controlled folder path, list private GitHub contents, and return a structured read-only directory response."
+      }
+    ],
+    "authors": "Administrator NTLx (via MCP)",
+    "name": "Add production safeguards",
+    "description": "Adds the shared error workflow, Asia/Shanghai timezone, execution retention, tags, and node groups for the read/list API.",
+    "autosaved": false,
+    "createdAt": "2026-10-25T13:03:41.718Z",
+    "updatedAt": "2026-10-25T13:03:41.718Z"
+  }
+}
