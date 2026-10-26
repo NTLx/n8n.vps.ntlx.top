@@ -1,0 +1,84 @@
+{
+  "id": "HblYdsNj2Ob4UqeE",
+  "name": "DingTalk v0.9 Community Package Gate",
+  "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-10-25T10:40:02.049Z",
+  "updatedAt": "2026-10-25T10:40:02.049Z",
+  "isArchived": false,
+  "versionId": "8adbdd28-be20-4729-90cd-dbd8cd5023b0",
+  "triggerCount": 0,
+  "nodes": [
+    {
+      "id": "1dd84151-4f82-488b-bec5-4df0f680ef78",
+      "name": "Start",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "6cb9aea5-ef5d-4bcd-aae1-a4c8a4533205",
+      "name": "List community packages",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        224,
+        0
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "https://n8n.vps.ntlx.top/api/v1/community-packages",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "n8nApi",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "credentials": {
+        "n8nApi": {
+          "id": "ZWhmVjb2nWJVoRkD",
+          "name": "self"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "List community packages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "HblYdsNj2Ob4UqeE",
+      "projectId": "cNMj0K6AdJmi0OAZ",
+      "createdAt": "2026-10-25T10:40:02.049Z",
+      "updatedAt": "2026-10-25T10:40:02.049Z"
+    }
+  ],
+  "activeVersion": null
+}
