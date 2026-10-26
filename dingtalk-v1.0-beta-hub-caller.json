@@ -1,0 +1,522 @@
+{
+  "id": "kTWdXiXKwJ0foAou",
+  "name": "DingTalk v1.0 Beta Hub Caller",
+  "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-10-25T13:15:50.298Z",
+  "updatedAt": "2026-10-25T13:15:50.298Z",
+  "isArchived": false,
+  "versionId": "0148930d-133a-40b7-8386-c602a89550e3",
+  "triggerCount": 0,
+  "nodes": [
+    {
+      "id": "ece8104b-8ec9-48ec-95d9-662157a204e9",
+      "name": "Start",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "a6232910-55e8-43ab-afea-eb0ffbb3c9ce",
+      "name": "Notification create",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.4,
+      "position": [
+        280,
+        -140
+      ],
+      "parameters": {
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "Pyh5wvWV1I9g2BEZ"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "title": "v1.0 beta Notification Hub",
+            "summary": "Connected-instance reusable Notification Hub Create gate.",
+            "content": "Typed sub-workflow input → deterministic create route → A2UI universal-v1 card.",
+            "status": "create passed",
+            "operation": "create",
+            "cardTemplateId": "ff4f49b1-384b-4b4a-b9f3-98379959f923.schema",
+            "spaceId": "cidtGz0XVJxopM5nzYAHEz5Lw==",
+            "outTrackId": "v1beta-notification-20261025"
+          },
+          "schema": [
+            {
+              "id": "title",
+              "displayName": "title",
+              "type": "string",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "summary",
+              "displayName": "summary",
+              "type": "string",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "content",
+              "displayName": "content",
+              "type": "string",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "type": "string",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "operation",
+              "displayName": "operation",
+              "type": "string",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "cardTemplateId",
+              "displayName": "cardTemplateId",
+              "type": "string",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "spaceId",
+              "displayName": "spaceId",
+              "type": "string",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "outTrackId",
+              "displayName": "outTrackId",
+              "type": "string",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "mode": "once",
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      }
+    },
+    {
+      "id": "278a2938-ec7a-4eaa-bb04-bc1789eb836e",
+      "name": "Notification update",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.4,
+      "position": [
+        560,
+        -140
+      ],
+      "parameters": {
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "Pyh5wvWV1I9g2BEZ"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "title": "✅ v1.0 beta Notification Hub passed",
+            "summary": "Create and replacement Update both completed through the reusable Hub contract.",
+            "content": "The hub accepted typed inputs, selected the update allowlist branch, and replaced the same card via A2UI.",
+            "status": "update passed",
+            "operation": "update",
+            "cardTemplateId": "ff4f49b1-384b-4b4a-b9f3-98379959f923.schema",
+            "spaceId": "cidtGz0XVJxopM5nzYAHEz5Lw==",
+            "outTrackId": "v1beta-notification-20261025"
+          },
+          "schema": [
+            {
+              "id": "title",
+              "displayName": "title",
+              "type": "string",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "summary",
+              "displayName": "summary",
+              "type": "string",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "content",
+              "displayName": "content",
+              "type": "string",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "type": "string",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "operation",
+              "displayName": "operation",
+              "type": "string",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "cardTemplateId",
+              "displayName": "cardTemplateId",
+              "type": "string",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "spaceId",
+              "displayName": "spaceId",
+              "type": "string",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "outTrackId",
+              "displayName": "outTrackId",
+              "type": "string",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "mode": "once",
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      }
+    },
+    {
+      "id": "abf39be3-5f76-405a-87c8-51cdcd17625e",
+      "name": "Report create",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.4,
+      "position": [
+        280,
+        140
+      ],
+      "parameters": {
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "0FkqOCLiVQrCj06s"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "title": "v1.0 beta Report Hub",
+            "summary": "Connected-instance reusable Report Hub Create gate.",
+            "highlights": "Typed input and concise report summary reached the universal-v1 presentation path.",
+            "detailText": "Long-form details remain outside the card; this field is deliberately plain text.",
+            "operation": "create",
+            "cardTemplateId": "ff4f49b1-384b-4b4a-b9f3-98379959f923.schema",
+            "spaceId": "cidtGz0XVJxopM5nzYAHEz5Lw==",
+            "outTrackId": "v1beta-report-20261025"
+          },
+          "schema": [
+            {
+              "id": "title",
+              "displayName": "title",
+              "type": "string",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "summary",
+              "displayName": "summary",
+              "type": "string",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "highlights",
+              "displayName": "highlights",
+              "type": "string",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "detailText",
+              "displayName": "detailText",
+              "type": "string",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "operation",
+              "displayName": "operation",
+              "type": "string",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "cardTemplateId",
+              "displayName": "cardTemplateId",
+              "type": "string",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "spaceId",
+              "displayName": "spaceId",
+              "type": "string",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "outTrackId",
+              "displayName": "outTrackId",
+              "type": "string",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "mode": "once",
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      }
+    },
+    {
+      "id": "50b1cff9-4ef2-4e5c-9576-57530419ecca",
+      "name": "Report update",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.4,
+      "position": [
+        560,
+        140
+      ],
+      "parameters": {
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "0FkqOCLiVQrCj06s"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "title": "✅ v1.0 beta Report Hub passed",
+            "summary": "Create and replacement Update both completed through the reusable Hub contract.",
+            "highlights": "The report asset imported and executed as a typed sub-workflow without an LLM.",
+            "detailText": "Report cards stay concise; detailed content remains an external/access-controlled concern.",
+            "operation": "update",
+            "cardTemplateId": "ff4f49b1-384b-4b4a-b9f3-98379959f923.schema",
+            "spaceId": "cidtGz0XVJxopM5nzYAHEz5Lw==",
+            "outTrackId": "v1beta-report-20261025"
+          },
+          "schema": [
+            {
+              "id": "title",
+              "displayName": "title",
+              "type": "string",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "summary",
+              "displayName": "summary",
+              "type": "string",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "highlights",
+              "displayName": "highlights",
+              "type": "string",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "detailText",
+              "displayName": "detailText",
+              "type": "string",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "operation",
+              "displayName": "operation",
+              "type": "string",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "cardTemplateId",
+              "displayName": "cardTemplateId",
+              "type": "string",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "spaceId",
+              "displayName": "spaceId",
+              "type": "string",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "outTrackId",
+              "displayName": "outTrackId",
+              "type": "string",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "mode": "once",
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "Notification create",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Report create",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notification create": {
+      "main": [
+        [
+          {
+            "node": "Notification update",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Report create": {
+      "main": [
+        [
+          {
+            "node": "Report update",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "kTWdXiXKwJ0foAou",
+      "projectId": "cNMj0K6AdJmi0OAZ",
+      "createdAt": "2026-10-25T13:15:50.298Z",
+      "updatedAt": "2026-10-25T13:15:50.298Z"
+    }
+  ],
+  "activeVersion": null
+}
