@@ -4,9 +4,9 @@
   "active": false,
   "activeVersionId": null,
   "createdAt": "2026-10-24T10:03:26.796Z",
-  "updatedAt": "2026-10-25T05:52:10.236Z",
+  "updatedAt": "2026-10-26T07:16:48.699Z",
   "isArchived": false,
-  "versionId": "462c469e-3d11-4e8e-8694-9466878d725d",
+  "versionId": "5f1ebbb3-2a72-4865-aaf0-6110d35acb0c",
   "triggerCount": 0,
   "nodes": [
     {
@@ -39,7 +39,7 @@
       "parameters": {
         "operation": "createAndDeliver",
         "inputMode": "form",
-        "cardTemplateId": "={{ $json.body.cardTemplateId }}",
+        "cardTemplateId": "ff4f49b1-384b-4b4a-b9f3-98379959f923.schema",
         "cardDataMode": "a2ui",
         "a2uiDescriptor": "{\"version\":\"1\",\"profile\":\"universal-v1\",\"title\":\"v0.6 A2UI Create acceptance\",\"summary\":\"Connected-instance A2UI transport and lifecycle compatibility check.\",\"tone\":\"info\",\"blocks\":[{\"type\":\"text\",\"text\":\"A2UI descriptor reached the production DingTalk Card transport path.\"},{\"type\":\"keyValue\",\"label\":\"Phase\",\"value\":\"Create\"},{\"type\":\"list\",\"items\":[\"Schema loaded\",\"Mapper accepted\",\"No action in this transport gate\"]}]}",
         "target": "group",
