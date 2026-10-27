@@ -2,11 +2,11 @@
   "id": "3LE3BnPfHSuIZCVR",
   "name": "Error Notification",
   "active": true,
-  "activeVersionId": "e38338e4-b5d0-4583-90aa-6d15344a9ff3",
+  "activeVersionId": "2e0a9c10-9c7e-4663-aff1-49aa84e6de90",
   "createdAt": "2026-02-12T08:00:08.087Z",
-  "updatedAt": "2026-10-23T16:17:40.171Z",
+  "updatedAt": "2026-10-26T08:01:26.907Z",
   "isArchived": false,
-  "versionId": "e38338e4-b5d0-4583-90aa-6d15344a9ff3",
+  "versionId": "2e0a9c10-9c7e-4663-aff1-49aa84e6de90",
   "triggerCount": 0,
   "nodes": [
     {
@@ -468,6 +468,114 @@
       "retryOnFail": true,
       "maxTries": 3,
       "waitBetweenTries": 5000
+    },
+    {
+      "id": "139ef4db-a853-4780-9949-3a5fc983016a",
+      "name": "Discord Error Alert",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.4,
+      "position": [
+        704,
+        144
+      ],
+      "parameters": {
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "Gu9lvE61vyyJf2xm"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "channel": "status",
+            "title": "={{ 'n8n · ' + ($json.workflow_name || 'Unknown workflow') + ' 运行失败' }}",
+            "summary": "={{ String($json.error_message || 'No message') }}",
+            "tone": "error",
+            "source": "n8n",
+            "kind": "workflow_error",
+            "url": "={{ String($json.execution_url || '') }}",
+            "metrics": "={{ [{ label: 'Workflow', value: String($json.workflow_name || 'Unknown'), inline: true }, { label: 'Node', value: String($json.error_node || 'Unknown'), inline: true }, { label: 'HTTP', value: String($json.http_code || '-'), inline: true }, { label: 'Mode', value: String($json.execution_mode || '-'), inline: true }, { label: 'Error', value: String($json.error_name || 'Error'), inline: false }] }}",
+            "sections": "={{ [{ title: '错误详情', markdown: String($json.error_message || 'No message').slice(0, 1800) }, { title: 'Execution', markdown: '`' + String($json.execution_id || '-') + '`' }] }}",
+            "footer": "n8n Error Notification",
+            "timestamp": "={{ $now.toISO() }}",
+            "imageUrl": "",
+            "thumbnailUrl": ""
+          },
+          "schema": [
+            {
+              "id": "channel",
+              "displayName": "channel",
+              "type": "string"
+            },
+            {
+              "id": "title",
+              "displayName": "title",
+              "type": "string"
+            },
+            {
+              "id": "summary",
+              "displayName": "summary",
+              "type": "string"
+            },
+            {
+              "id": "tone",
+              "displayName": "tone",
+              "type": "string"
+            },
+            {
+              "id": "source",
+              "displayName": "source",
+              "type": "string"
+            },
+            {
+              "id": "kind",
+              "displayName": "kind",
+              "type": "string"
+            },
+            {
+              "id": "url",
+              "displayName": "url",
+              "type": "string"
+            },
+            {
+              "id": "metrics",
+              "displayName": "metrics",
+              "type": "array"
+            },
+            {
+              "id": "sections",
+              "displayName": "sections",
+              "type": "array"
+            },
+            {
+              "id": "footer",
+              "displayName": "footer",
+              "type": "string"
+            },
+            {
+              "id": "timestamp",
+              "displayName": "timestamp",
+              "type": "string"
+            },
+            {
+              "id": "imageUrl",
+              "displayName": "imageUrl",
+              "type": "string"
+            },
+            {
+              "id": "thumbnailUrl",
+              "displayName": "thumbnailUrl",
+              "type": "string"
+            }
+          ]
+        },
+        "mode": "each",
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "onError": "continueRegularOutput"
     }
   ],
   "connections": {
@@ -492,6 +600,11 @@
           },
           {
             "node": "DingTalk Primary Alert",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Discord Error Alert",
             "type": "main",
             "index": 0
           }
@@ -566,12 +679,6 @@
   },
   "tags": [
     {
-      "id": "twNsKNALbdWLw0Ox",
-      "name": "automation",
-      "createdAt": "2026-10-22T08:25:54.546Z",
-      "updatedAt": "2026-10-22T08:25:54.546Z"
-    },
-    {
       "id": "YwjTMUhE83IXTCRg",
       "name": "monitoring",
       "createdAt": "2026-10-22T08:38:34.124Z",
@@ -584,10 +691,28 @@
       "updatedAt": "2026-10-22T09:14:35.367Z"
     },
     {
+      "id": "xpWm4veSI3VnYxs0",
+      "name": "notification",
+      "createdAt": "2026-10-26T07:57:41.702Z",
+      "updatedAt": "2026-10-26T07:57:41.702Z"
+    },
+    {
       "id": "BlGRvaSWqnmTk53i",
       "name": "event-producer",
       "createdAt": "2026-10-22T09:14:35.370Z",
       "updatedAt": "2026-10-22T09:14:35.370Z"
+    },
+    {
+      "id": "xx4RO3RRCGt61Y5L",
+      "name": "discord",
+      "createdAt": "2026-10-26T07:57:41.707Z",
+      "updatedAt": "2026-10-26T07:57:41.707Z"
+    },
+    {
+      "id": "twNsKNALbdWLw0Ox",
+      "name": "automation",
+      "createdAt": "2026-10-22T08:25:54.546Z",
+      "updatedAt": "2026-10-22T08:25:54.546Z"
     }
   ],
   "shared": [
@@ -600,7 +725,7 @@
     }
   ],
   "activeVersion": {
-    "versionId": "e38338e4-b5d0-4583-90aa-6d15344a9ff3",
+    "versionId": "2e0a9c10-9c7e-4663-aff1-49aa84e6de90",
     "workflowId": "3LE3BnPfHSuIZCVR",
     "nodes": [
       {
@@ -1062,6 +1187,114 @@
         "retryOnFail": true,
         "maxTries": 3,
         "waitBetweenTries": 5000
+      },
+      {
+        "id": "139ef4db-a853-4780-9949-3a5fc983016a",
+        "name": "Discord Error Alert",
+        "type": "n8n-nodes-base.executeWorkflow",
+        "typeVersion": 1.4,
+        "position": [
+          704,
+          144
+        ],
+        "parameters": {
+          "source": "database",
+          "workflowId": {
+            "__rl": true,
+            "mode": "id",
+            "value": "Gu9lvE61vyyJf2xm"
+          },
+          "workflowInputs": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "channel": "status",
+              "title": "={{ 'n8n · ' + ($json.workflow_name || 'Unknown workflow') + ' 运行失败' }}",
+              "summary": "={{ String($json.error_message || 'No message') }}",
+              "tone": "error",
+              "source": "n8n",
+              "kind": "workflow_error",
+              "url": "={{ String($json.execution_url || '') }}",
+              "metrics": "={{ [{ label: 'Workflow', value: String($json.workflow_name || 'Unknown'), inline: true }, { label: 'Node', value: String($json.error_node || 'Unknown'), inline: true }, { label: 'HTTP', value: String($json.http_code || '-'), inline: true }, { label: 'Mode', value: String($json.execution_mode || '-'), inline: true }, { label: 'Error', value: String($json.error_name || 'Error'), inline: false }] }}",
+              "sections": "={{ [{ title: '错误详情', markdown: String($json.error_message || 'No message').slice(0, 1800) }, { title: 'Execution', markdown: '`' + String($json.execution_id || '-') + '`' }] }}",
+              "footer": "n8n Error Notification",
+              "timestamp": "={{ $now.toISO() }}",
+              "imageUrl": "",
+              "thumbnailUrl": ""
+            },
+            "schema": [
+              {
+                "id": "channel",
+                "displayName": "channel",
+                "type": "string"
+              },
+              {
+                "id": "title",
+                "displayName": "title",
+                "type": "string"
+              },
+              {
+                "id": "summary",
+                "displayName": "summary",
+                "type": "string"
+              },
+              {
+                "id": "tone",
+                "displayName": "tone",
+                "type": "string"
+              },
+              {
+                "id": "source",
+                "displayName": "source",
+                "type": "string"
+              },
+              {
+                "id": "kind",
+                "displayName": "kind",
+                "type": "string"
+              },
+              {
+                "id": "url",
+                "displayName": "url",
+                "type": "string"
+              },
+              {
+                "id": "metrics",
+                "displayName": "metrics",
+                "type": "array"
+              },
+              {
+                "id": "sections",
+                "displayName": "sections",
+                "type": "array"
+              },
+              {
+                "id": "footer",
+                "displayName": "footer",
+                "type": "string"
+              },
+              {
+                "id": "timestamp",
+                "displayName": "timestamp",
+                "type": "string"
+              },
+              {
+                "id": "imageUrl",
+                "displayName": "imageUrl",
+                "type": "string"
+              },
+              {
+                "id": "thumbnailUrl",
+                "displayName": "thumbnailUrl",
+                "type": "string"
+              }
+            ]
+          },
+          "mode": "each",
+          "options": {
+            "waitForSubWorkflow": true
+          }
+        },
+        "onError": "continueRegularOutput"
       }
     ],
     "connections": {
@@ -1086,6 +1319,11 @@
             },
             {
               "node": "DingTalk Primary Alert",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Discord Error Alert",
               "type": "main",
               "index": 0
             }
@@ -1140,10 +1378,10 @@
       }
     ],
     "authors": "Administrator NTLx (via MCP)",
-    "name": "Use DingTalk ActionCard alerts",
-    "description": "Productionize the verified DingTalk ActionCard alert: remove temporary manual test nodes and restore the workflow's original execution-data retention settings. The primary alert now renders Markdown inside an ActionCard and links directly to execution details; Telegram remains fallback.",
+    "name": "Add rich Discord error alert",
+    "description": "Adds a parallel status-channel Rich Embed through the shared Discord Hub while preserving DingTalk primary alert, Telegram fallback, and AI triage behavior.",
     "autosaved": false,
-    "createdAt": "2026-10-23T16:17:40.174Z",
-    "updatedAt": "2026-10-23T16:17:40.174Z"
+    "createdAt": "2026-10-26T08:01:26.912Z",
+    "updatedAt": "2026-10-26T08:01:26.912Z"
   }
 }
