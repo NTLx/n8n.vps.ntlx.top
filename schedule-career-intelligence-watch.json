@@ -373,12 +373,6 @@
   },
   "tags": [
     {
-      "id": "5x8Ku7hwyJeQ95Ib",
-      "name": "career",
-      "createdAt": "2026-10-22T16:34:54.019Z",
-      "updatedAt": "2026-10-22T16:34:54.019Z"
-    },
-    {
       "id": "BlGRvaSWqnmTk53i",
       "name": "event-producer",
       "createdAt": "2026-10-22T09:14:35.370Z",
@@ -389,6 +383,12 @@
       "name": "ai-work-producer",
       "createdAt": "2026-10-22T09:14:35.367Z",
       "updatedAt": "2026-10-22T09:14:35.367Z"
+    },
+    {
+      "id": "5x8Ku7hwyJeQ95Ib",
+      "name": "career",
+      "createdAt": "2026-10-22T16:34:54.019Z",
+      "updatedAt": "2026-10-22T16:34:54.019Z"
     },
     {
       "id": "twNsKNALbdWLw0Ox",
