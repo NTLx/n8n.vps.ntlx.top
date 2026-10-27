@@ -2,11 +2,11 @@
   "id": "TXTq8pnTcz5Kb3m5",
   "name": "Capture ServerFS CI failure",
   "active": true,
-  "activeVersionId": "40aa77e3-ef6f-4abb-995b-a72e4facd56b",
+  "activeVersionId": "f76a32df-666c-43f1-a8be-4e1af9fdb396",
   "createdAt": "2026-10-22T08:38:23.109Z",
-  "updatedAt": "2026-10-22T09:17:58.825Z",
+  "updatedAt": "2026-10-26T08:01:48.997Z",
   "isArchived": false,
-  "versionId": "40aa77e3-ef6f-4abb-995b-a72e4facd56b",
+  "versionId": "f76a32df-666c-43f1-a8be-4e1af9fdb396",
   "triggerCount": 1,
   "nodes": [
     {
@@ -425,45 +425,6 @@
       }
     },
     {
-      "id": "1e25d178-8e3e-409c-9980-1a7a7326e5de",
-      "name": "Discord CI Alert",
-      "type": "n8n-nodes-base.discord",
-      "typeVersion": 2,
-      "position": [
-        1344,
-        80
-      ],
-      "parameters": {
-        "authentication": "oAuth2",
-        "resource": "message",
-        "operation": "send",
-        "guildId": {
-          "__rl": true,
-          "value": "1223272555885105264",
-          "mode": "id"
-        },
-        "sendTo": "channel",
-        "channelId": {
-          "__rl": true,
-          "value": "1224990958718812170",
-          "mode": "id"
-        },
-        "content": "={{ $json.discordMessage }}",
-        "options": {}
-      },
-      "credentials": {
-        "discordOAuth2Api": {
-          "id": "ep3LAXJ2M9XUjEj1",
-          "name": "NTLx"
-        }
-      },
-      "retryOnFail": true,
-      "maxTries": 3,
-      "waitBetweenTries": 5000,
-      "onError": "continueErrorOutput",
-      "webhookId": "581f0e72-04f1-4572-a7d6-303dc3156f34"
-    },
-    {
       "id": "0c9a40b6-444f-405b-8a0f-8743a1b92b78",
       "name": "Telegram CI Fallback",
       "type": "n8n-nodes-base.telegram",
@@ -640,6 +601,114 @@
         "options": {}
       },
       "onError": "continueErrorOutput"
+    },
+    {
+      "id": "f6d26062-9b18-44a0-9b72-87467dbb0563",
+      "name": "Discord CI Rich Alert",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.4,
+      "position": [
+        1344,
+        80
+      ],
+      "parameters": {
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "Gu9lvE61vyyJf2xm"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "channel": "status",
+            "title": "={{ 'ServerFS CI · ' + String($('Normalize CI Failure').item.json.check_name || 'Check failed') }}",
+            "summary": "={{ String($('Normalize CI Failure').item.json.summary || 'CI check requires attention') }}",
+            "tone": "={{ $('Normalize CI Failure').item.json.severity === 'P1' ? 'error' : 'warning' }}",
+            "source": "GitHub Actions",
+            "kind": "ci_failure",
+            "url": "={{ String($('Normalize CI Failure').item.json.details_url || '') }}",
+            "metrics": "={{ (() => { const c = $('Normalize CI Failure').item.json; return [{ label: 'Severity', value: String(c.severity || '-'), inline: true }, { label: 'Conclusion', value: String(c.conclusion || '-'), inline: true }, { label: 'Branch', value: String(c.branch || '-'), inline: true }, { label: 'SHA', value: String(c.head_sha || '-').slice(0,12), inline: true }, { label: 'AI Work', value: String(c.work_id || '-'), inline: false }]; })() }}",
+            "sections": "={{ [{ title: '处理方式', markdown: 'n8n 已完成事件捕获、去重与排队；根因分析由 ChatGPT 后续处理。' }] }}",
+            "footer": "ServerFS_MCP · CI",
+            "timestamp": "={{ String($('Normalize CI Failure').item.json.detected_at || $now.toISO()) }}",
+            "imageUrl": "",
+            "thumbnailUrl": ""
+          },
+          "schema": [
+            {
+              "id": "channel",
+              "displayName": "channel",
+              "type": "string"
+            },
+            {
+              "id": "title",
+              "displayName": "title",
+              "type": "string"
+            },
+            {
+              "id": "summary",
+              "displayName": "summary",
+              "type": "string"
+            },
+            {
+              "id": "tone",
+              "displayName": "tone",
+              "type": "string"
+            },
+            {
+              "id": "source",
+              "displayName": "source",
+              "type": "string"
+            },
+            {
+              "id": "kind",
+              "displayName": "kind",
+              "type": "string"
+            },
+            {
+              "id": "url",
+              "displayName": "url",
+              "type": "string"
+            },
+            {
+              "id": "metrics",
+              "displayName": "metrics",
+              "type": "array"
+            },
+            {
+              "id": "sections",
+              "displayName": "sections",
+              "type": "array"
+            },
+            {
+              "id": "footer",
+              "displayName": "footer",
+              "type": "string"
+            },
+            {
+              "id": "timestamp",
+              "displayName": "timestamp",
+              "type": "string"
+            },
+            {
+              "id": "imageUrl",
+              "displayName": "imageUrl",
+              "type": "string"
+            },
+            {
+              "id": "thumbnailUrl",
+              "displayName": "thumbnailUrl",
+              "type": "string"
+            }
+          ]
+        },
+        "mode": "each",
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "onError": "continueErrorOutput"
     }
   ],
   "connections": {
@@ -670,29 +739,6 @@
         [
           {
             "node": "Only New CI Work",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Format CI Alert": {
-      "main": [
-        [
-          {
-            "node": "Discord CI Alert",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Discord CI Alert": {
-      "main": [
-        [],
-        [
-          {
-            "node": "Telegram CI Fallback",
             "type": "main",
             "index": 0
           }
@@ -746,6 +792,29 @@
           }
         ]
       ]
+    },
+    "Format CI Alert": {
+      "main": [
+        [
+          {
+            "node": "Discord CI Rich Alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Discord CI Rich Alert": {
+      "main": [
+        null,
+        [
+          {
+            "node": "Telegram CI Fallback",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "nodeGroups": [
@@ -759,10 +828,10 @@
         "ddde8f5a-fe04-40fc-a6dd-07066d0b4eb1",
         "0a6215b5-8854-45af-901d-3bedea63f0a6",
         "4065e56b-a9e5-4437-91a7-c4642702c19f",
-        "1e25d178-8e3e-409c-9980-1a7a7326e5de",
+        "f6d26062-9b18-44a0-9b72-87467dbb0563",
         "0c9a40b6-444f-405b-8a0f-8743a1b92b78"
       ],
-      "description": "Filter abnormal checks, deduplicate and queue ChatGPT triage, record the event, then send an immediate deterministic alert."
+      "description": "Filter abnormal checks, deduplicate and queue ChatGPT triage, record the event, then send a rich Discord status alert with Telegram fallback."
     }
   ],
   "settings": {
@@ -793,28 +862,10 @@
   },
   "tags": [
     {
-      "id": "9jw9Bhya2Ylf8E4D",
-      "name": "ai-work-producer",
-      "createdAt": "2026-10-22T09:14:35.367Z",
-      "updatedAt": "2026-10-22T09:14:35.367Z"
-    },
-    {
-      "id": "BlGRvaSWqnmTk53i",
-      "name": "event-producer",
-      "createdAt": "2026-10-22T09:14:35.370Z",
-      "updatedAt": "2026-10-22T09:14:35.370Z"
-    },
-    {
       "id": "twNsKNALbdWLw0Ox",
       "name": "automation",
       "createdAt": "2026-10-22T08:25:54.546Z",
       "updatedAt": "2026-10-22T08:25:54.546Z"
-    },
-    {
-      "id": "dO6jlaR7zVjNByrJ",
-      "name": "serverfs",
-      "createdAt": "2026-10-22T08:30:55.412Z",
-      "updatedAt": "2026-10-22T08:30:55.412Z"
     },
     {
       "id": "rzKrKSvBlXCxdtjq",
@@ -827,6 +878,36 @@
       "name": "monitoring",
       "createdAt": "2026-10-22T08:38:34.124Z",
       "updatedAt": "2026-10-22T08:38:34.124Z"
+    },
+    {
+      "id": "xx4RO3RRCGt61Y5L",
+      "name": "discord",
+      "createdAt": "2026-10-26T07:57:41.707Z",
+      "updatedAt": "2026-10-26T07:57:41.707Z"
+    },
+    {
+      "id": "xpWm4veSI3VnYxs0",
+      "name": "notification",
+      "createdAt": "2026-10-26T07:57:41.702Z",
+      "updatedAt": "2026-10-26T07:57:41.702Z"
+    },
+    {
+      "id": "BlGRvaSWqnmTk53i",
+      "name": "event-producer",
+      "createdAt": "2026-10-22T09:14:35.370Z",
+      "updatedAt": "2026-10-22T09:14:35.370Z"
+    },
+    {
+      "id": "9jw9Bhya2Ylf8E4D",
+      "name": "ai-work-producer",
+      "createdAt": "2026-10-22T09:14:35.367Z",
+      "updatedAt": "2026-10-22T09:14:35.367Z"
+    },
+    {
+      "id": "dO6jlaR7zVjNByrJ",
+      "name": "serverfs",
+      "createdAt": "2026-10-22T08:30:55.412Z",
+      "updatedAt": "2026-10-22T08:30:55.412Z"
     }
   ],
   "shared": [
@@ -839,7 +920,7 @@
     }
   ],
   "activeVersion": {
-    "versionId": "40aa77e3-ef6f-4abb-995b-a72e4facd56b",
+    "versionId": "f76a32df-666c-43f1-a8be-4e1af9fdb396",
     "workflowId": "TXTq8pnTcz5Kb3m5",
     "nodes": [
       {
@@ -1258,45 +1339,6 @@
         }
       },
       {
-        "id": "1e25d178-8e3e-409c-9980-1a7a7326e5de",
-        "name": "Discord CI Alert",
-        "type": "n8n-nodes-base.discord",
-        "typeVersion": 2,
-        "position": [
-          1344,
-          80
-        ],
-        "parameters": {
-          "authentication": "oAuth2",
-          "resource": "message",
-          "operation": "send",
-          "guildId": {
-            "__rl": true,
-            "value": "1223272555885105264",
-            "mode": "id"
-          },
-          "sendTo": "channel",
-          "channelId": {
-            "__rl": true,
-            "value": "1224990958718812170",
-            "mode": "id"
-          },
-          "content": "={{ $json.discordMessage }}",
-          "options": {}
-        },
-        "credentials": {
-          "discordOAuth2Api": {
-            "id": "ep3LAXJ2M9XUjEj1",
-            "name": "NTLx"
-          }
-        },
-        "retryOnFail": true,
-        "maxTries": 3,
-        "waitBetweenTries": 5000,
-        "onError": "continueErrorOutput",
-        "webhookId": "581f0e72-04f1-4572-a7d6-303dc3156f34"
-      },
-      {
         "id": "0c9a40b6-444f-405b-8a0f-8743a1b92b78",
         "name": "Telegram CI Fallback",
         "type": "n8n-nodes-base.telegram",
@@ -1473,6 +1515,114 @@
           "options": {}
         },
         "onError": "continueErrorOutput"
+      },
+      {
+        "id": "f6d26062-9b18-44a0-9b72-87467dbb0563",
+        "name": "Discord CI Rich Alert",
+        "type": "n8n-nodes-base.executeWorkflow",
+        "typeVersion": 1.4,
+        "position": [
+          1344,
+          80
+        ],
+        "parameters": {
+          "source": "database",
+          "workflowId": {
+            "__rl": true,
+            "mode": "id",
+            "value": "Gu9lvE61vyyJf2xm"
+          },
+          "workflowInputs": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "channel": "status",
+              "title": "={{ 'ServerFS CI · ' + String($('Normalize CI Failure').item.json.check_name || 'Check failed') }}",
+              "summary": "={{ String($('Normalize CI Failure').item.json.summary || 'CI check requires attention') }}",
+              "tone": "={{ $('Normalize CI Failure').item.json.severity === 'P1' ? 'error' : 'warning' }}",
+              "source": "GitHub Actions",
+              "kind": "ci_failure",
+              "url": "={{ String($('Normalize CI Failure').item.json.details_url || '') }}",
+              "metrics": "={{ (() => { const c = $('Normalize CI Failure').item.json; return [{ label: 'Severity', value: String(c.severity || '-'), inline: true }, { label: 'Conclusion', value: String(c.conclusion || '-'), inline: true }, { label: 'Branch', value: String(c.branch || '-'), inline: true }, { label: 'SHA', value: String(c.head_sha || '-').slice(0,12), inline: true }, { label: 'AI Work', value: String(c.work_id || '-'), inline: false }]; })() }}",
+              "sections": "={{ [{ title: '处理方式', markdown: 'n8n 已完成事件捕获、去重与排队；根因分析由 ChatGPT 后续处理。' }] }}",
+              "footer": "ServerFS_MCP · CI",
+              "timestamp": "={{ String($('Normalize CI Failure').item.json.detected_at || $now.toISO()) }}",
+              "imageUrl": "",
+              "thumbnailUrl": ""
+            },
+            "schema": [
+              {
+                "id": "channel",
+                "displayName": "channel",
+                "type": "string"
+              },
+              {
+                "id": "title",
+                "displayName": "title",
+                "type": "string"
+              },
+              {
+                "id": "summary",
+                "displayName": "summary",
+                "type": "string"
+              },
+              {
+                "id": "tone",
+                "displayName": "tone",
+                "type": "string"
+              },
+              {
+                "id": "source",
+                "displayName": "source",
+                "type": "string"
+              },
+              {
+                "id": "kind",
+                "displayName": "kind",
+                "type": "string"
+              },
+              {
+                "id": "url",
+                "displayName": "url",
+                "type": "string"
+              },
+              {
+                "id": "metrics",
+                "displayName": "metrics",
+                "type": "array"
+              },
+              {
+                "id": "sections",
+                "displayName": "sections",
+                "type": "array"
+              },
+              {
+                "id": "footer",
+                "displayName": "footer",
+                "type": "string"
+              },
+              {
+                "id": "timestamp",
+                "displayName": "timestamp",
+                "type": "string"
+              },
+              {
+                "id": "imageUrl",
+                "displayName": "imageUrl",
+                "type": "string"
+              },
+              {
+                "id": "thumbnailUrl",
+                "displayName": "thumbnailUrl",
+                "type": "string"
+              }
+            ]
+          },
+          "mode": "each",
+          "options": {
+            "waitForSubWorkflow": true
+          }
+        },
+        "onError": "continueErrorOutput"
       }
     ],
     "connections": {
@@ -1503,29 +1653,6 @@
           [
             {
               "node": "Only New CI Work",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Format CI Alert": {
-        "main": [
-          [
-            {
-              "node": "Discord CI Alert",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Discord CI Alert": {
-        "main": [
-          [],
-          [
-            {
-              "node": "Telegram CI Fallback",
               "type": "main",
               "index": 0
             }
@@ -1579,6 +1706,29 @@
             }
           ]
         ]
+      },
+      "Format CI Alert": {
+        "main": [
+          [
+            {
+              "node": "Discord CI Rich Alert",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Discord CI Rich Alert": {
+        "main": [
+          null,
+          [
+            {
+              "node": "Telegram CI Fallback",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
       }
     },
     "nodeGroups": [
@@ -1592,17 +1742,17 @@
           "ddde8f5a-fe04-40fc-a6dd-07066d0b4eb1",
           "0a6215b5-8854-45af-901d-3bedea63f0a6",
           "4065e56b-a9e5-4437-91a7-c4642702c19f",
-          "1e25d178-8e3e-409c-9980-1a7a7326e5de",
+          "f6d26062-9b18-44a0-9b72-87467dbb0563",
           "0c9a40b6-444f-405b-8a0f-8743a1b92b78"
         ],
-        "description": "Filter abnormal checks, deduplicate and queue ChatGPT triage, record the event, then send an immediate deterministic alert."
+        "description": "Filter abnormal checks, deduplicate and queue ChatGPT triage, record the event, then send a rich Discord status alert with Telegram fallback."
       }
     ],
     "authors": "Administrator NTLx (via MCP)",
-    "name": "Group CI capture stage",
-    "description": "Groups the complete post-trigger anomaly capture path without changing execution behavior.",
+    "name": "Upgrade CI alert to Discord Hub",
+    "description": "Replaces the direct plain-text Discord node with the shared Rich Embed Hub on status while preserving Telegram fallback on Discord delivery failure.",
     "autosaved": false,
-    "createdAt": "2026-10-22T09:17:58.829Z",
-    "updatedAt": "2026-10-22T09:17:58.829Z"
+    "createdAt": "2026-10-26T08:01:49.001Z",
+    "updatedAt": "2026-10-26T08:01:49.001Z"
   }
 }
