@@ -348,16 +348,16 @@
   },
   "tags": [
     {
-      "id": "wMDPWb1vTtFNeY23",
-      "name": "work-events",
-      "createdAt": "2026-10-22T08:25:54.556Z",
-      "updatedAt": "2026-10-22T08:25:54.556Z"
-    },
-    {
       "id": "twNsKNALbdWLw0Ox",
       "name": "automation",
       "createdAt": "2026-10-22T08:25:54.546Z",
       "updatedAt": "2026-10-22T08:25:54.546Z"
+    },
+    {
+      "id": "wMDPWb1vTtFNeY23",
+      "name": "work-events",
+      "createdAt": "2026-10-22T08:25:54.556Z",
+      "updatedAt": "2026-10-22T08:25:54.556Z"
     },
     {
       "id": "FHTic8vsGI9vqNgN",
