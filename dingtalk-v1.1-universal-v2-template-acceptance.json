@@ -1,0 +1,129 @@
+{
+  "id": "OWUinf3fCXalf0ml",
+  "name": "DingTalk v1.1 universal-v2 template acceptance",
+  "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-10-26T03:21:57.860Z",
+  "updatedAt": "2026-10-26T07:08:31.466Z",
+  "isArchived": false,
+  "versionId": "a7378308-6cb2-4c2c-8230-a97eca3ce91c",
+  "triggerCount": 0,
+  "nodes": [
+    {
+      "id": "741dd2e9-cd27-4bab-a9be-f5624c00c74a",
+      "name": "Start rich card acceptance",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "f4374c69-2ce2-4097-a7ec-f7f600a6e670",
+      "name": "Send universal-v2 acceptance card",
+      "type": "n8n-nodes-dingtalk-card.dingTalkCard",
+      "typeVersion": 1,
+      "position": [
+        224,
+        0
+      ],
+      "parameters": {
+        "operation": "createAndDeliver",
+        "inputMode": "form",
+        "outTrackId": "chatgpt-dingtalk-official-stream-2026-10-26-1",
+        "enableStreamCallbacks": false,
+        "cardTemplateId": "5c501297-24d3-4545-b31f-734a8ddfb285.schema",
+        "cardDataMode": "json",
+        "cardData": {
+          "cardParamMap": {
+            "content": "",
+            "config": "{\"autoLayout\":true}"
+          }
+        },
+        "target": "robot",
+        "spaceId": "manager5845",
+        "robotCode": ""
+      },
+      "credentials": {
+        "dingTalkCardApi": {
+          "id": "qYZQszWAxbIfLPnQ",
+          "name": "四有青年 DingTalk Card API"
+        }
+      }
+    },
+    {
+      "id": "e136d547-4d80-49f4-aaac-e8deb1011e5b",
+      "name": "Stream universal-v2 content",
+      "type": "n8n-nodes-dingtalk-card.dingTalkCard",
+      "typeVersion": 1,
+      "position": [
+        448,
+        0
+      ],
+      "parameters": {
+        "operation": "stream",
+        "inputMode": "form",
+        "outTrackId": "chatgpt-dingtalk-official-stream-2026-10-26-1",
+        "key": "content",
+        "content": "# DingTalk Universal v2 验收\n\n✅ **Create → Stream → Finalize 已打通**\n\n- 模板：官方 AI Markdown 卡\n- PC 宽屏：应保持自适应宽度\n- Markdown：**粗体**、列表、标题应正常\n- 链接：[OpenAI Status](https://status.openai.com/) · [插件仓库](https://github.com/NTLx/n8n-nodes-dingtalk-card)\n\n> 如果你现在看到这段内容，说明模板本体和现有插件的 Streaming API 已经正确配合。",
+        "isFull": true,
+        "isFinalize": true,
+        "isError": false
+      },
+      "credentials": {
+        "dingTalkCardApi": {
+          "id": "qYZQszWAxbIfLPnQ",
+          "name": "四有青年 DingTalk Card API"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Start rich card acceptance": {
+      "main": [
+        [
+          {
+            "node": "Send universal-v2 acceptance card",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send universal-v2 acceptance card": {
+      "main": [
+        [
+          {
+            "node": "Stream universal-v2 content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "OWUinf3fCXalf0ml",
+      "projectId": "cNMj0K6AdJmi0OAZ",
+      "createdAt": "2026-10-26T03:21:57.860Z",
+      "updatedAt": "2026-10-26T03:21:57.860Z"
+    }
+  ],
+  "activeVersion": null
+}
