@@ -1,0 +1,111 @@
+{
+  "id": "G1T0ZECyIatrpcN5",
+  "name": "Create ServerFS v0.23.0 tag once",
+  "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-10-26T07:51:48.022Z",
+  "updatedAt": "2026-10-26T07:52:44.970Z",
+  "isArchived": true,
+  "versionId": "9355c327-e3e4-4cbd-ae03-b5e60a3758f4",
+  "triggerCount": 0,
+  "nodes": [
+    {
+      "id": "51404776-f0e9-4d8d-8874-2e870728c07a",
+      "name": "Create tag now",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "bf6b8e7b-401e-493b-85e6-9dc5195cedd9",
+      "name": "Create exact GitHub tag ref",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        224,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.github.com/repos/NTLx/ServerFS_MCP/git/refs",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "githubOAuth2Api",
+        "sendHeaders": true,
+        "specifyHeaders": "keypair",
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/vnd.github+json"
+            },
+            {
+              "name": "X-GitHub-Api-Version",
+              "value": "2022-11-28"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": {
+          "ref": "refs/tags/v0.23.0",
+          "sha": "cfb0a3f70b768ad63c2b27f05e3ef8aec085f0e4"
+        },
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": false,
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "credentials": {
+        "githubOAuth2Api": {
+          "id": "stt7O3UtIsjdKCqg",
+          "name": "NTLx"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Create tag now": {
+      "main": [
+        [
+          {
+            "node": "Create exact GitHub tag ref",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "G1T0ZECyIatrpcN5",
+      "projectId": "cNMj0K6AdJmi0OAZ",
+      "createdAt": "2026-10-26T07:51:48.022Z",
+      "updatedAt": "2026-10-26T07:51:48.022Z"
+    }
+  ],
+  "activeVersion": null
+}
