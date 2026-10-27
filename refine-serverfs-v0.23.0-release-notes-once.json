@@ -1,0 +1,188 @@
+{
+  "id": "sqyl0k8C4GmLK7hA",
+  "name": "Refine ServerFS v0.23.0 Release notes once",
+  "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-10-26T08:07:17.609Z",
+  "updatedAt": "2026-10-26T08:07:58.095Z",
+  "isArchived": true,
+  "versionId": "a2de6f6c-68d6-4066-8a6b-f183364a116e",
+  "triggerCount": 0,
+  "nodes": [
+    {
+      "id": "1f005cfc-e9cd-4a72-ba72-72cfdee33395",
+      "name": "Update release now",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "f987b551-3731-4950-8da1-7afb0ed06a56",
+      "name": "Read current GitHub Release",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        224,
+        0
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "https://api.github.com/repos/NTLx/ServerFS_MCP/releases/423974769",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "githubOAuth2Api",
+        "sendHeaders": true,
+        "specifyHeaders": "keypair",
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/vnd.github+json"
+            },
+            {
+              "name": "X-GitHub-Api-Version",
+              "value": "2022-11-28"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "credentials": {
+        "githubOAuth2Api": {
+          "id": "stt7O3UtIsjdKCqg",
+          "name": "NTLx"
+        }
+      }
+    },
+    {
+      "id": "2361a605-c59b-41e7-8b30-351437d749fc",
+      "name": "Refine release notes wording",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        0
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const data = $input.first().json;\nconst old1 = '- **Fixed release actions** are supported for operator-configured repositories: `release_tag` can create/push a validated release tag at the captured clean `main` HEAD, and `publish_npm` can dispatch one fixed GitHub Actions publication workflow without exposing generic Git/workflow arguments.';\nconst new1 = '- **Fixed npm release actions** are supported for operator-configured npm/`package.json` repositories: `release_tag` can create/push a validated release tag at the captured clean `main` HEAD after matching the root `package.json` version, and `publish_npm` can dispatch one fixed GitHub Actions publication workflow without exposing generic Git/workflow arguments. These built-ins are intentionally narrower than the repository-generic Repo Ops surface.';\nconst old2 = 'The release workflow attaches the product wheel, Agent Bridge wheel, Windows native abi3 wheel, and the skills-only `serverfs-plugin-v0.23.0.zip`; their SHA-256 values are appended automatically to the GitHub Release body after the tag workflow completes.';\nconst new2 = 'The published release attaches the product wheel, Agent Bridge wheel, Windows native abi3 wheel, and the skills-only `serverfs-plugin-v0.23.0.zip`; their SHA-256 values were appended automatically to the GitHub Release body by the tag workflow.';\nif (typeof data.body !== 'string') throw new Error('GitHub Release body missing');\nif (data.body.split(old1).length - 1 !== 1) throw new Error('Expected release-action sentence exactly once');\nif (data.body.split(old2).length - 1 !== 1) throw new Error('Expected release-asset sentence exactly once');\nreturn [{ json: { body: data.body.replace(old1, new1).replace(old2, new2) } }];"
+      }
+    },
+    {
+      "id": "17396a94-d09b-4a78-aebc-b65beb17be8c",
+      "name": "Update GitHub Release body",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        672,
+        0
+      ],
+      "parameters": {
+        "method": "PATCH",
+        "url": "https://api.github.com/repos/NTLx/ServerFS_MCP/releases/423974769",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "githubOAuth2Api",
+        "sendHeaders": true,
+        "specifyHeaders": "keypair",
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/vnd.github+json"
+            },
+            {
+              "name": "X-GitHub-Api-Version",
+              "value": "2022-11-28"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "={{ { body: $json.body } }}",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": false,
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "credentials": {
+        "githubOAuth2Api": {
+          "id": "stt7O3UtIsjdKCqg",
+          "name": "NTLx"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Update release now": {
+      "main": [
+        [
+          {
+            "node": "Read current GitHub Release",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read current GitHub Release": {
+      "main": [
+        [
+          {
+            "node": "Refine release notes wording",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Refine release notes wording": {
+      "main": [
+        [
+          {
+            "node": "Update GitHub Release body",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "sqyl0k8C4GmLK7hA",
+      "projectId": "cNMj0K6AdJmi0OAZ",
+      "createdAt": "2026-10-26T08:07:17.609Z",
+      "updatedAt": "2026-10-26T08:07:17.609Z"
+    }
+  ],
+  "activeVersion": null
+}
