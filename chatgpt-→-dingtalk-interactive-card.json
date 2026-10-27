@@ -2,11 +2,11 @@
   "id": "lIYiupA0LyU58hNd",
   "name": "ChatGPT → DingTalk Interactive Card",
   "active": true,
-  "activeVersionId": "2f10f141-6edb-498b-8d9a-0ac94b43761c",
+  "activeVersionId": "4c436ae2-c214-4426-b9f1-5f5251016403",
   "createdAt": "2026-10-25T13:51:08.776Z",
-  "updatedAt": "2026-10-26T00:49:22.198Z",
+  "updatedAt": "2026-10-26T07:59:08.823Z",
   "isArchived": false,
-  "versionId": "2f10f141-6edb-498b-8d9a-0ac94b43761c",
+  "versionId": "4c436ae2-c214-4426-b9f1-5f5251016403",
   "triggerCount": 1,
   "nodes": [
     {
@@ -39,18 +39,18 @@
       "type": "n8n-nodes-dingtalk-card.dingTalkCard",
       "typeVersion": 1,
       "position": [
-        560,
+        800,
         300
       ],
       "parameters": {
         "operation": "createAndDeliver",
         "inputMode": "form",
-        "cardTemplateId": "ff4f49b1-384b-4b4a-b9f3-98379959f923.schema",
+        "cardTemplateId": "5c501297-24d3-4545-b31f-734a8ddfb285.schema",
         "cardDataMode": "a2ui",
-        "a2uiDescriptor": "={{ (() => { const d = $json.body.descriptor; if (!d || typeof d !== 'object' || Array.isArray(d)) return d; const blocks = Array.isArray(d.blocks) ? d.blocks.flatMap((b) => { if (!b || typeof b !== 'object' || Array.isArray(b) || typeof b.type === 'string') return [b]; if (typeof b.text === 'string') return [{ type: 'text', text: b.text }]; if (b.keyValue && typeof b.keyValue === 'object' && !Array.isArray(b.keyValue)) return Object.entries(b.keyValue).map(([label, value]) => ({ type: 'keyValue', label: String(label), value: value == null ? '' : String(value) })); if (Array.isArray(b.list)) return [{ type: 'list', items: b.list.map((v) => String(v)) }]; return [b]; }) : d.blocks; return { ...d, blocks }; })() }}",
+        "a2uiDescriptor": "={{ (() => {\n  const d = $('ChatGPT DingTalk Card').item.json.body.descriptor;\n  if (!d || typeof d !== 'object' || Array.isArray(d)) return d;\n  if (d.version === '2' && d.profile === 'universal-v2') return d;\n  if (d.version !== '1' || d.profile !== 'universal-v1') return d;\n  if (Array.isArray(d.actions) && d.actions.length) {\n    throw new Error('Legacy universal-v1 request actions cannot be rendered by the universal-v2 template. Use a legacy action-card workflow or redesign as v2 links.');\n  }\n\n  const blocks = Array.isArray(d.blocks) ? d.blocks : [];\n  const keyValues = blocks\n    .filter((b) => b && typeof b === 'object' && !Array.isArray(b) && b.type === 'keyValue')\n    .slice(0, 4)\n    .map((b) => ({\n      label: String(b.label ?? '指标').slice(0, 100) || '指标',\n      value: String(b.value ?? '—').slice(0, 1000) || '—',\n    }));\n\n  const defaults = [\n    { label: '状态', value: String(d.tone || 'info').toUpperCase() },\n    { label: '内容块', value: String(blocks.length) },\n    { label: '来源', value: 'ChatGPT' },\n    { label: '契约', value: 'universal-v2' },\n  ];\n  const metrics = [...keyValues];\n  for (const item of defaults) {\n    if (metrics.length >= 4) break;\n    if (!metrics.some((m) => m.label === item.label)) metrics.push(item);\n  }\n  while (metrics.length < 4) metrics.push({ label: `指标${metrics.length + 1}`, value: '—' });\n\n  const body = blocks.map((b) => {\n    if (!b || typeof b !== 'object' || Array.isArray(b)) return '';\n    if (b.type === 'text') return String(b.text ?? '');\n    if (b.type === 'keyValue') return `- **${String(b.label ?? '信息')}**：${String(b.value ?? '')}`;\n    if (b.type === 'list' && Array.isArray(b.items)) return b.items.map((v) => `- ${String(v)}`).join('\\n');\n    return '';\n  }).filter(Boolean).join('\\n\\n');\n\n  const summary = String(d.summary || blocks.find((b) => b?.type === 'text')?.text || d.title || '通知').slice(0, 1000) || '通知';\n  const result = {\n    version: '2',\n    profile: 'universal-v2',\n    title: String(d.title || '通知').slice(0, 200) || '通知',\n    summary,\n    tone: d.tone || 'info',\n    status: String(d.tone || 'info').toUpperCase(),\n    source: 'ChatGPT',\n    metrics,\n    footer: 'ChatGPT · DingTalk universal-v2',\n  };\n  if (body) result.sections = [{ title: '详情', markdown: body }];\n  return result;\n})() }}",
         "target": "robot",
         "spaceId": "manager5845",
-        "outTrackId": "={{ $json.body.outTrackId || \"\" }}",
+        "outTrackId": "={{ $('ChatGPT DingTalk Card').item.json.body.outTrackId || \"\" }}",
         "enableStreamCallbacks": false
       },
       "credentials": {
@@ -59,10 +59,129 @@
           "name": "四有青年 DingTalk Card API"
         }
       }
+    },
+    {
+      "id": "6ca9063b-0be9-4d36-aeb9-dc5274e0959e",
+      "name": "Send Discord rich notification",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.4,
+      "position": [
+        520,
+        300
+      ],
+      "parameters": {
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "Gu9lvE61vyyJf2xm"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "channel": "={{ (() => { const b = $('ChatGPT DingTalk Card').item.json.body || {}; const explicit = String(b.discordChannel || '').toLowerCase(); if (['feeds','status'].includes(explicit)) return explicit; const t = String(b.notificationType || '').toLowerCase(); return ['status','alert','error','incident','monitoring','health','ci','infra','worker_status','runtime'].includes(t) ? 'status' : 'feeds'; })() }}",
+            "title": "={{ String($('ChatGPT DingTalk Card').item.json.body?.descriptor?.title || 'ChatGPT Notification') }}",
+            "summary": "={{ String($('ChatGPT DingTalk Card').item.json.body?.descriptor?.summary || $('ChatGPT DingTalk Card').item.json.body?.descriptor?.blocks?.find?.(b => b?.type === 'text')?.text || 'ChatGPT notification') }}",
+            "tone": "={{ String($('ChatGPT DingTalk Card').item.json.body?.descriptor?.tone || 'info') }}",
+            "source": "={{ String($('ChatGPT DingTalk Card').item.json.body?.descriptor?.source || 'ChatGPT') }}",
+            "kind": "={{ String($('ChatGPT DingTalk Card').item.json.body?.notificationType || $('ChatGPT DingTalk Card').item.json.body?.descriptor?.kind || 'chatgpt_notification') }}",
+            "url": "={{ String($('ChatGPT DingTalk Card').item.json.body?.url || $('ChatGPT DingTalk Card').item.json.body?.descriptor?.url || '') }}",
+            "metrics": "={{ (() => { const d = $('ChatGPT DingTalk Card').item.json.body?.descriptor || {}; if (Array.isArray(d.metrics)) return d.metrics; const blocks = Array.isArray(d.blocks) ? d.blocks : []; return blocks.filter(b => b?.type === 'keyValue').slice(0,8).map(b => ({ label: String(b.label || '信息'), value: String(b.value ?? '—'), inline: true })); })() }}",
+            "sections": "={{ (() => { const d = $('ChatGPT DingTalk Card').item.json.body?.descriptor || {}; if (Array.isArray(d.sections)) return d.sections; const blocks = Array.isArray(d.blocks) ? d.blocks : []; const lines = blocks.map(b => { if (b?.type === 'text') return String(b.text || ''); if (b?.type === 'list' && Array.isArray(b.items)) return b.items.map(v => '- ' + String(v)).join('\\n'); if (b?.type === 'keyValue') return `- **${String(b.label || '信息')}**：${String(b.value ?? '')}`; return ''; }).filter(Boolean).join('\\n\\n'); return lines ? [{ title: '详情', markdown: lines }] : []; })() }}",
+            "footer": "={{ String($('ChatGPT DingTalk Card').item.json.body?.descriptor?.footer || 'ChatGPT · Discord') }}",
+            "timestamp": "={{ $now.toISO() }}",
+            "imageUrl": "={{ String($('ChatGPT DingTalk Card').item.json.body?.imageUrl || $('ChatGPT DingTalk Card').item.json.body?.descriptor?.imageUrl || '') }}",
+            "thumbnailUrl": "={{ String($('ChatGPT DingTalk Card').item.json.body?.thumbnailUrl || $('ChatGPT DingTalk Card').item.json.body?.descriptor?.thumbnailUrl || '') }}"
+          },
+          "schema": [
+            {
+              "id": "channel",
+              "displayName": "channel",
+              "type": "string"
+            },
+            {
+              "id": "title",
+              "displayName": "title",
+              "type": "string"
+            },
+            {
+              "id": "summary",
+              "displayName": "summary",
+              "type": "string"
+            },
+            {
+              "id": "tone",
+              "displayName": "tone",
+              "type": "string"
+            },
+            {
+              "id": "source",
+              "displayName": "source",
+              "type": "string"
+            },
+            {
+              "id": "kind",
+              "displayName": "kind",
+              "type": "string"
+            },
+            {
+              "id": "url",
+              "displayName": "url",
+              "type": "string"
+            },
+            {
+              "id": "metrics",
+              "displayName": "metrics",
+              "type": "array"
+            },
+            {
+              "id": "sections",
+              "displayName": "sections",
+              "type": "array"
+            },
+            {
+              "id": "footer",
+              "displayName": "footer",
+              "type": "string"
+            },
+            {
+              "id": "timestamp",
+              "displayName": "timestamp",
+              "type": "string"
+            },
+            {
+              "id": "imageUrl",
+              "displayName": "imageUrl",
+              "type": "string"
+            },
+            {
+              "id": "thumbnailUrl",
+              "displayName": "thumbnailUrl",
+              "type": "string"
+            }
+          ]
+        },
+        "mode": "each",
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "onError": "continueRegularOutput"
     }
   ],
   "connections": {
     "ChatGPT DingTalk Card": {
+      "main": [
+        [
+          {
+            "node": "Send Discord rich notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Discord rich notification": {
       "main": [
         [
           {
@@ -85,7 +204,20 @@
     "aiBuilderAssisted": true,
     "builderVariant": "mcp"
   },
-  "tags": [],
+  "tags": [
+    {
+      "id": "xx4RO3RRCGt61Y5L",
+      "name": "discord",
+      "createdAt": "2026-10-26T07:57:41.707Z",
+      "updatedAt": "2026-10-26T07:57:41.707Z"
+    },
+    {
+      "id": "xpWm4veSI3VnYxs0",
+      "name": "notification",
+      "createdAt": "2026-10-26T07:57:41.702Z",
+      "updatedAt": "2026-10-26T07:57:41.702Z"
+    }
+  ],
   "shared": [
     {
       "role": "workflow:owner",
@@ -96,7 +228,7 @@
     }
   ],
   "activeVersion": {
-    "versionId": "2f10f141-6edb-498b-8d9a-0ac94b43761c",
+    "versionId": "4c436ae2-c214-4426-b9f1-5f5251016403",
     "workflowId": "lIYiupA0LyU58hNd",
     "nodes": [
       {
@@ -129,18 +261,18 @@
         "type": "n8n-nodes-dingtalk-card.dingTalkCard",
         "typeVersion": 1,
         "position": [
-          560,
+          800,
           300
         ],
         "parameters": {
           "operation": "createAndDeliver",
           "inputMode": "form",
-          "cardTemplateId": "ff4f49b1-384b-4b4a-b9f3-98379959f923.schema",
+          "cardTemplateId": "5c501297-24d3-4545-b31f-734a8ddfb285.schema",
           "cardDataMode": "a2ui",
-          "a2uiDescriptor": "={{ (() => { const d = $json.body.descriptor; if (!d || typeof d !== 'object' || Array.isArray(d)) return d; const blocks = Array.isArray(d.blocks) ? d.blocks.flatMap((b) => { if (!b || typeof b !== 'object' || Array.isArray(b) || typeof b.type === 'string') return [b]; if (typeof b.text === 'string') return [{ type: 'text', text: b.text }]; if (b.keyValue && typeof b.keyValue === 'object' && !Array.isArray(b.keyValue)) return Object.entries(b.keyValue).map(([label, value]) => ({ type: 'keyValue', label: String(label), value: value == null ? '' : String(value) })); if (Array.isArray(b.list)) return [{ type: 'list', items: b.list.map((v) => String(v)) }]; return [b]; }) : d.blocks; return { ...d, blocks }; })() }}",
+          "a2uiDescriptor": "={{ (() => {\n  const d = $('ChatGPT DingTalk Card').item.json.body.descriptor;\n  if (!d || typeof d !== 'object' || Array.isArray(d)) return d;\n  if (d.version === '2' && d.profile === 'universal-v2') return d;\n  if (d.version !== '1' || d.profile !== 'universal-v1') return d;\n  if (Array.isArray(d.actions) && d.actions.length) {\n    throw new Error('Legacy universal-v1 request actions cannot be rendered by the universal-v2 template. Use a legacy action-card workflow or redesign as v2 links.');\n  }\n\n  const blocks = Array.isArray(d.blocks) ? d.blocks : [];\n  const keyValues = blocks\n    .filter((b) => b && typeof b === 'object' && !Array.isArray(b) && b.type === 'keyValue')\n    .slice(0, 4)\n    .map((b) => ({\n      label: String(b.label ?? '指标').slice(0, 100) || '指标',\n      value: String(b.value ?? '—').slice(0, 1000) || '—',\n    }));\n\n  const defaults = [\n    { label: '状态', value: String(d.tone || 'info').toUpperCase() },\n    { label: '内容块', value: String(blocks.length) },\n    { label: '来源', value: 'ChatGPT' },\n    { label: '契约', value: 'universal-v2' },\n  ];\n  const metrics = [...keyValues];\n  for (const item of defaults) {\n    if (metrics.length >= 4) break;\n    if (!metrics.some((m) => m.label === item.label)) metrics.push(item);\n  }\n  while (metrics.length < 4) metrics.push({ label: `指标${metrics.length + 1}`, value: '—' });\n\n  const body = blocks.map((b) => {\n    if (!b || typeof b !== 'object' || Array.isArray(b)) return '';\n    if (b.type === 'text') return String(b.text ?? '');\n    if (b.type === 'keyValue') return `- **${String(b.label ?? '信息')}**：${String(b.value ?? '')}`;\n    if (b.type === 'list' && Array.isArray(b.items)) return b.items.map((v) => `- ${String(v)}`).join('\\n');\n    return '';\n  }).filter(Boolean).join('\\n\\n');\n\n  const summary = String(d.summary || blocks.find((b) => b?.type === 'text')?.text || d.title || '通知').slice(0, 1000) || '通知';\n  const result = {\n    version: '2',\n    profile: 'universal-v2',\n    title: String(d.title || '通知').slice(0, 200) || '通知',\n    summary,\n    tone: d.tone || 'info',\n    status: String(d.tone || 'info').toUpperCase(),\n    source: 'ChatGPT',\n    metrics,\n    footer: 'ChatGPT · DingTalk universal-v2',\n  };\n  if (body) result.sections = [{ title: '详情', markdown: body }];\n  return result;\n})() }}",
           "target": "robot",
           "spaceId": "manager5845",
-          "outTrackId": "={{ $json.body.outTrackId || \"\" }}",
+          "outTrackId": "={{ $('ChatGPT DingTalk Card').item.json.body.outTrackId || \"\" }}",
           "enableStreamCallbacks": false
         },
         "credentials": {
@@ -149,10 +281,129 @@
             "name": "四有青年 DingTalk Card API"
           }
         }
+      },
+      {
+        "id": "6ca9063b-0be9-4d36-aeb9-dc5274e0959e",
+        "name": "Send Discord rich notification",
+        "type": "n8n-nodes-base.executeWorkflow",
+        "typeVersion": 1.4,
+        "position": [
+          520,
+          300
+        ],
+        "parameters": {
+          "source": "database",
+          "workflowId": {
+            "__rl": true,
+            "mode": "id",
+            "value": "Gu9lvE61vyyJf2xm"
+          },
+          "workflowInputs": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "channel": "={{ (() => { const b = $('ChatGPT DingTalk Card').item.json.body || {}; const explicit = String(b.discordChannel || '').toLowerCase(); if (['feeds','status'].includes(explicit)) return explicit; const t = String(b.notificationType || '').toLowerCase(); return ['status','alert','error','incident','monitoring','health','ci','infra','worker_status','runtime'].includes(t) ? 'status' : 'feeds'; })() }}",
+              "title": "={{ String($('ChatGPT DingTalk Card').item.json.body?.descriptor?.title || 'ChatGPT Notification') }}",
+              "summary": "={{ String($('ChatGPT DingTalk Card').item.json.body?.descriptor?.summary || $('ChatGPT DingTalk Card').item.json.body?.descriptor?.blocks?.find?.(b => b?.type === 'text')?.text || 'ChatGPT notification') }}",
+              "tone": "={{ String($('ChatGPT DingTalk Card').item.json.body?.descriptor?.tone || 'info') }}",
+              "source": "={{ String($('ChatGPT DingTalk Card').item.json.body?.descriptor?.source || 'ChatGPT') }}",
+              "kind": "={{ String($('ChatGPT DingTalk Card').item.json.body?.notificationType || $('ChatGPT DingTalk Card').item.json.body?.descriptor?.kind || 'chatgpt_notification') }}",
+              "url": "={{ String($('ChatGPT DingTalk Card').item.json.body?.url || $('ChatGPT DingTalk Card').item.json.body?.descriptor?.url || '') }}",
+              "metrics": "={{ (() => { const d = $('ChatGPT DingTalk Card').item.json.body?.descriptor || {}; if (Array.isArray(d.metrics)) return d.metrics; const blocks = Array.isArray(d.blocks) ? d.blocks : []; return blocks.filter(b => b?.type === 'keyValue').slice(0,8).map(b => ({ label: String(b.label || '信息'), value: String(b.value ?? '—'), inline: true })); })() }}",
+              "sections": "={{ (() => { const d = $('ChatGPT DingTalk Card').item.json.body?.descriptor || {}; if (Array.isArray(d.sections)) return d.sections; const blocks = Array.isArray(d.blocks) ? d.blocks : []; const lines = blocks.map(b => { if (b?.type === 'text') return String(b.text || ''); if (b?.type === 'list' && Array.isArray(b.items)) return b.items.map(v => '- ' + String(v)).join('\\n'); if (b?.type === 'keyValue') return `- **${String(b.label || '信息')}**：${String(b.value ?? '')}`; return ''; }).filter(Boolean).join('\\n\\n'); return lines ? [{ title: '详情', markdown: lines }] : []; })() }}",
+              "footer": "={{ String($('ChatGPT DingTalk Card').item.json.body?.descriptor?.footer || 'ChatGPT · Discord') }}",
+              "timestamp": "={{ $now.toISO() }}",
+              "imageUrl": "={{ String($('ChatGPT DingTalk Card').item.json.body?.imageUrl || $('ChatGPT DingTalk Card').item.json.body?.descriptor?.imageUrl || '') }}",
+              "thumbnailUrl": "={{ String($('ChatGPT DingTalk Card').item.json.body?.thumbnailUrl || $('ChatGPT DingTalk Card').item.json.body?.descriptor?.thumbnailUrl || '') }}"
+            },
+            "schema": [
+              {
+                "id": "channel",
+                "displayName": "channel",
+                "type": "string"
+              },
+              {
+                "id": "title",
+                "displayName": "title",
+                "type": "string"
+              },
+              {
+                "id": "summary",
+                "displayName": "summary",
+                "type": "string"
+              },
+              {
+                "id": "tone",
+                "displayName": "tone",
+                "type": "string"
+              },
+              {
+                "id": "source",
+                "displayName": "source",
+                "type": "string"
+              },
+              {
+                "id": "kind",
+                "displayName": "kind",
+                "type": "string"
+              },
+              {
+                "id": "url",
+                "displayName": "url",
+                "type": "string"
+              },
+              {
+                "id": "metrics",
+                "displayName": "metrics",
+                "type": "array"
+              },
+              {
+                "id": "sections",
+                "displayName": "sections",
+                "type": "array"
+              },
+              {
+                "id": "footer",
+                "displayName": "footer",
+                "type": "string"
+              },
+              {
+                "id": "timestamp",
+                "displayName": "timestamp",
+                "type": "string"
+              },
+              {
+                "id": "imageUrl",
+                "displayName": "imageUrl",
+                "type": "string"
+              },
+              {
+                "id": "thumbnailUrl",
+                "displayName": "thumbnailUrl",
+                "type": "string"
+              }
+            ]
+          },
+          "mode": "each",
+          "options": {
+            "waitForSubWorkflow": true
+          }
+        },
+        "onError": "continueRegularOutput"
       }
     ],
     "connections": {
       "ChatGPT DingTalk Card": {
+        "main": [
+          [
+            {
+              "node": "Send Discord rich notification",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Send Discord rich notification": {
         "main": [
           [
             {
@@ -166,10 +417,10 @@
     },
     "nodeGroups": [],
     "authors": "Administrator NTLx (via MCP)",
-    "name": "Harden A2UI input and delivery contract",
-    "description": "Normalize legacy shorthand blocks before plugin validation and document terminal delivery verification for all ChatGPT scheduled-worker callers.",
+    "name": "Add parallel Discord delivery",
+    "description": "Routes ChatGPT notifications through the shared rich Discord Hub before DingTalk. Defaults to feeds, supports explicit status via discordChannel/notificationType, and preserves the existing DingTalk webhook response contract.",
     "autosaved": false,
-    "createdAt": "2026-10-26T00:49:22.204Z",
-    "updatedAt": "2026-10-26T00:49:22.204Z"
+    "createdAt": "2026-10-26T07:59:08.828Z",
+    "updatedAt": "2026-10-26T07:59:08.828Z"
   }
 }
