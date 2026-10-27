@@ -4,9 +4,9 @@
   "active": false,
   "activeVersionId": null,
   "createdAt": "2026-10-25T13:14:46.223Z",
-  "updatedAt": "2026-10-25T13:14:46.223Z",
+  "updatedAt": "2026-10-26T07:16:22.055Z",
   "isArchived": false,
-  "versionId": "a840e225-61ea-4ddb-9ec3-2f0f74d944ff",
+  "versionId": "c3714525-eea6-4ca5-917d-846e36a916d6",
   "triggerCount": 0,
   "nodes": [
     {
@@ -156,7 +156,7 @@
       "parameters": {
         "operation": "createAndDeliver",
         "inputMode": "form",
-        "cardTemplateId": "={{ $('Run report').item.json.cardTemplateId || '' }}",
+        "cardTemplateId": "ff4f49b1-384b-4b4a-b9f3-98379959f923.schema",
         "cardDataMode": "a2ui",
         "a2uiDescriptor": "={{ $json.descriptor }}",
         "target": "group",
