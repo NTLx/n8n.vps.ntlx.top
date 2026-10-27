@@ -1,0 +1,119 @@
+{
+  "id": "OwlefDPyc21eW1mX",
+  "name": "Recover blocked OpenAI status work",
+  "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-10-27T00:17:46.698Z",
+  "updatedAt": "2026-10-27T00:18:04.144Z",
+  "isArchived": true,
+  "versionId": "199e8325-92d9-41e4-bab5-11038be85646",
+  "triggerCount": 0,
+  "nodes": [
+    {
+      "id": "fd790221-4c52-45bc-b088-765b3b6ad881",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "ccf014b4-2472-423c-b4fc-fd497b476961",
+      "name": "Requeue blocked OpenAI status work",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        224,
+        0
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "OxI5fJ0yqAgyyHze",
+          "cachedResultName": "ai_work_queue"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "kind",
+              "condition": "eq",
+              "keyValue": "openai_status_update"
+            },
+            {
+              "keyName": "status",
+              "condition": "eq",
+              "keyValue": "blocked"
+            },
+            {
+              "keyName": "correlation_id",
+              "condition": "eq",
+              "keyValue": "openai-status:01M5WPZTT0385GMEV1353ZC4AM"
+            },
+            {
+              "keyName": "last_error",
+              "condition": "eq",
+              "keyValue": "unknown work kind，需要定义处理契约"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "status": "pending",
+            "not_before": "={{ $now.toISO() }}",
+            "completed_at": null,
+            "claimed_by": "",
+            "claimed_at": null,
+            "lease_until": null,
+            "result_ref": "",
+            "result_summary": "",
+            "last_error": ""
+          }
+        },
+        "options": {}
+      }
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Requeue blocked OpenAI status work",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "OwlefDPyc21eW1mX",
+      "projectId": "cNMj0K6AdJmi0OAZ",
+      "createdAt": "2026-10-27T00:17:46.698Z",
+      "updatedAt": "2026-10-27T00:17:46.698Z"
+    }
+  ],
+  "activeVersion": null
+}
