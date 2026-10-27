@@ -2,11 +2,11 @@
   "id": "AKwuvPIWm8mmJH6h",
   "name": "Nutify",
   "active": true,
-  "activeVersionId": "d6168d48-02a8-4e19-beb9-5eadc634143d",
+  "activeVersionId": "4865fcb8-6ccb-41d1-88bb-e57ddac4c831",
   "createdAt": "2026-10-19T06:27:25.767Z",
-  "updatedAt": "2026-10-22T16:21:02.719Z",
+  "updatedAt": "2026-10-26T08:02:14.030Z",
   "isArchived": false,
-  "versionId": "d6168d48-02a8-4e19-beb9-5eadc634143d",
+  "versionId": "4865fcb8-6ccb-41d1-88bb-e57ddac4c831",
   "triggerCount": 1,
   "nodes": [
     {
@@ -375,6 +375,114 @@
         }
       },
       "onError": "continueRegularOutput"
+    },
+    {
+      "id": "fd2eea30-9e36-4382-824d-7f743980aba6",
+      "name": "Discord UPS Status Alert",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.4,
+      "position": [
+        224,
+        -192
+      ],
+      "parameters": {
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "Gu9lvE61vyyJf2xm"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "channel": "status",
+            "title": "={{ String($json.body?.title || 'Nutify UPS 事件') }}",
+            "summary": "={{ String($json.body?.event_description || $json.body?.message || 'UPS notification') }}",
+            "tone": "={{ (() => { if ($json.body?.test === true || String($json.body?.event_type || '').toUpperCase() === 'TEST') return 'info'; const s = String($json.body?.notification_card?.severity || '').toLowerCase(); if (['critical','error','emergency'].includes(s)) return 'error'; if (['warning','warn'].includes(s)) return 'warning'; return 'info'; })() }}",
+            "source": "Nutify",
+            "kind": "ups_event",
+            "url": "",
+            "metrics": "={{ [{ label: 'Event', value: String($json.body?.event_type || '-'), inline: true }, { label: 'Priority', value: 'P' + String($json.body?.priority ?? '-'), inline: true }, { label: 'Server', value: String($json.body?.server_name || '-'), inline: true }, { label: 'UPS Status', value: String($json.body?.ups_data?.ups_status || '-'), inline: true }, { label: 'Battery', value: String($json.body?.ups_data?.battery_charge ?? '-') + (String($json.body?.ups_data?.battery_charge ?? '').includes('%') ? '' : '%'), inline: true }, { label: 'Input', value: String($json.body?.ups_data?.input_voltage || '-'), inline: true }] }}",
+            "sections": "={{ [{ title: 'UPS 设备', markdown: '- **型号**：' + String($json.body?.ups_data?.ups_model || '-') + '\\n- **序列号**：' + String($json.body?.ups_data?.device_serial || '-') + ($json.body?.test ? '\\n\\n> ⚠️ 这是一条 Nutify 测试消息' : '') }] }}",
+            "footer": "Nutify UPS Monitor",
+            "timestamp": "={{ String($json.body?.event_timestamp || $json.body?.timestamp || $now.toISO()) }}",
+            "imageUrl": "",
+            "thumbnailUrl": ""
+          },
+          "schema": [
+            {
+              "id": "channel",
+              "displayName": "channel",
+              "type": "string"
+            },
+            {
+              "id": "title",
+              "displayName": "title",
+              "type": "string"
+            },
+            {
+              "id": "summary",
+              "displayName": "summary",
+              "type": "string"
+            },
+            {
+              "id": "tone",
+              "displayName": "tone",
+              "type": "string"
+            },
+            {
+              "id": "source",
+              "displayName": "source",
+              "type": "string"
+            },
+            {
+              "id": "kind",
+              "displayName": "kind",
+              "type": "string"
+            },
+            {
+              "id": "url",
+              "displayName": "url",
+              "type": "string"
+            },
+            {
+              "id": "metrics",
+              "displayName": "metrics",
+              "type": "array"
+            },
+            {
+              "id": "sections",
+              "displayName": "sections",
+              "type": "array"
+            },
+            {
+              "id": "footer",
+              "displayName": "footer",
+              "type": "string"
+            },
+            {
+              "id": "timestamp",
+              "displayName": "timestamp",
+              "type": "string"
+            },
+            {
+              "id": "imageUrl",
+              "displayName": "imageUrl",
+              "type": "string"
+            },
+            {
+              "id": "thumbnailUrl",
+              "displayName": "thumbnailUrl",
+              "type": "string"
+            }
+          ]
+        },
+        "mode": "each",
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "onError": "continueRegularOutput"
     }
   ],
   "connections": {
@@ -388,6 +496,11 @@
           },
           {
             "node": "Keep Real UPS Events",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Discord UPS Status Alert",
             "type": "main",
             "index": 0
           }
@@ -451,22 +564,22 @@
   },
   "tags": [
     {
+      "id": "BlGRvaSWqnmTk53i",
+      "name": "event-producer",
+      "createdAt": "2026-10-22T09:14:35.370Z",
+      "updatedAt": "2026-10-22T09:14:35.370Z"
+    },
+    {
       "id": "9jw9Bhya2Ylf8E4D",
       "name": "ai-work-producer",
       "createdAt": "2026-10-22T09:14:35.367Z",
       "updatedAt": "2026-10-22T09:14:35.367Z"
     },
     {
-      "id": "twNsKNALbdWLw0Ox",
-      "name": "automation",
-      "createdAt": "2026-10-22T08:25:54.546Z",
-      "updatedAt": "2026-10-22T08:25:54.546Z"
-    },
-    {
-      "id": "BlGRvaSWqnmTk53i",
-      "name": "event-producer",
-      "createdAt": "2026-10-22T09:14:35.370Z",
-      "updatedAt": "2026-10-22T09:14:35.370Z"
+      "id": "fKoxhQDd26tREjYf",
+      "name": "infrastructure",
+      "createdAt": "2026-10-22T16:21:02.698Z",
+      "updatedAt": "2026-10-22T16:21:02.698Z"
     },
     {
       "id": "YwjTMUhE83IXTCRg",
@@ -475,10 +588,22 @@
       "updatedAt": "2026-10-22T08:38:34.124Z"
     },
     {
-      "id": "fKoxhQDd26tREjYf",
-      "name": "infrastructure",
-      "createdAt": "2026-10-22T16:21:02.698Z",
-      "updatedAt": "2026-10-22T16:21:02.698Z"
+      "id": "twNsKNALbdWLw0Ox",
+      "name": "automation",
+      "createdAt": "2026-10-22T08:25:54.546Z",
+      "updatedAt": "2026-10-22T08:25:54.546Z"
+    },
+    {
+      "id": "xx4RO3RRCGt61Y5L",
+      "name": "discord",
+      "createdAt": "2026-10-26T07:57:41.707Z",
+      "updatedAt": "2026-10-26T07:57:41.707Z"
+    },
+    {
+      "id": "xpWm4veSI3VnYxs0",
+      "name": "notification",
+      "createdAt": "2026-10-26T07:57:41.702Z",
+      "updatedAt": "2026-10-26T07:57:41.702Z"
     }
   ],
   "shared": [
@@ -491,7 +616,7 @@
     }
   ],
   "activeVersion": {
-    "versionId": "d6168d48-02a8-4e19-beb9-5eadc634143d",
+    "versionId": "4865fcb8-6ccb-41d1-88bb-e57ddac4c831",
     "workflowId": "AKwuvPIWm8mmJH6h",
     "nodes": [
       {
@@ -860,6 +985,114 @@
           }
         },
         "onError": "continueRegularOutput"
+      },
+      {
+        "id": "fd2eea30-9e36-4382-824d-7f743980aba6",
+        "name": "Discord UPS Status Alert",
+        "type": "n8n-nodes-base.executeWorkflow",
+        "typeVersion": 1.4,
+        "position": [
+          224,
+          -192
+        ],
+        "parameters": {
+          "source": "database",
+          "workflowId": {
+            "__rl": true,
+            "mode": "id",
+            "value": "Gu9lvE61vyyJf2xm"
+          },
+          "workflowInputs": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "channel": "status",
+              "title": "={{ String($json.body?.title || 'Nutify UPS 事件') }}",
+              "summary": "={{ String($json.body?.event_description || $json.body?.message || 'UPS notification') }}",
+              "tone": "={{ (() => { if ($json.body?.test === true || String($json.body?.event_type || '').toUpperCase() === 'TEST') return 'info'; const s = String($json.body?.notification_card?.severity || '').toLowerCase(); if (['critical','error','emergency'].includes(s)) return 'error'; if (['warning','warn'].includes(s)) return 'warning'; return 'info'; })() }}",
+              "source": "Nutify",
+              "kind": "ups_event",
+              "url": "",
+              "metrics": "={{ [{ label: 'Event', value: String($json.body?.event_type || '-'), inline: true }, { label: 'Priority', value: 'P' + String($json.body?.priority ?? '-'), inline: true }, { label: 'Server', value: String($json.body?.server_name || '-'), inline: true }, { label: 'UPS Status', value: String($json.body?.ups_data?.ups_status || '-'), inline: true }, { label: 'Battery', value: String($json.body?.ups_data?.battery_charge ?? '-') + (String($json.body?.ups_data?.battery_charge ?? '').includes('%') ? '' : '%'), inline: true }, { label: 'Input', value: String($json.body?.ups_data?.input_voltage || '-'), inline: true }] }}",
+              "sections": "={{ [{ title: 'UPS 设备', markdown: '- **型号**：' + String($json.body?.ups_data?.ups_model || '-') + '\\n- **序列号**：' + String($json.body?.ups_data?.device_serial || '-') + ($json.body?.test ? '\\n\\n> ⚠️ 这是一条 Nutify 测试消息' : '') }] }}",
+              "footer": "Nutify UPS Monitor",
+              "timestamp": "={{ String($json.body?.event_timestamp || $json.body?.timestamp || $now.toISO()) }}",
+              "imageUrl": "",
+              "thumbnailUrl": ""
+            },
+            "schema": [
+              {
+                "id": "channel",
+                "displayName": "channel",
+                "type": "string"
+              },
+              {
+                "id": "title",
+                "displayName": "title",
+                "type": "string"
+              },
+              {
+                "id": "summary",
+                "displayName": "summary",
+                "type": "string"
+              },
+              {
+                "id": "tone",
+                "displayName": "tone",
+                "type": "string"
+              },
+              {
+                "id": "source",
+                "displayName": "source",
+                "type": "string"
+              },
+              {
+                "id": "kind",
+                "displayName": "kind",
+                "type": "string"
+              },
+              {
+                "id": "url",
+                "displayName": "url",
+                "type": "string"
+              },
+              {
+                "id": "metrics",
+                "displayName": "metrics",
+                "type": "array"
+              },
+              {
+                "id": "sections",
+                "displayName": "sections",
+                "type": "array"
+              },
+              {
+                "id": "footer",
+                "displayName": "footer",
+                "type": "string"
+              },
+              {
+                "id": "timestamp",
+                "displayName": "timestamp",
+                "type": "string"
+              },
+              {
+                "id": "imageUrl",
+                "displayName": "imageUrl",
+                "type": "string"
+              },
+              {
+                "id": "thumbnailUrl",
+                "displayName": "thumbnailUrl",
+                "type": "string"
+              }
+            ]
+          },
+          "mode": "each",
+          "options": {
+            "waitForSubWorkflow": true
+          }
+        },
+        "onError": "continueRegularOutput"
       }
     ],
     "connections": {
@@ -873,6 +1106,11 @@
             },
             {
               "node": "Keep Real UPS Events",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Discord UPS Status Alert",
               "type": "main",
               "index": 0
             }
@@ -915,10 +1153,10 @@
       }
     ],
     "authors": "Administrator NTLx (via MCP)",
-    "name": "Add infrastructure incident producer",
-    "description": "Keep existing immediate DingTalk alerts intact, filter out Nutify test notifications, and enqueue all real UPS notification events as infra_incident_review through the shared AI Work producer backend.",
+    "name": "Add Discord UPS status alert",
+    "description": "Adds a parallel rich Discord status notification through the shared Hub for every Nutify event without changing the real-event AI queue filter or DingTalk delivery.",
     "autosaved": false,
-    "createdAt": "2026-10-22T16:21:02.725Z",
-    "updatedAt": "2026-10-22T16:21:02.725Z"
+    "createdAt": "2026-10-26T08:02:14.033Z",
+    "updatedAt": "2026-10-26T08:02:14.033Z"
   }
 }
