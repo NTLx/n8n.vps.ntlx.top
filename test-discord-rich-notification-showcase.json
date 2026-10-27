@@ -1,0 +1,320 @@
+{
+  "id": "ofE9uGn1JR6eznTq",
+  "name": "Test Discord rich notification showcase",
+  "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-10-26T07:42:10.969Z",
+  "updatedAt": "2026-10-26T07:56:50.380Z",
+  "isArchived": false,
+  "versionId": "3e7d6a80-18b7-424c-bd04-dc95da48b300",
+  "triggerCount": 0,
+  "nodes": [
+    {
+      "id": "d5b810c6-0f22-4ade-bd7d-147c67d1a7d6",
+      "name": "Run Discord showcase",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        240,
+        300
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "1983c41b-cd4f-45af-b091-a9a6ec8e4abe",
+      "name": "Test feeds via Hub",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.4,
+      "position": [
+        560,
+        200
+      ],
+      "parameters": {
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "Gu9lvE61vyyJf2xm"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "channel": "feeds",
+            "title": "AI Intelligence Daily · Discord Hub",
+            "summary": "验证内容型通知进入 feeds，并由共享 Hub 统一渲染为 Rich Embed。",
+            "tone": "info",
+            "source": "ChatGPT",
+            "kind": "report",
+            "url": "https://n8n.vps.ntlx.top/workflow/Gu9lvE61vyyJf2xm",
+            "metrics": [
+              {
+                "label": "新情报",
+                "value": "12",
+                "inline": true
+              },
+              {
+                "label": "重点",
+                "value": "4",
+                "inline": true
+              },
+              {
+                "label": "需跟进",
+                "value": "2",
+                "inline": true
+              }
+            ],
+            "sections": [
+              {
+                "title": "重点内容",
+                "markdown": "- 新模型发布与工程实践\n- 深度文章与知识产物\n- 报告入口与关键结论"
+              }
+            ],
+            "footer": "Discord Hub · feeds",
+            "timestamp": "={{ $now.toISO() }}",
+            "imageUrl": "https://avatars.githubusercontent.com/u/45487711?s=400&v=4",
+            "thumbnailUrl": ""
+          },
+          "schema": [
+            {
+              "id": "channel",
+              "displayName": "channel",
+              "type": "string"
+            },
+            {
+              "id": "title",
+              "displayName": "title",
+              "type": "string"
+            },
+            {
+              "id": "summary",
+              "displayName": "summary",
+              "type": "string"
+            },
+            {
+              "id": "tone",
+              "displayName": "tone",
+              "type": "string"
+            },
+            {
+              "id": "source",
+              "displayName": "source",
+              "type": "string"
+            },
+            {
+              "id": "kind",
+              "displayName": "kind",
+              "type": "string"
+            },
+            {
+              "id": "url",
+              "displayName": "url",
+              "type": "string"
+            },
+            {
+              "id": "metrics",
+              "displayName": "metrics",
+              "type": "array"
+            },
+            {
+              "id": "sections",
+              "displayName": "sections",
+              "type": "array"
+            },
+            {
+              "id": "footer",
+              "displayName": "footer",
+              "type": "string"
+            },
+            {
+              "id": "timestamp",
+              "displayName": "timestamp",
+              "type": "string"
+            },
+            {
+              "id": "imageUrl",
+              "displayName": "imageUrl",
+              "type": "string"
+            },
+            {
+              "id": "thumbnailUrl",
+              "displayName": "thumbnailUrl",
+              "type": "string"
+            }
+          ]
+        },
+        "mode": "each",
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      }
+    },
+    {
+      "id": "6315fce1-45fb-4d4f-9964-ca6e63121643",
+      "name": "Test status via Hub",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.4,
+      "position": [
+        560,
+        400
+      ],
+      "parameters": {
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "Gu9lvE61vyyJf2xm"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "channel": "status",
+            "title": "ServerFS CI · Rich Status",
+            "summary": "验证运行状态、CI、基础设施和错误告警进入 status。",
+            "tone": "warning",
+            "source": "n8n",
+            "kind": "ci",
+            "url": "https://n8n.vps.ntlx.top/",
+            "metrics": [
+              {
+                "label": "Severity",
+                "value": "P1",
+                "inline": true
+              },
+              {
+                "label": "Check",
+                "value": "linux-arm64",
+                "inline": true
+              },
+              {
+                "label": "State",
+                "value": "degraded",
+                "inline": true
+              }
+            ],
+            "sections": [
+              {
+                "title": "下一步",
+                "markdown": "核查失败节点 → 提取证据 → 交由 ChatGPT 完成根因分析。"
+              }
+            ],
+            "footer": "Discord Hub · status",
+            "timestamp": "={{ $now.toISO() }}",
+            "imageUrl": "",
+            "thumbnailUrl": "https://avatars.githubusercontent.com/u/45487711?s=200&v=4"
+          },
+          "schema": [
+            {
+              "id": "channel",
+              "displayName": "channel",
+              "type": "string"
+            },
+            {
+              "id": "title",
+              "displayName": "title",
+              "type": "string"
+            },
+            {
+              "id": "summary",
+              "displayName": "summary",
+              "type": "string"
+            },
+            {
+              "id": "tone",
+              "displayName": "tone",
+              "type": "string"
+            },
+            {
+              "id": "source",
+              "displayName": "source",
+              "type": "string"
+            },
+            {
+              "id": "kind",
+              "displayName": "kind",
+              "type": "string"
+            },
+            {
+              "id": "url",
+              "displayName": "url",
+              "type": "string"
+            },
+            {
+              "id": "metrics",
+              "displayName": "metrics",
+              "type": "array"
+            },
+            {
+              "id": "sections",
+              "displayName": "sections",
+              "type": "array"
+            },
+            {
+              "id": "footer",
+              "displayName": "footer",
+              "type": "string"
+            },
+            {
+              "id": "timestamp",
+              "displayName": "timestamp",
+              "type": "string"
+            },
+            {
+              "id": "imageUrl",
+              "displayName": "imageUrl",
+              "type": "string"
+            },
+            {
+              "id": "thumbnailUrl",
+              "displayName": "thumbnailUrl",
+              "type": "string"
+            }
+          ]
+        },
+        "mode": "each",
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Run Discord showcase": {
+      "main": [
+        [
+          {
+            "node": "Test feeds via Hub",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Test status via Hub",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "ofE9uGn1JR6eznTq",
+      "projectId": "cNMj0K6AdJmi0OAZ",
+      "createdAt": "2026-10-26T07:42:10.969Z",
+      "updatedAt": "2026-10-26T07:42:10.969Z"
+    }
+  ],
+  "activeVersion": null
+}
