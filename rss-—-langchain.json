@@ -179,7 +179,7 @@
   },
   "staticData": {
     "node:RSS Feed": {
-      "lastItemDate": "2026-10-26T15:32:16.000Z"
+      "lastItemDate": "2026-10-27T17:05:05.000Z"
     }
   },
   "pinData": null,
@@ -188,12 +188,6 @@
     "builderVariant": "mcp"
   },
   "tags": [
-    {
-      "id": "twNsKNALbdWLw0Ox",
-      "name": "automation",
-      "createdAt": "2026-10-22T08:25:54.546Z",
-      "updatedAt": "2026-10-22T08:25:54.546Z"
-    },
     {
       "id": "4l8F0YrAzc1V3KcA",
       "name": "rss-ingress",
@@ -205,6 +199,12 @@
       "name": "rss",
       "createdAt": "2026-10-22T09:19:50.833Z",
       "updatedAt": "2026-10-22T09:19:50.833Z"
+    },
+    {
+      "id": "twNsKNALbdWLw0Ox",
+      "name": "automation",
+      "createdAt": "2026-10-22T08:25:54.546Z",
+      "updatedAt": "2026-10-22T08:25:54.546Z"
     }
   ],
   "shared": [
