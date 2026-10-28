@@ -2,11 +2,11 @@
   "id": "3LE3BnPfHSuIZCVR",
   "name": "Error Notification",
   "active": true,
-  "activeVersionId": "2e0a9c10-9c7e-4663-aff1-49aa84e6de90",
+  "activeVersionId": "12a8e042-3739-44ae-88fe-29db0d9fc71f",
   "createdAt": "2026-02-12T08:00:08.087Z",
-  "updatedAt": "2026-10-26T08:01:26.907Z",
+  "updatedAt": "2026-10-27T09:32:08.935Z",
   "isArchived": false,
-  "versionId": "2e0a9c10-9c7e-4663-aff1-49aa84e6de90",
+  "versionId": "12a8e042-3739-44ae-88fe-29db0d9fc71f",
   "triggerCount": 0,
   "nodes": [
     {
@@ -21,34 +21,6 @@
       "id": "aba1f1f6-bc98-4a9f-856f-7a99d7477455"
     },
     {
-      "parameters": {
-        "chatId": "135590865",
-        "text": "={{ $('Format Error Alert').item.json.telegramMessage }}",
-        "additionalFields": {
-          "appendAttribution": false,
-          "disable_web_page_preview": true
-        }
-      },
-      "type": "n8n-nodes-base.telegram",
-      "typeVersion": 1.2,
-      "position": [
-        960,
-        432
-      ],
-      "name": "Telegram Fallback",
-      "id": "4dd1c3b6-9137-4ec5-bd32-360c6004fecc",
-      "webhookId": "c6d07374-17c4-48b7-bfa0-a20768198d8e",
-      "credentials": {
-        "telegramApi": {
-          "id": "tVb8Nv4w2KsUp66k",
-          "name": "lx3325360"
-        }
-      },
-      "retryOnFail": true,
-      "maxTries": 3,
-      "waitBetweenTries": 5000
-    },
-    {
       "id": "c6686195-ea59-4de0-8cca-a40ba647bd1b",
       "name": "Format Error Alert",
       "type": "n8n-nodes-base.set",
@@ -61,18 +33,6 @@
         "mode": "manual",
         "assignments": {
           "assignments": [
-            {
-              "id": "discordMessage",
-              "name": "discordMessage",
-              "type": "string",
-              "value": "={{ (() => { const e = $json.execution?.error || {}; const wf = $json.workflow?.name || 'Unknown workflow'; const node = $json.execution?.lastNodeExecuted || e.node?.name || 'Unknown'; const code = e.httpCode || '-'; const name = e.name || 'Error'; const level = e.level || '-'; const msg = String(e.description || e.message || e.messages?.[0] || 'No message').replace(/\\s+/g, ' ').slice(0, 700); const url = $json.execution?.url || '-'; const id = $json.execution?.id || '-'; const mode = $json.execution?.mode || '-'; const time = $now.setZone('Asia/Shanghai').toFormat('yyyy-LL-dd HH:mm:ss'); return `🚨 **${wf} 运行失败**\\n> **出错节点**：\\`${node}\\`\\n> **发生时间**：${time}\\n\\n⚠️ **错误详情**\\n* **状态码**：\\`${code}\\` | \\`${name}\\`\\n* **级别 / 模式**：\\`${level}\\` / \\`${mode}\\`\\n* **问题描述**：${msg}\\n\\n🔗 **Execution ${id}**\\n${url}`; })() }}"
-            },
-            {
-              "id": "telegramMessage",
-              "name": "telegramMessage",
-              "type": "string",
-              "value": "={{ (() => { const e = $json.execution?.error || {}; const wf = $json.workflow?.name || 'Unknown workflow'; const node = $json.execution?.lastNodeExecuted || e.node?.name || 'Unknown'; const code = e.httpCode || '-'; const name = e.name || 'Error'; const msg = String(e.description || e.message || e.messages?.[0] || 'No message').replace(/\\s+/g, ' ').slice(0, 900); const url = $json.execution?.url || '-'; const id = $json.execution?.id || '-'; const time = $now.setZone('Asia/Shanghai').toFormat('yyyy-LL-dd HH:mm:ss'); return `🚨 n8n 工作流运行失败\\nWorkflow: ${wf}\\nNode: ${node}\\nTime: ${time}\\nHTTP: ${code}\\nError: ${name}\\nMessage: ${msg}\\nExecution: ${id}\\n${url}`; })() }}"
-            },
             {
               "id": "workflow-id",
               "name": "workflow_id",
@@ -444,34 +404,8 @@
       }
     },
     {
-      "id": "e46db210-125a-4637-bd0d-82b2c6bacfce",
-      "name": "DingTalk Primary Alert",
-      "type": "@cryozerolabs/n8n-nodes-dingtalk.dingtalkNode",
-      "typeVersion": 1,
-      "position": [
-        704,
-        304
-      ],
-      "parameters": {
-        "resource": "robot",
-        "operation": "robot.send",
-        "sendBody": "json",
-        "jsonBody": "={{ ({ msgtype: 'actionCard', actionCard: { title: '🚨 n8n · ' + ($json.workflow_name || 'Unknown workflow') + ' 运行失败', text: '### 🚨 n8n 工作流运行失败\\n\\n**工作流**：' + ($json.workflow_name || 'Unknown workflow') + '\\n\\n**出错节点**：`' + ($json.error_node || 'Unknown') + '`\\n\\n**发生时间**：' + $now.setZone('Asia/Shanghai').toFormat('yyyy-LL-dd HH:mm:ss') + '\\n\\n> **错误类型**：`' + ($json.error_name || 'Error') + '`\\n> **HTTP**：`' + ($json.http_code || '-') + '` · **模式**：`' + ($json.execution_mode || '-') + '`\\n> **详情**：' + String($json.error_message || 'No message').replace(/\\s+/g, ' ').slice(0, 900) + '\\n\\n**Execution**：`' + ($json.execution_id || '-') + '`', singleTitle: '查看执行详情', singleURL: $json.execution_url || 'https://n8n.vps.ntlx.top/' } }) }}"
-      },
-      "credentials": {
-        "dingtalkRobotApi": {
-          "id": "94fIrOuZ6EAtktb4",
-          "name": "四有青年-Notifications-加签通知"
-        }
-      },
-      "onError": "continueErrorOutput",
-      "retryOnFail": true,
-      "maxTries": 3,
-      "waitBetweenTries": 5000
-    },
-    {
       "id": "139ef4db-a853-4780-9949-3a5fc983016a",
-      "name": "Discord Error Alert",
+      "name": "Discord Markdown Error Alert",
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.4,
       "position": [
@@ -489,18 +423,7 @@
           "mappingMode": "defineBelow",
           "value": {
             "channel": "status",
-            "title": "={{ 'n8n · ' + ($json.workflow_name || 'Unknown workflow') + ' 运行失败' }}",
-            "summary": "={{ String($json.error_message || 'No message') }}",
-            "tone": "error",
-            "source": "n8n",
-            "kind": "workflow_error",
-            "url": "={{ String($json.execution_url || '') }}",
-            "metrics": "={{ [{ label: 'Workflow', value: String($json.workflow_name || 'Unknown'), inline: true }, { label: 'Node', value: String($json.error_node || 'Unknown'), inline: true }, { label: 'HTTP', value: String($json.http_code || '-'), inline: true }, { label: 'Mode', value: String($json.execution_mode || '-'), inline: true }, { label: 'Error', value: String($json.error_name || 'Error'), inline: false }] }}",
-            "sections": "={{ [{ title: '错误详情', markdown: String($json.error_message || 'No message').slice(0, 1800) }, { title: 'Execution', markdown: '`' + String($json.execution_id || '-') + '`' }] }}",
-            "footer": "n8n Error Notification",
-            "timestamp": "={{ $now.toISO() }}",
-            "imageUrl": "",
-            "thumbnailUrl": ""
+            "markdown": "={{ (() => { const e = $('Format Error Alert').item.json; const lines = ['# 🚨 n8n 工作流运行失败', '', `- **工作流**：${e.workflow_name || 'Unknown workflow'}`, `- **出错节点**：\\`${e.error_node || 'Unknown'}\\``, `- **错误类型**：\\`${e.error_name || 'Error'}\\``, `- **HTTP**：\\`${e.http_code || '-'}\\``, `- **模式**：\\`${e.execution_mode || '-'}\\``, '', '## 错误详情', String(e.error_message || 'No message')]; if (e.execution_url) lines.push('', `🔗 ${e.execution_url}`); lines.push('', `> Execution: \\`${e.execution_id || '-'}\\``); return lines.join('\\n'); })() }}"
           },
           "schema": [
             {
@@ -509,63 +432,8 @@
               "type": "string"
             },
             {
-              "id": "title",
-              "displayName": "title",
-              "type": "string"
-            },
-            {
-              "id": "summary",
-              "displayName": "summary",
-              "type": "string"
-            },
-            {
-              "id": "tone",
-              "displayName": "tone",
-              "type": "string"
-            },
-            {
-              "id": "source",
-              "displayName": "source",
-              "type": "string"
-            },
-            {
-              "id": "kind",
-              "displayName": "kind",
-              "type": "string"
-            },
-            {
-              "id": "url",
-              "displayName": "url",
-              "type": "string"
-            },
-            {
-              "id": "metrics",
-              "displayName": "metrics",
-              "type": "array"
-            },
-            {
-              "id": "sections",
-              "displayName": "sections",
-              "type": "array"
-            },
-            {
-              "id": "footer",
-              "displayName": "footer",
-              "type": "string"
-            },
-            {
-              "id": "timestamp",
-              "displayName": "timestamp",
-              "type": "string"
-            },
-            {
-              "id": "imageUrl",
-              "displayName": "imageUrl",
-              "type": "string"
-            },
-            {
-              "id": "thumbnailUrl",
-              "displayName": "thumbnailUrl",
+              "id": "markdown",
+              "displayName": "markdown",
               "type": "string"
             }
           ]
@@ -599,12 +467,7 @@
             "index": 0
           },
           {
-            "node": "DingTalk Primary Alert",
-            "type": "main",
-            "index": 0
-          },
-          {
-            "node": "Discord Error Alert",
+            "node": "Discord Markdown Error Alert",
             "type": "main",
             "index": 0
           }
@@ -627,18 +490,6 @@
         [
           {
             "node": "Prepare Failure AI Work",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "DingTalk Primary Alert": {
-      "main": [
-        null,
-        [
-          {
-            "node": "Telegram Fallback",
             "type": "main",
             "index": 0
           }
@@ -679,16 +530,22 @@
   },
   "tags": [
     {
+      "id": "9jw9Bhya2Ylf8E4D",
+      "name": "ai-work-producer",
+      "createdAt": "2026-10-22T09:14:35.367Z",
+      "updatedAt": "2026-10-22T09:14:35.367Z"
+    },
+    {
       "id": "YwjTMUhE83IXTCRg",
       "name": "monitoring",
       "createdAt": "2026-10-22T08:38:34.124Z",
       "updatedAt": "2026-10-22T08:38:34.124Z"
     },
     {
-      "id": "9jw9Bhya2Ylf8E4D",
-      "name": "ai-work-producer",
-      "createdAt": "2026-10-22T09:14:35.367Z",
-      "updatedAt": "2026-10-22T09:14:35.367Z"
+      "id": "twNsKNALbdWLw0Ox",
+      "name": "automation",
+      "createdAt": "2026-10-22T08:25:54.546Z",
+      "updatedAt": "2026-10-22T08:25:54.546Z"
     },
     {
       "id": "xpWm4veSI3VnYxs0",
@@ -697,22 +554,16 @@
       "updatedAt": "2026-10-26T07:57:41.702Z"
     },
     {
-      "id": "BlGRvaSWqnmTk53i",
-      "name": "event-producer",
-      "createdAt": "2026-10-22T09:14:35.370Z",
-      "updatedAt": "2026-10-22T09:14:35.370Z"
-    },
-    {
       "id": "xx4RO3RRCGt61Y5L",
       "name": "discord",
       "createdAt": "2026-10-26T07:57:41.707Z",
       "updatedAt": "2026-10-26T07:57:41.707Z"
     },
     {
-      "id": "twNsKNALbdWLw0Ox",
-      "name": "automation",
-      "createdAt": "2026-10-22T08:25:54.546Z",
-      "updatedAt": "2026-10-22T08:25:54.546Z"
+      "id": "BlGRvaSWqnmTk53i",
+      "name": "event-producer",
+      "createdAt": "2026-10-22T09:14:35.370Z",
+      "updatedAt": "2026-10-22T09:14:35.370Z"
     }
   ],
   "shared": [
@@ -725,7 +576,7 @@
     }
   ],
   "activeVersion": {
-    "versionId": "2e0a9c10-9c7e-4663-aff1-49aa84e6de90",
+    "versionId": "12a8e042-3739-44ae-88fe-29db0d9fc71f",
     "workflowId": "3LE3BnPfHSuIZCVR",
     "nodes": [
       {
@@ -740,34 +591,6 @@
         "id": "aba1f1f6-bc98-4a9f-856f-7a99d7477455"
       },
       {
-        "parameters": {
-          "chatId": "135590865",
-          "text": "={{ $('Format Error Alert').item.json.telegramMessage }}",
-          "additionalFields": {
-            "appendAttribution": false,
-            "disable_web_page_preview": true
-          }
-        },
-        "type": "n8n-nodes-base.telegram",
-        "typeVersion": 1.2,
-        "position": [
-          960,
-          432
-        ],
-        "name": "Telegram Fallback",
-        "id": "4dd1c3b6-9137-4ec5-bd32-360c6004fecc",
-        "webhookId": "c6d07374-17c4-48b7-bfa0-a20768198d8e",
-        "credentials": {
-          "telegramApi": {
-            "id": "tVb8Nv4w2KsUp66k",
-            "name": "lx3325360"
-          }
-        },
-        "retryOnFail": true,
-        "maxTries": 3,
-        "waitBetweenTries": 5000
-      },
-      {
         "id": "c6686195-ea59-4de0-8cca-a40ba647bd1b",
         "name": "Format Error Alert",
         "type": "n8n-nodes-base.set",
@@ -780,18 +603,6 @@
           "mode": "manual",
           "assignments": {
             "assignments": [
-              {
-                "id": "discordMessage",
-                "name": "discordMessage",
-                "type": "string",
-                "value": "={{ (() => { const e = $json.execution?.error || {}; const wf = $json.workflow?.name || 'Unknown workflow'; const node = $json.execution?.lastNodeExecuted || e.node?.name || 'Unknown'; const code = e.httpCode || '-'; const name = e.name || 'Error'; const level = e.level || '-'; const msg = String(e.description || e.message || e.messages?.[0] || 'No message').replace(/\\s+/g, ' ').slice(0, 700); const url = $json.execution?.url || '-'; const id = $json.execution?.id || '-'; const mode = $json.execution?.mode || '-'; const time = $now.setZone('Asia/Shanghai').toFormat('yyyy-LL-dd HH:mm:ss'); return `🚨 **${wf} 运行失败**\\n> **出错节点**：\\`${node}\\`\\n> **发生时间**：${time}\\n\\n⚠️ **错误详情**\\n* **状态码**：\\`${code}\\` | \\`${name}\\`\\n* **级别 / 模式**：\\`${level}\\` / \\`${mode}\\`\\n* **问题描述**：${msg}\\n\\n🔗 **Execution ${id}**\\n${url}`; })() }}"
-              },
-              {
-                "id": "telegramMessage",
-                "name": "telegramMessage",
-                "type": "string",
-                "value": "={{ (() => { const e = $json.execution?.error || {}; const wf = $json.workflow?.name || 'Unknown workflow'; const node = $json.execution?.lastNodeExecuted || e.node?.name || 'Unknown'; const code = e.httpCode || '-'; const name = e.name || 'Error'; const msg = String(e.description || e.message || e.messages?.[0] || 'No message').replace(/\\s+/g, ' ').slice(0, 900); const url = $json.execution?.url || '-'; const id = $json.execution?.id || '-'; const time = $now.setZone('Asia/Shanghai').toFormat('yyyy-LL-dd HH:mm:ss'); return `🚨 n8n 工作流运行失败\\nWorkflow: ${wf}\\nNode: ${node}\\nTime: ${time}\\nHTTP: ${code}\\nError: ${name}\\nMessage: ${msg}\\nExecution: ${id}\\n${url}`; })() }}"
-              },
               {
                 "id": "workflow-id",
                 "name": "workflow_id",
@@ -1163,34 +974,8 @@
         }
       },
       {
-        "id": "e46db210-125a-4637-bd0d-82b2c6bacfce",
-        "name": "DingTalk Primary Alert",
-        "type": "@cryozerolabs/n8n-nodes-dingtalk.dingtalkNode",
-        "typeVersion": 1,
-        "position": [
-          704,
-          304
-        ],
-        "parameters": {
-          "resource": "robot",
-          "operation": "robot.send",
-          "sendBody": "json",
-          "jsonBody": "={{ ({ msgtype: 'actionCard', actionCard: { title: '🚨 n8n · ' + ($json.workflow_name || 'Unknown workflow') + ' 运行失败', text: '### 🚨 n8n 工作流运行失败\\n\\n**工作流**：' + ($json.workflow_name || 'Unknown workflow') + '\\n\\n**出错节点**：`' + ($json.error_node || 'Unknown') + '`\\n\\n**发生时间**：' + $now.setZone('Asia/Shanghai').toFormat('yyyy-LL-dd HH:mm:ss') + '\\n\\n> **错误类型**：`' + ($json.error_name || 'Error') + '`\\n> **HTTP**：`' + ($json.http_code || '-') + '` · **模式**：`' + ($json.execution_mode || '-') + '`\\n> **详情**：' + String($json.error_message || 'No message').replace(/\\s+/g, ' ').slice(0, 900) + '\\n\\n**Execution**：`' + ($json.execution_id || '-') + '`', singleTitle: '查看执行详情', singleURL: $json.execution_url || 'https://n8n.vps.ntlx.top/' } }) }}"
-        },
-        "credentials": {
-          "dingtalkRobotApi": {
-            "id": "94fIrOuZ6EAtktb4",
-            "name": "四有青年-Notifications-加签通知"
-          }
-        },
-        "onError": "continueErrorOutput",
-        "retryOnFail": true,
-        "maxTries": 3,
-        "waitBetweenTries": 5000
-      },
-      {
         "id": "139ef4db-a853-4780-9949-3a5fc983016a",
-        "name": "Discord Error Alert",
+        "name": "Discord Markdown Error Alert",
         "type": "n8n-nodes-base.executeWorkflow",
         "typeVersion": 1.4,
         "position": [
@@ -1208,18 +993,7 @@
             "mappingMode": "defineBelow",
             "value": {
               "channel": "status",
-              "title": "={{ 'n8n · ' + ($json.workflow_name || 'Unknown workflow') + ' 运行失败' }}",
-              "summary": "={{ String($json.error_message || 'No message') }}",
-              "tone": "error",
-              "source": "n8n",
-              "kind": "workflow_error",
-              "url": "={{ String($json.execution_url || '') }}",
-              "metrics": "={{ [{ label: 'Workflow', value: String($json.workflow_name || 'Unknown'), inline: true }, { label: 'Node', value: String($json.error_node || 'Unknown'), inline: true }, { label: 'HTTP', value: String($json.http_code || '-'), inline: true }, { label: 'Mode', value: String($json.execution_mode || '-'), inline: true }, { label: 'Error', value: String($json.error_name || 'Error'), inline: false }] }}",
-              "sections": "={{ [{ title: '错误详情', markdown: String($json.error_message || 'No message').slice(0, 1800) }, { title: 'Execution', markdown: '`' + String($json.execution_id || '-') + '`' }] }}",
-              "footer": "n8n Error Notification",
-              "timestamp": "={{ $now.toISO() }}",
-              "imageUrl": "",
-              "thumbnailUrl": ""
+              "markdown": "={{ (() => { const e = $('Format Error Alert').item.json; const lines = ['# 🚨 n8n 工作流运行失败', '', `- **工作流**：${e.workflow_name || 'Unknown workflow'}`, `- **出错节点**：\\`${e.error_node || 'Unknown'}\\``, `- **错误类型**：\\`${e.error_name || 'Error'}\\``, `- **HTTP**：\\`${e.http_code || '-'}\\``, `- **模式**：\\`${e.execution_mode || '-'}\\``, '', '## 错误详情', String(e.error_message || 'No message')]; if (e.execution_url) lines.push('', `🔗 ${e.execution_url}`); lines.push('', `> Execution: \\`${e.execution_id || '-'}\\``); return lines.join('\\n'); })() }}"
             },
             "schema": [
               {
@@ -1228,63 +1002,8 @@
                 "type": "string"
               },
               {
-                "id": "title",
-                "displayName": "title",
-                "type": "string"
-              },
-              {
-                "id": "summary",
-                "displayName": "summary",
-                "type": "string"
-              },
-              {
-                "id": "tone",
-                "displayName": "tone",
-                "type": "string"
-              },
-              {
-                "id": "source",
-                "displayName": "source",
-                "type": "string"
-              },
-              {
-                "id": "kind",
-                "displayName": "kind",
-                "type": "string"
-              },
-              {
-                "id": "url",
-                "displayName": "url",
-                "type": "string"
-              },
-              {
-                "id": "metrics",
-                "displayName": "metrics",
-                "type": "array"
-              },
-              {
-                "id": "sections",
-                "displayName": "sections",
-                "type": "array"
-              },
-              {
-                "id": "footer",
-                "displayName": "footer",
-                "type": "string"
-              },
-              {
-                "id": "timestamp",
-                "displayName": "timestamp",
-                "type": "string"
-              },
-              {
-                "id": "imageUrl",
-                "displayName": "imageUrl",
-                "type": "string"
-              },
-              {
-                "id": "thumbnailUrl",
-                "displayName": "thumbnailUrl",
+                "id": "markdown",
+                "displayName": "markdown",
                 "type": "string"
               }
             ]
@@ -1318,12 +1037,7 @@
               "index": 0
             },
             {
-              "node": "DingTalk Primary Alert",
-              "type": "main",
-              "index": 0
-            },
-            {
-              "node": "Discord Error Alert",
+              "node": "Discord Markdown Error Alert",
               "type": "main",
               "index": 0
             }
@@ -1351,18 +1065,6 @@
             }
           ]
         ]
-      },
-      "DingTalk Primary Alert": {
-        "main": [
-          null,
-          [
-            {
-              "node": "Telegram Fallback",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
       }
     },
     "nodeGroups": [
@@ -1378,10 +1080,10 @@
       }
     ],
     "authors": "Administrator NTLx (via MCP)",
-    "name": "Add rich Discord error alert",
-    "description": "Adds a parallel status-channel Rich Embed through the shared Discord Hub while preserving DingTalk primary alert, Telegram fallback, and AI triage behavior.",
+    "name": "Use final Markdown contract",
+    "description": "Removed legacy structured notification payload. Error Notification now sends only channel + final Markdown to the shared Discord Hub.",
     "autosaved": false,
-    "createdAt": "2026-10-26T08:01:26.912Z",
-    "updatedAt": "2026-10-26T08:01:26.912Z"
+    "createdAt": "2026-10-27T09:19:56.612Z",
+    "updatedAt": "2026-10-27T09:19:56.612Z"
   }
 }
