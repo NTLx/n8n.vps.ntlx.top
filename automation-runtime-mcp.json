@@ -833,10 +833,10 @@
   },
   "tags": [
     {
-      "id": "vFSgDqIgd5B7WQV5",
-      "name": "mcp",
-      "createdAt": "2026-10-22T09:12:58.484Z",
-      "updatedAt": "2026-10-22T09:12:58.484Z"
+      "id": "twNsKNALbdWLw0Ox",
+      "name": "automation",
+      "createdAt": "2026-10-22T08:25:54.546Z",
+      "updatedAt": "2026-10-22T08:25:54.546Z"
     },
     {
       "id": "ATML5b5eE3eFn63x",
@@ -845,16 +845,16 @@
       "updatedAt": "2026-10-22T09:12:58.479Z"
     },
     {
+      "id": "vFSgDqIgd5B7WQV5",
+      "name": "mcp",
+      "createdAt": "2026-10-22T09:12:58.484Z",
+      "updatedAt": "2026-10-22T09:12:58.484Z"
+    },
+    {
       "id": "SvzA8xykOpMtvbwk",
       "name": "ai-work",
       "createdAt": "2026-10-22T09:12:58.488Z",
       "updatedAt": "2026-10-22T09:12:58.488Z"
-    },
-    {
-      "id": "twNsKNALbdWLw0Ox",
-      "name": "automation",
-      "createdAt": "2026-10-22T08:25:54.546Z",
-      "updatedAt": "2026-10-22T08:25:54.546Z"
     }
   ],
   "shared": [
