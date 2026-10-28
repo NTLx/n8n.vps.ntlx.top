@@ -2,11 +2,11 @@
   "id": "AKwuvPIWm8mmJH6h",
   "name": "Nutify",
   "active": true,
-  "activeVersionId": "4865fcb8-6ccb-41d1-88bb-e57ddac4c831",
+  "activeVersionId": "0d5a5c64-378b-41d6-a5ac-75c485ef277c",
   "createdAt": "2026-10-19T06:27:25.767Z",
-  "updatedAt": "2026-10-26T08:02:14.030Z",
+  "updatedAt": "2026-10-27T09:20:05.750Z",
   "isArchived": false,
-  "versionId": "4865fcb8-6ccb-41d1-88bb-e57ddac4c831",
+  "versionId": "0d5a5c64-378b-41d6-a5ac-75c485ef277c",
   "triggerCount": 1,
   "nodes": [
     {
@@ -29,32 +29,6 @@
         "httpHeaderAuth": {
           "id": "RvmfH6qWSIUABPQO",
           "name": "n8n Webhook（Bearer Auth）"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "method": "POST",
-        "url": "https://oapi.dingtalk.com/robot/send",
-        "authentication": "genericCredentialType",
-        "genericAuthType": "httpQueryAuth",
-        "sendBody": true,
-        "specifyBody": "json",
-        "jsonBody": "={\n  \"msgtype\": \"markdown\",\n  \"markdown\": {\n    \"title\": \"{{ ($json.body.title || 'Nutify UPS 事件').toJsonString().slice(1, -1) }}\",\n    \"text\": \"# 🚨 {{ ($json.body.title || 'Nutify UPS 事件').toJsonString().slice(1, -1) }}\\n\\n> **事件类型：** {{ ($json.body.event_type || '-').toJsonString().slice(1, -1) }}\\n> **优先级：** P{{ (String($json.body.priority ?? '-')).toJsonString().slice(1, -1) }}\\n> **服务器：** {{ ($json.body.server_name || '-').toJsonString().slice(1, -1) }}\\n> **事件时间：** {{ ($json.body.event_timestamp || $json.body.timestamp || '-').toJsonString().slice(1, -1) }}\\n\\n**事件描述：** {{ ($json.body.event_description || $json.body.message || '-').toJsonString().slice(1, -1) }}\\n\\n#### 🔋 UPS 数据\\n\\n- **型号：** {{ ($json.body.ups_data?.ups_model || '-').toJsonString().slice(1, -1) }}\\n- **序列号：** {{ ($json.body.ups_data?.device_serial || '-').toJsonString().slice(1, -1) }}\\n- **状态：** {{ ($json.body.ups_data?.ups_status || '-').toJsonString().slice(1, -1) }}\\n- **电池电量：** {{ (String($json.body.ups_data?.battery_charge || '-')).toJsonString().slice(1, -1) }}\\n- **输入电压：** {{ ($json.body.ups_data?.input_voltage || '-').toJsonString().slice(1, -1) }}\\n\\n{{ $json.body.test ? '> ⚠️ 这是一条来自 Nutify 的测试消息' : '' }}\\n\\n*Nutify UPS Monitor · 接收于 {{ $now.format('yyyy-LL-dd HH:mm:ss') }}*\"\n  },\n  \"at\": {\n    \"isAtAll\": false\n  }\n}",
-        "options": {}
-      },
-      "id": "9d7333c9-2773-448a-8e89-4ebb32cc6073",
-      "name": "发送钉钉 Markdown 消息",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
-      "position": [
-        224,
-        0
-      ],
-      "credentials": {
-        "httpQueryAuth": {
-          "id": "BhuH8Wpmqr9Nndwy",
-          "name": "四有青年 Notifications 关键字通知（钉钉群机器人）"
         }
       }
     },
@@ -378,7 +352,7 @@
     },
     {
       "id": "fd2eea30-9e36-4382-824d-7f743980aba6",
-      "name": "Discord UPS Status Alert",
+      "name": "Discord Markdown UPS Alert",
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.4,
       "position": [
@@ -396,18 +370,7 @@
           "mappingMode": "defineBelow",
           "value": {
             "channel": "status",
-            "title": "={{ String($json.body?.title || 'Nutify UPS 事件') }}",
-            "summary": "={{ String($json.body?.event_description || $json.body?.message || 'UPS notification') }}",
-            "tone": "={{ (() => { if ($json.body?.test === true || String($json.body?.event_type || '').toUpperCase() === 'TEST') return 'info'; const s = String($json.body?.notification_card?.severity || '').toLowerCase(); if (['critical','error','emergency'].includes(s)) return 'error'; if (['warning','warn'].includes(s)) return 'warning'; return 'info'; })() }}",
-            "source": "Nutify",
-            "kind": "ups_event",
-            "url": "",
-            "metrics": "={{ [{ label: 'Event', value: String($json.body?.event_type || '-'), inline: true }, { label: 'Priority', value: 'P' + String($json.body?.priority ?? '-'), inline: true }, { label: 'Server', value: String($json.body?.server_name || '-'), inline: true }, { label: 'UPS Status', value: String($json.body?.ups_data?.ups_status || '-'), inline: true }, { label: 'Battery', value: String($json.body?.ups_data?.battery_charge ?? '-') + (String($json.body?.ups_data?.battery_charge ?? '').includes('%') ? '' : '%'), inline: true }, { label: 'Input', value: String($json.body?.ups_data?.input_voltage || '-'), inline: true }] }}",
-            "sections": "={{ [{ title: 'UPS 设备', markdown: '- **型号**：' + String($json.body?.ups_data?.ups_model || '-') + '\\n- **序列号**：' + String($json.body?.ups_data?.device_serial || '-') + ($json.body?.test ? '\\n\\n> ⚠️ 这是一条 Nutify 测试消息' : '') }] }}",
-            "footer": "Nutify UPS Monitor",
-            "timestamp": "={{ String($json.body?.event_timestamp || $json.body?.timestamp || $now.toISO()) }}",
-            "imageUrl": "",
-            "thumbnailUrl": ""
+            "markdown": "={{ (() => { const b = $json.body || {}; const u = b.ups_data || {}; const test = b.test === true || String(b.event_type || '').toUpperCase() === 'TEST'; return [`# ${test ? '🔵' : '⚠️'} ${String(b.title || 'Nutify UPS 事件')}`, '', `> Nutify · ${String(b.server_name || '-')}`, '', `- **事件**：${String(b.event_type || '-')}`, `- **优先级**：P${String(b.priority ?? '-')}`, `- **UPS 状态**：${String(u.ups_status || '-')}`, `- **电池**：${String(u.battery_charge ?? '-')}${String(u.battery_charge ?? '').includes('%') ? '' : '%'}`, `- **输入电压**：${String(u.input_voltage || '-')}`, `- **型号**：${String(u.ups_model || '-')}`, `- **序列号**：${String(u.device_serial || '-')}`, '', String(b.event_description || b.message || 'UPS notification'), ...(test ? ['', '> ⚠️ 这是一条 Nutify 测试消息'] : []), '', '---', `Nutify UPS Monitor · ${String(b.event_timestamp || b.timestamp || $now.toISO())}`].join('\\n'); })() }}"
           },
           "schema": [
             {
@@ -416,63 +379,8 @@
               "type": "string"
             },
             {
-              "id": "title",
-              "displayName": "title",
-              "type": "string"
-            },
-            {
-              "id": "summary",
-              "displayName": "summary",
-              "type": "string"
-            },
-            {
-              "id": "tone",
-              "displayName": "tone",
-              "type": "string"
-            },
-            {
-              "id": "source",
-              "displayName": "source",
-              "type": "string"
-            },
-            {
-              "id": "kind",
-              "displayName": "kind",
-              "type": "string"
-            },
-            {
-              "id": "url",
-              "displayName": "url",
-              "type": "string"
-            },
-            {
-              "id": "metrics",
-              "displayName": "metrics",
-              "type": "array"
-            },
-            {
-              "id": "sections",
-              "displayName": "sections",
-              "type": "array"
-            },
-            {
-              "id": "footer",
-              "displayName": "footer",
-              "type": "string"
-            },
-            {
-              "id": "timestamp",
-              "displayName": "timestamp",
-              "type": "string"
-            },
-            {
-              "id": "imageUrl",
-              "displayName": "imageUrl",
-              "type": "string"
-            },
-            {
-              "id": "thumbnailUrl",
-              "displayName": "thumbnailUrl",
+              "id": "markdown",
+              "displayName": "markdown",
               "type": "string"
             }
           ]
@@ -490,17 +398,12 @@
       "main": [
         [
           {
-            "node": "发送钉钉 Markdown 消息",
-            "type": "main",
-            "index": 0
-          },
-          {
             "node": "Keep Real UPS Events",
             "type": "main",
             "index": 0
           },
           {
-            "node": "Discord UPS Status Alert",
+            "node": "Discord Markdown UPS Alert",
             "type": "main",
             "index": 0
           }
@@ -539,7 +442,7 @@
         "91475cd8-8bf4-4cca-83c2-ab6f7d48d6f1",
         "117b69ef-7698-44d8-a7b8-75651c8ddf1b"
       ],
-      "description": "Ignore test notifications; enqueue real UPS events for later ChatGPT analysis without delaying the immediate DingTalk alert."
+      "description": "Ignore test notifications; enqueue real UPS events for later ChatGPT analysis without delaying the immediate Discord status alert."
     }
   ],
   "settings": {
@@ -563,6 +466,18 @@
     "builderVariant": "mcp"
   },
   "tags": [
+    {
+      "id": "xx4RO3RRCGt61Y5L",
+      "name": "discord",
+      "createdAt": "2026-10-26T07:57:41.707Z",
+      "updatedAt": "2026-10-26T07:57:41.707Z"
+    },
+    {
+      "id": "xpWm4veSI3VnYxs0",
+      "name": "notification",
+      "createdAt": "2026-10-26T07:57:41.702Z",
+      "updatedAt": "2026-10-26T07:57:41.702Z"
+    },
     {
       "id": "BlGRvaSWqnmTk53i",
       "name": "event-producer",
@@ -592,18 +507,6 @@
       "name": "automation",
       "createdAt": "2026-10-22T08:25:54.546Z",
       "updatedAt": "2026-10-22T08:25:54.546Z"
-    },
-    {
-      "id": "xx4RO3RRCGt61Y5L",
-      "name": "discord",
-      "createdAt": "2026-10-26T07:57:41.707Z",
-      "updatedAt": "2026-10-26T07:57:41.707Z"
-    },
-    {
-      "id": "xpWm4veSI3VnYxs0",
-      "name": "notification",
-      "createdAt": "2026-10-26T07:57:41.702Z",
-      "updatedAt": "2026-10-26T07:57:41.702Z"
     }
   ],
   "shared": [
@@ -616,7 +519,7 @@
     }
   ],
   "activeVersion": {
-    "versionId": "4865fcb8-6ccb-41d1-88bb-e57ddac4c831",
+    "versionId": "0d5a5c64-378b-41d6-a5ac-75c485ef277c",
     "workflowId": "AKwuvPIWm8mmJH6h",
     "nodes": [
       {
@@ -639,32 +542,6 @@
           "httpHeaderAuth": {
             "id": "RvmfH6qWSIUABPQO",
             "name": "n8n Webhook（Bearer Auth）"
-          }
-        }
-      },
-      {
-        "parameters": {
-          "method": "POST",
-          "url": "https://oapi.dingtalk.com/robot/send",
-          "authentication": "genericCredentialType",
-          "genericAuthType": "httpQueryAuth",
-          "sendBody": true,
-          "specifyBody": "json",
-          "jsonBody": "={\n  \"msgtype\": \"markdown\",\n  \"markdown\": {\n    \"title\": \"{{ ($json.body.title || 'Nutify UPS 事件').toJsonString().slice(1, -1) }}\",\n    \"text\": \"# 🚨 {{ ($json.body.title || 'Nutify UPS 事件').toJsonString().slice(1, -1) }}\\n\\n> **事件类型：** {{ ($json.body.event_type || '-').toJsonString().slice(1, -1) }}\\n> **优先级：** P{{ (String($json.body.priority ?? '-')).toJsonString().slice(1, -1) }}\\n> **服务器：** {{ ($json.body.server_name || '-').toJsonString().slice(1, -1) }}\\n> **事件时间：** {{ ($json.body.event_timestamp || $json.body.timestamp || '-').toJsonString().slice(1, -1) }}\\n\\n**事件描述：** {{ ($json.body.event_description || $json.body.message || '-').toJsonString().slice(1, -1) }}\\n\\n#### 🔋 UPS 数据\\n\\n- **型号：** {{ ($json.body.ups_data?.ups_model || '-').toJsonString().slice(1, -1) }}\\n- **序列号：** {{ ($json.body.ups_data?.device_serial || '-').toJsonString().slice(1, -1) }}\\n- **状态：** {{ ($json.body.ups_data?.ups_status || '-').toJsonString().slice(1, -1) }}\\n- **电池电量：** {{ (String($json.body.ups_data?.battery_charge || '-')).toJsonString().slice(1, -1) }}\\n- **输入电压：** {{ ($json.body.ups_data?.input_voltage || '-').toJsonString().slice(1, -1) }}\\n\\n{{ $json.body.test ? '> ⚠️ 这是一条来自 Nutify 的测试消息' : '' }}\\n\\n*Nutify UPS Monitor · 接收于 {{ $now.format('yyyy-LL-dd HH:mm:ss') }}*\"\n  },\n  \"at\": {\n    \"isAtAll\": false\n  }\n}",
-          "options": {}
-        },
-        "id": "9d7333c9-2773-448a-8e89-4ebb32cc6073",
-        "name": "发送钉钉 Markdown 消息",
-        "type": "n8n-nodes-base.httpRequest",
-        "typeVersion": 4.2,
-        "position": [
-          224,
-          0
-        ],
-        "credentials": {
-          "httpQueryAuth": {
-            "id": "BhuH8Wpmqr9Nndwy",
-            "name": "四有青年 Notifications 关键字通知（钉钉群机器人）"
           }
         }
       },
@@ -988,7 +865,7 @@
       },
       {
         "id": "fd2eea30-9e36-4382-824d-7f743980aba6",
-        "name": "Discord UPS Status Alert",
+        "name": "Discord Markdown UPS Alert",
         "type": "n8n-nodes-base.executeWorkflow",
         "typeVersion": 1.4,
         "position": [
@@ -1006,18 +883,7 @@
             "mappingMode": "defineBelow",
             "value": {
               "channel": "status",
-              "title": "={{ String($json.body?.title || 'Nutify UPS 事件') }}",
-              "summary": "={{ String($json.body?.event_description || $json.body?.message || 'UPS notification') }}",
-              "tone": "={{ (() => { if ($json.body?.test === true || String($json.body?.event_type || '').toUpperCase() === 'TEST') return 'info'; const s = String($json.body?.notification_card?.severity || '').toLowerCase(); if (['critical','error','emergency'].includes(s)) return 'error'; if (['warning','warn'].includes(s)) return 'warning'; return 'info'; })() }}",
-              "source": "Nutify",
-              "kind": "ups_event",
-              "url": "",
-              "metrics": "={{ [{ label: 'Event', value: String($json.body?.event_type || '-'), inline: true }, { label: 'Priority', value: 'P' + String($json.body?.priority ?? '-'), inline: true }, { label: 'Server', value: String($json.body?.server_name || '-'), inline: true }, { label: 'UPS Status', value: String($json.body?.ups_data?.ups_status || '-'), inline: true }, { label: 'Battery', value: String($json.body?.ups_data?.battery_charge ?? '-') + (String($json.body?.ups_data?.battery_charge ?? '').includes('%') ? '' : '%'), inline: true }, { label: 'Input', value: String($json.body?.ups_data?.input_voltage || '-'), inline: true }] }}",
-              "sections": "={{ [{ title: 'UPS 设备', markdown: '- **型号**：' + String($json.body?.ups_data?.ups_model || '-') + '\\n- **序列号**：' + String($json.body?.ups_data?.device_serial || '-') + ($json.body?.test ? '\\n\\n> ⚠️ 这是一条 Nutify 测试消息' : '') }] }}",
-              "footer": "Nutify UPS Monitor",
-              "timestamp": "={{ String($json.body?.event_timestamp || $json.body?.timestamp || $now.toISO()) }}",
-              "imageUrl": "",
-              "thumbnailUrl": ""
+              "markdown": "={{ (() => { const b = $json.body || {}; const u = b.ups_data || {}; const test = b.test === true || String(b.event_type || '').toUpperCase() === 'TEST'; return [`# ${test ? '🔵' : '⚠️'} ${String(b.title || 'Nutify UPS 事件')}`, '', `> Nutify · ${String(b.server_name || '-')}`, '', `- **事件**：${String(b.event_type || '-')}`, `- **优先级**：P${String(b.priority ?? '-')}`, `- **UPS 状态**：${String(u.ups_status || '-')}`, `- **电池**：${String(u.battery_charge ?? '-')}${String(u.battery_charge ?? '').includes('%') ? '' : '%'}`, `- **输入电压**：${String(u.input_voltage || '-')}`, `- **型号**：${String(u.ups_model || '-')}`, `- **序列号**：${String(u.device_serial || '-')}`, '', String(b.event_description || b.message || 'UPS notification'), ...(test ? ['', '> ⚠️ 这是一条 Nutify 测试消息'] : []), '', '---', `Nutify UPS Monitor · ${String(b.event_timestamp || b.timestamp || $now.toISO())}`].join('\\n'); })() }}"
             },
             "schema": [
               {
@@ -1026,63 +892,8 @@
                 "type": "string"
               },
               {
-                "id": "title",
-                "displayName": "title",
-                "type": "string"
-              },
-              {
-                "id": "summary",
-                "displayName": "summary",
-                "type": "string"
-              },
-              {
-                "id": "tone",
-                "displayName": "tone",
-                "type": "string"
-              },
-              {
-                "id": "source",
-                "displayName": "source",
-                "type": "string"
-              },
-              {
-                "id": "kind",
-                "displayName": "kind",
-                "type": "string"
-              },
-              {
-                "id": "url",
-                "displayName": "url",
-                "type": "string"
-              },
-              {
-                "id": "metrics",
-                "displayName": "metrics",
-                "type": "array"
-              },
-              {
-                "id": "sections",
-                "displayName": "sections",
-                "type": "array"
-              },
-              {
-                "id": "footer",
-                "displayName": "footer",
-                "type": "string"
-              },
-              {
-                "id": "timestamp",
-                "displayName": "timestamp",
-                "type": "string"
-              },
-              {
-                "id": "imageUrl",
-                "displayName": "imageUrl",
-                "type": "string"
-              },
-              {
-                "id": "thumbnailUrl",
-                "displayName": "thumbnailUrl",
+                "id": "markdown",
+                "displayName": "markdown",
                 "type": "string"
               }
             ]
@@ -1100,17 +911,12 @@
         "main": [
           [
             {
-              "node": "发送钉钉 Markdown 消息",
-              "type": "main",
-              "index": 0
-            },
-            {
               "node": "Keep Real UPS Events",
               "type": "main",
               "index": 0
             },
             {
-              "node": "Discord UPS Status Alert",
+              "node": "Discord Markdown UPS Alert",
               "type": "main",
               "index": 0
             }
@@ -1149,14 +955,14 @@
           "91475cd8-8bf4-4cca-83c2-ab6f7d48d6f1",
           "117b69ef-7698-44d8-a7b8-75651c8ddf1b"
         ],
-        "description": "Ignore test notifications; enqueue real UPS events for later ChatGPT analysis without delaying the immediate DingTalk alert."
+        "description": "Ignore test notifications; enqueue real UPS events for later ChatGPT analysis without delaying the immediate Discord status alert."
       }
     ],
     "authors": "Administrator NTLx (via MCP)",
-    "name": "Add Discord UPS status alert",
-    "description": "Adds a parallel rich Discord status notification through the shared Hub for every Nutify event without changing the real-event AI queue filter or DingTalk delivery.",
+    "name": "Use final Markdown contract",
+    "description": "Removed legacy structured Discord payload fields. Nutify now formats one final Markdown message and sends only channel + markdown to the shared Hub.",
     "autosaved": false,
-    "createdAt": "2026-10-26T08:02:14.033Z",
-    "updatedAt": "2026-10-26T08:02:14.033Z"
+    "createdAt": "2026-10-27T09:20:05.753Z",
+    "updatedAt": "2026-10-27T09:20:05.753Z"
   }
 }
