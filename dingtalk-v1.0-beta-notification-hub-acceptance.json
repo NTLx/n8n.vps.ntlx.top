@@ -4,9 +4,9 @@
   "active": false,
   "activeVersionId": null,
   "createdAt": "2026-10-25T13:14:18.985Z",
-  "updatedAt": "2026-10-26T07:16:29.060Z",
-  "isArchived": false,
-  "versionId": "56f7cf8a-c4dd-4e38-be95-40d5ae1597b6",
+  "updatedAt": "2026-10-27T09:21:41.728Z",
+  "isArchived": true,
+  "versionId": "7a7b93e7-4027-4407-9016-44d726b05fad",
   "triggerCount": 0,
   "nodes": [
     {
