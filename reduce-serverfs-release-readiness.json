@@ -995,6 +995,12 @@
   },
   "tags": [
     {
+      "id": "BlGRvaSWqnmTk53i",
+      "name": "event-producer",
+      "createdAt": "2026-10-22T09:14:35.370Z",
+      "updatedAt": "2026-10-22T09:14:35.370Z"
+    },
+    {
       "id": "dO6jlaR7zVjNByrJ",
       "name": "serverfs",
       "createdAt": "2026-10-22T08:30:55.412Z",
@@ -1007,6 +1013,12 @@
       "updatedAt": "2026-10-22T08:30:55.419Z"
     },
     {
+      "id": "Ljy4crjObq2mrrQG",
+      "name": "state-reducer",
+      "createdAt": "2026-10-22T09:22:13.165Z",
+      "updatedAt": "2026-10-22T09:22:13.165Z"
+    },
+    {
       "id": "twNsKNALbdWLw0Ox",
       "name": "automation",
       "createdAt": "2026-10-22T08:25:54.546Z",
@@ -1017,18 +1029,6 @@
       "name": "ai-work-producer",
       "createdAt": "2026-10-22T09:14:35.367Z",
       "updatedAt": "2026-10-22T09:14:35.367Z"
-    },
-    {
-      "id": "Ljy4crjObq2mrrQG",
-      "name": "state-reducer",
-      "createdAt": "2026-10-22T09:22:13.165Z",
-      "updatedAt": "2026-10-22T09:22:13.165Z"
-    },
-    {
-      "id": "BlGRvaSWqnmTk53i",
-      "name": "event-producer",
-      "createdAt": "2026-10-22T09:14:35.370Z",
-      "updatedAt": "2026-10-22T09:14:35.370Z"
     }
   ],
   "shared": [
