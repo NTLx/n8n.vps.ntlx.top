@@ -4,9 +4,9 @@
   "active": false,
   "activeVersionId": null,
   "createdAt": "2026-05-12T07:07:15.446Z",
-  "updatedAt": "2026-10-22T16:17:28.354Z",
-  "isArchived": false,
-  "versionId": "faf695f4-11aa-44f1-9a5f-aa1a7c06b29b",
+  "updatedAt": "2026-10-27T09:22:05.208Z",
+  "isArchived": true,
+  "versionId": "be944423-7cf0-47f8-af80-f766147fedc4",
   "triggerCount": 0,
   "nodes": [
     {
@@ -42,43 +42,6 @@
       ],
       "id": "2cd098cc-58a8-4b6b-9931-41c6f21ca484",
       "name": "HTTP Request"
-    },
-    {
-      "parameters": {
-        "authentication": "oAuth2",
-        "resource": "message",
-        "guildId": {
-          "__rl": true,
-          "value": "1223272555885105264",
-          "mode": "id"
-        },
-        "channelId": {
-          "__rl": true,
-          "value": "1224879319499800676",
-          "mode": "list",
-          "cachedResultName": "rss-feed",
-          "cachedResultUrl": "https://discord.com/channels/1223272555885105264/1224879319499800676"
-        },
-        "content": "={{ $('Basic LLM Chain1').item.json.text }}",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.discord",
-      "typeVersion": 2,
-      "position": [
-        752,
-        0
-      ],
-      "id": "d26b48a1-d88c-46ad-9e94-b682744bf69a",
-      "name": "Send a message",
-      "webhookId": "32359dd1-65c8-496a-ab0b-d53b85eb58c2",
-      "retryOnFail": true,
-      "waitBetweenTries": 2000,
-      "credentials": {
-        "discordOAuth2Api": {
-          "id": "ep3LAXJ2M9XUjEj1",
-          "name": "NTLx"
-        }
-      }
     },
     {
       "parameters": {
@@ -126,6 +89,48 @@
           "name": "NewAPI-OE"
         }
       }
+    },
+    {
+      "id": "6885ae90-7162-4c62-aa26-2efd21d122df",
+      "name": "Send Markdown via Discord Hub",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.4,
+      "position": [
+        752,
+        0
+      ],
+      "parameters": {
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "Gu9lvE61vyyJf2xm"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "channel": "feeds",
+            "markdown": "={{ String($('Basic LLM Chain1').item.json.text || '') }}"
+          },
+          "schema": [
+            {
+              "id": "channel",
+              "displayName": "channel",
+              "type": "string"
+            },
+            {
+              "id": "markdown",
+              "displayName": "markdown",
+              "type": "string"
+            }
+          ]
+        },
+        "mode": "each",
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "onError": "stopWorkflow"
     }
   ],
   "connections": {
@@ -166,7 +171,7 @@
       "main": [
         [
           {
-            "node": "Send a message",
+            "node": "Send Markdown via Discord Hub",
             "type": "main",
             "index": 0
           }
@@ -182,7 +187,10 @@
   },
   "staticData": null,
   "pinData": {},
-  "meta": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
   "tags": [],
   "shared": [
     {
