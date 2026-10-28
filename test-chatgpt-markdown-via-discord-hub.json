@@ -1,0 +1,134 @@
+{
+  "id": "TEpzOPbiVqiKyNSB",
+  "name": "Test ChatGPT Markdown via Discord Hub",
+  "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-10-27T06:56:37.005Z",
+  "updatedAt": "2026-10-27T09:21:58.979Z",
+  "isArchived": true,
+  "versionId": "e1ae09b4-50c1-4e10-a49e-4a1163e634d4",
+  "triggerCount": 1,
+  "nodes": [
+    {
+      "id": "4d90c355-f7e1-4fb8-a460-d84e224a45d9",
+      "name": "Receive Markdown",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.2,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "chatgpt-discord-markdown",
+        "authentication": "n8nOAuth2",
+        "requireExecuteAccess": true,
+        "responseMode": "lastNode",
+        "responseData": "firstEntryJson"
+      },
+      "webhookId": "6f25ac80-9414-44a5-8a17-3ad067dba502"
+    },
+    {
+      "id": "4185dfac-6575-4803-af51-425489282f51",
+      "name": "Send via Discord Markdown Hub",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.4,
+      "position": [
+        224,
+        0
+      ],
+      "parameters": {
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "Gu9lvE61vyyJf2xm"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "channel": "feeds",
+            "markdown": "={{ String($('Receive Markdown').item.json.body?.markdown || '') }}"
+          },
+          "schema": [
+            {
+              "id": "channel",
+              "displayName": "channel",
+              "type": "string"
+            },
+            {
+              "id": "markdown",
+              "displayName": "markdown",
+              "type": "string"
+            }
+          ]
+        },
+        "mode": "each",
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "onError": "stopWorkflow"
+    }
+  ],
+  "connections": {
+    "Receive Markdown": {
+      "main": [
+        [
+          {
+            "node": "Send via Discord Markdown Hub",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [
+    {
+      "id": "ls0dHUF9a9IU00kE",
+      "name": "chatgpt",
+      "createdAt": "2026-10-27T06:57:35.933Z",
+      "updatedAt": "2026-10-27T06:57:35.933Z"
+    },
+    {
+      "id": "4K2bQrntVhmSikB8",
+      "name": "tool",
+      "createdAt": "2026-10-27T06:57:35.939Z",
+      "updatedAt": "2026-10-27T06:57:35.939Z"
+    },
+    {
+      "id": "xx4RO3RRCGt61Y5L",
+      "name": "discord",
+      "createdAt": "2026-10-26T07:57:41.707Z",
+      "updatedAt": "2026-10-26T07:57:41.707Z"
+    },
+    {
+      "id": "xpWm4veSI3VnYxs0",
+      "name": "notification",
+      "createdAt": "2026-10-26T07:57:41.702Z",
+      "updatedAt": "2026-10-26T07:57:41.702Z"
+    }
+  ],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "TEpzOPbiVqiKyNSB",
+      "projectId": "cNMj0K6AdJmi0OAZ",
+      "createdAt": "2026-10-27T06:56:37.005Z",
+      "updatedAt": "2026-10-27T06:56:37.005Z"
+    }
+  ],
+  "activeVersion": null
+}
