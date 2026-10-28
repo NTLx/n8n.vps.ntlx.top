@@ -1,0 +1,218 @@
+{
+  "id": "lIYiupA0LyU58hNd",
+  "name": "ChatGPT → Discord Markdown Notification",
+  "active": true,
+  "activeVersionId": "38b6ab92-be79-440e-aaae-4d4795bec390",
+  "createdAt": "2026-10-25T13:51:08.776Z",
+  "updatedAt": "2026-10-27T09:31:43.045Z",
+  "isArchived": false,
+  "versionId": "38b6ab92-be79-440e-aaae-4d4795bec390",
+  "triggerCount": 1,
+  "nodes": [
+    {
+      "id": "80a9d821-5430-492a-b29e-839b28939e49",
+      "name": "ChatGPT Markdown Notification",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.2,
+      "position": [
+        240,
+        300
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "chatgpt-discord-markdown",
+        "authentication": "headerAuth",
+        "responseMode": "lastNode",
+        "responseData": "firstEntryJson"
+      },
+      "webhookId": "3fa1c48c-9f1e-4cc0-ad79-99cc7bd83a7b",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "RvmfH6qWSIUABPQO",
+          "name": "n8n Webhook（Bearer Auth）"
+        }
+      }
+    },
+    {
+      "id": "6ca9063b-0be9-4d36-aeb9-dc5274e0959e",
+      "name": "Route Markdown to Discord Hub",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.4,
+      "position": [
+        520,
+        300
+      ],
+      "parameters": {
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "Gu9lvE61vyyJf2xm"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "channel": "={{ (() => { const c = String($('ChatGPT Markdown Notification').item.json.body?.channel || '').toLowerCase(); if (!['feeds','status'].includes(c)) throw new Error('channel must be feeds or status'); return c; })() }}",
+            "markdown": "={{ (() => { const md = String($('ChatGPT Markdown Notification').item.json.body?.markdown || '').trim(); if (!md) throw new Error('markdown is required'); return md; })() }}"
+          },
+          "schema": [
+            {
+              "id": "channel",
+              "displayName": "channel",
+              "type": "string"
+            },
+            {
+              "id": "markdown",
+              "displayName": "markdown",
+              "type": "string"
+            }
+          ]
+        },
+        "mode": "each",
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "onError": "stopWorkflow"
+    }
+  ],
+  "connections": {
+    "ChatGPT Markdown Notification": {
+      "main": [
+        [
+          {
+            "node": "Route Markdown to Discord Hub",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [
+    {
+      "id": "xpWm4veSI3VnYxs0",
+      "name": "notification",
+      "createdAt": "2026-10-26T07:57:41.702Z",
+      "updatedAt": "2026-10-26T07:57:41.702Z"
+    },
+    {
+      "id": "xx4RO3RRCGt61Y5L",
+      "name": "discord",
+      "createdAt": "2026-10-26T07:57:41.707Z",
+      "updatedAt": "2026-10-26T07:57:41.707Z"
+    }
+  ],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "lIYiupA0LyU58hNd",
+      "projectId": "cNMj0K6AdJmi0OAZ",
+      "createdAt": "2026-10-25T13:51:08.776Z",
+      "updatedAt": "2026-10-25T13:51:08.776Z"
+    }
+  ],
+  "activeVersion": {
+    "versionId": "38b6ab92-be79-440e-aaae-4d4795bec390",
+    "workflowId": "lIYiupA0LyU58hNd",
+    "nodes": [
+      {
+        "id": "80a9d821-5430-492a-b29e-839b28939e49",
+        "name": "ChatGPT Markdown Notification",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.2,
+        "position": [
+          240,
+          300
+        ],
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "chatgpt-discord-markdown",
+          "authentication": "headerAuth",
+          "responseMode": "lastNode",
+          "responseData": "firstEntryJson"
+        },
+        "webhookId": "3fa1c48c-9f1e-4cc0-ad79-99cc7bd83a7b",
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "RvmfH6qWSIUABPQO",
+            "name": "n8n Webhook（Bearer Auth）"
+          }
+        }
+      },
+      {
+        "id": "6ca9063b-0be9-4d36-aeb9-dc5274e0959e",
+        "name": "Route Markdown to Discord Hub",
+        "type": "n8n-nodes-base.executeWorkflow",
+        "typeVersion": 1.4,
+        "position": [
+          520,
+          300
+        ],
+        "parameters": {
+          "source": "database",
+          "workflowId": {
+            "__rl": true,
+            "mode": "id",
+            "value": "Gu9lvE61vyyJf2xm"
+          },
+          "workflowInputs": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "channel": "={{ (() => { const c = String($('ChatGPT Markdown Notification').item.json.body?.channel || '').toLowerCase(); if (!['feeds','status'].includes(c)) throw new Error('channel must be feeds or status'); return c; })() }}",
+              "markdown": "={{ (() => { const md = String($('ChatGPT Markdown Notification').item.json.body?.markdown || '').trim(); if (!md) throw new Error('markdown is required'); return md; })() }}"
+            },
+            "schema": [
+              {
+                "id": "channel",
+                "displayName": "channel",
+                "type": "string"
+              },
+              {
+                "id": "markdown",
+                "displayName": "markdown",
+                "type": "string"
+              }
+            ]
+          },
+          "mode": "each",
+          "options": {
+            "waitForSubWorkflow": true
+          }
+        },
+        "onError": "stopWorkflow"
+      }
+    ],
+    "connections": {
+      "ChatGPT Markdown Notification": {
+        "main": [
+          [
+            {
+              "node": "Route Markdown to Discord Hub",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "nodeGroups": [],
+    "authors": "Administrator NTLx (via MCP)",
+    "name": "Remove legacy notification ABI",
+    "description": "Removed the legacy DingTalk trigger name/path and all descriptor/reportMarkdown/outTrackId normalization. The production gateway now accepts only channel + final Markdown and forwards it unchanged to the shared Discord Hub.",
+    "autosaved": false,
+    "createdAt": "2026-10-27T09:31:43.048Z",
+    "updatedAt": "2026-10-27T09:31:43.048Z"
+  }
+}
