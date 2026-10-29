@@ -1,0 +1,883 @@
+{
+  "id": "NWjUMDrTgfS50fZ0",
+  "name": "Use GitHub Actions natively",
+  "active": true,
+  "activeVersionId": "4cf58fe5-e3cb-411e-9ef8-05774b7a02b3",
+  "createdAt": "2026-10-28T15:44:29.501Z",
+  "updatedAt": "2026-10-28T15:47:46.061Z",
+  "isArchived": false,
+  "versionId": "4cf58fe5-e3cb-411e-9ef8-05774b7a02b3",
+  "triggerCount": 0,
+  "nodes": [
+    {
+      "id": "e1fe3709-b3e8-47f8-ab9e-0a5fc4f60c4a",
+      "name": "Receive Actions request",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "inputSource": "workflowInputs",
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "owner",
+              "type": "string"
+            },
+            {
+              "name": "repository",
+              "type": "string"
+            },
+            {
+              "name": "action",
+              "type": "string"
+            },
+            {
+              "name": "workflow_id",
+              "type": "string"
+            },
+            {
+              "name": "ref",
+              "type": "string"
+            },
+            {
+              "name": "inputs",
+              "type": "object"
+            },
+            {
+              "name": "confirmed",
+              "type": "boolean"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "6c900254-db98-4142-bca4-c7be9e68c8e0",
+      "name": "Route Actions operation",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        280,
+        0
+      ],
+      "parameters": {
+        "mode": "rules",
+        "rules": {
+          "values": [
+            {
+              "renameOutput": true,
+              "outputKey": "list",
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Receive Actions request').item.json.action }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "rightValue": "list"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "renameOutput": true,
+              "outputKey": "get",
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Receive Actions request').item.json.action }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "rightValue": "get"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "renameOutput": true,
+              "outputKey": "usage",
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Receive Actions request').item.json.action }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "rightValue": "usage"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "renameOutput": true,
+              "outputKey": "dispatch",
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Receive Actions request').item.json.action }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "rightValue": "dispatch"
+                  },
+                  {
+                    "leftValue": "={{ $('Receive Actions request').item.json.confirmed }}",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "isTrue"
+                    },
+                    "rightValue": true
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra",
+          "renameFallbackOutput": "refused"
+        }
+      }
+    },
+    {
+      "id": "09e58ecf-02d8-4028-8844-4fa4f2afd9da",
+      "name": "List GitHub workflows",
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1.1,
+      "position": [
+        560,
+        -240
+      ],
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "workflow",
+        "operation": "list",
+        "owner": {
+          "__rl": true,
+          "mode": "name",
+          "value": "={{ $('Receive Actions request').item.json.owner }}"
+        },
+        "repository": {
+          "__rl": true,
+          "mode": "name",
+          "value": "={{ $('Receive Actions request').item.json.repository }}"
+        }
+      },
+      "credentials": {
+        "githubOAuth2Api": {
+          "id": "stt7O3UtIsjdKCqg",
+          "name": "NTLx"
+        }
+      },
+      "webhookId": "adbe5017-6540-426a-b117-753cab365c58"
+    },
+    {
+      "id": "537f77cf-47fa-4e61-a09c-33824029a0e6",
+      "name": "Get GitHub workflow",
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1.1,
+      "position": [
+        560,
+        -80
+      ],
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "workflow",
+        "operation": "get",
+        "owner": {
+          "__rl": true,
+          "mode": "name",
+          "value": "={{ $('Receive Actions request').item.json.owner }}"
+        },
+        "repository": {
+          "__rl": true,
+          "mode": "name",
+          "value": "={{ $('Receive Actions request').item.json.repository }}"
+        },
+        "workflowId": {
+          "__rl": true,
+          "mode": "filename",
+          "value": "={{ $('Receive Actions request').item.json.workflow_id }}"
+        }
+      },
+      "credentials": {
+        "githubOAuth2Api": {
+          "id": "stt7O3UtIsjdKCqg",
+          "name": "NTLx"
+        }
+      },
+      "webhookId": "8cfdc825-488d-44bf-bde5-713c9212ec9e"
+    },
+    {
+      "id": "0c083669-557e-4482-8ec5-27063847d0bd",
+      "name": "Get GitHub workflow usage",
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1.1,
+      "position": [
+        560,
+        80
+      ],
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "workflow",
+        "operation": "getUsage",
+        "owner": {
+          "__rl": true,
+          "mode": "name",
+          "value": "={{ $('Receive Actions request').item.json.owner }}"
+        },
+        "repository": {
+          "__rl": true,
+          "mode": "name",
+          "value": "={{ $('Receive Actions request').item.json.repository }}"
+        },
+        "workflowId": {
+          "__rl": true,
+          "mode": "filename",
+          "value": "={{ $('Receive Actions request').item.json.workflow_id }}"
+        }
+      },
+      "credentials": {
+        "githubOAuth2Api": {
+          "id": "stt7O3UtIsjdKCqg",
+          "name": "NTLx"
+        }
+      },
+      "webhookId": "2ee872e0-35b2-4467-a0da-c9e6fce13423"
+    },
+    {
+      "id": "6abf1449-4623-4800-af2c-5a6630dcd7e8",
+      "name": "Dispatch GitHub workflow",
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1.1,
+      "position": [
+        560,
+        240
+      ],
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "workflow",
+        "operation": "dispatch",
+        "owner": {
+          "__rl": true,
+          "mode": "name",
+          "value": "={{ $('Receive Actions request').item.json.owner }}"
+        },
+        "repository": {
+          "__rl": true,
+          "mode": "name",
+          "value": "={{ $('Receive Actions request').item.json.repository }}"
+        },
+        "workflowId": {
+          "__rl": true,
+          "mode": "filename",
+          "value": "={{ $('Receive Actions request').item.json.workflow_id }}"
+        },
+        "ref": {
+          "__rl": true,
+          "mode": "name",
+          "value": "={{ $('Receive Actions request').item.json.ref }}"
+        },
+        "inputs": "={{ $('Receive Actions request').item.json.inputs || {} }}"
+      },
+      "credentials": {
+        "githubOAuth2Api": {
+          "id": "stt7O3UtIsjdKCqg",
+          "name": "NTLx"
+        }
+      },
+      "webhookId": "51a96c02-27ca-41c6-9acc-9641d6413b2b"
+    },
+    {
+      "id": "515eefdf-83e6-4c4a-a9da-4b884801da10",
+      "name": "Return refused Actions operation",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        560,
+        400
+      ],
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ok",
+              "name": "ok",
+              "type": "boolean",
+              "value": false
+            },
+            {
+              "id": "error",
+              "name": "error",
+              "type": "string",
+              "value": "unsupported_or_unconfirmed_action"
+            },
+            {
+              "id": "policy",
+              "name": "policy",
+              "type": "string",
+              "value": "dispatch requires confirmed=true; list/get/usage are read-only"
+            }
+          ]
+        },
+        "includeOtherFields": false
+      }
+    }
+  ],
+  "connections": {
+    "Receive Actions request": {
+      "main": [
+        [
+          {
+            "node": "Route Actions operation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route Actions operation": {
+      "main": [
+        [
+          {
+            "node": "List GitHub workflows",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get GitHub workflow",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get GitHub workflow usage",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Dispatch GitHub workflow",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Return refused Actions operation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true,
+    "errorWorkflow": "3LE3BnPfHSuIZCVR",
+    "timezone": "Asia/Shanghai",
+    "saveExecutionProgress": false,
+    "saveManualExecutions": false,
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "none",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [
+    {
+      "id": "jkffVXRb1S4v5PNj",
+      "name": "subworkflow",
+      "createdAt": "2026-10-22T15:59:43.410Z",
+      "updatedAt": "2026-10-22T15:59:43.410Z"
+    },
+    {
+      "id": "twNsKNALbdWLw0Ox",
+      "name": "automation",
+      "createdAt": "2026-10-22T08:25:54.546Z",
+      "updatedAt": "2026-10-22T08:25:54.546Z"
+    },
+    {
+      "id": "ZB1OFuryVXrNRjEy",
+      "name": "github",
+      "createdAt": "2026-10-23T02:30:52.063Z",
+      "updatedAt": "2026-10-23T02:30:52.063Z"
+    },
+    {
+      "id": "4K2bQrntVhmSikB8",
+      "name": "tool",
+      "createdAt": "2026-10-27T06:57:35.939Z",
+      "updatedAt": "2026-10-27T06:57:35.939Z"
+    },
+    {
+      "id": "rzKrKSvBlXCxdtjq",
+      "name": "ci",
+      "createdAt": "2026-10-22T08:38:34.120Z",
+      "updatedAt": "2026-10-22T08:38:34.120Z"
+    }
+  ],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "NWjUMDrTgfS50fZ0",
+      "projectId": "cNMj0K6AdJmi0OAZ",
+      "createdAt": "2026-10-28T15:44:29.501Z",
+      "updatedAt": "2026-10-28T15:44:29.501Z"
+    }
+  ],
+  "activeVersion": {
+    "versionId": "4cf58fe5-e3cb-411e-9ef8-05774b7a02b3",
+    "workflowId": "NWjUMDrTgfS50fZ0",
+    "nodes": [
+      {
+        "id": "e1fe3709-b3e8-47f8-ab9e-0a5fc4f60c4a",
+        "name": "Receive Actions request",
+        "type": "n8n-nodes-base.executeWorkflowTrigger",
+        "typeVersion": 1.3,
+        "position": [
+          0,
+          0
+        ],
+        "parameters": {
+          "inputSource": "workflowInputs",
+          "workflowInputs": {
+            "values": [
+              {
+                "name": "owner",
+                "type": "string"
+              },
+              {
+                "name": "repository",
+                "type": "string"
+              },
+              {
+                "name": "action",
+                "type": "string"
+              },
+              {
+                "name": "workflow_id",
+                "type": "string"
+              },
+              {
+                "name": "ref",
+                "type": "string"
+              },
+              {
+                "name": "inputs",
+                "type": "object"
+              },
+              {
+                "name": "confirmed",
+                "type": "boolean"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "6c900254-db98-4142-bca4-c7be9e68c8e0",
+        "name": "Route Actions operation",
+        "type": "n8n-nodes-base.switch",
+        "typeVersion": 3.4,
+        "position": [
+          280,
+          0
+        ],
+        "parameters": {
+          "mode": "rules",
+          "rules": {
+            "values": [
+              {
+                "renameOutput": true,
+                "outputKey": "list",
+                "conditions": {
+                  "options": {
+                    "caseSensitive": false,
+                    "leftValue": "",
+                    "typeValidation": "strict"
+                  },
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $('Receive Actions request').item.json.action }}",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals"
+                      },
+                      "rightValue": "list"
+                    }
+                  ],
+                  "combinator": "and"
+                }
+              },
+              {
+                "renameOutput": true,
+                "outputKey": "get",
+                "conditions": {
+                  "options": {
+                    "caseSensitive": false,
+                    "leftValue": "",
+                    "typeValidation": "strict"
+                  },
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $('Receive Actions request').item.json.action }}",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals"
+                      },
+                      "rightValue": "get"
+                    }
+                  ],
+                  "combinator": "and"
+                }
+              },
+              {
+                "renameOutput": true,
+                "outputKey": "usage",
+                "conditions": {
+                  "options": {
+                    "caseSensitive": false,
+                    "leftValue": "",
+                    "typeValidation": "strict"
+                  },
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $('Receive Actions request').item.json.action }}",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals"
+                      },
+                      "rightValue": "usage"
+                    }
+                  ],
+                  "combinator": "and"
+                }
+              },
+              {
+                "renameOutput": true,
+                "outputKey": "dispatch",
+                "conditions": {
+                  "options": {
+                    "caseSensitive": false,
+                    "leftValue": "",
+                    "typeValidation": "strict"
+                  },
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $('Receive Actions request').item.json.action }}",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals"
+                      },
+                      "rightValue": "dispatch"
+                    },
+                    {
+                      "leftValue": "={{ $('Receive Actions request').item.json.confirmed }}",
+                      "operator": {
+                        "type": "boolean",
+                        "operation": "isTrue"
+                      },
+                      "rightValue": true
+                    }
+                  ],
+                  "combinator": "and"
+                }
+              }
+            ]
+          },
+          "options": {
+            "fallbackOutput": "extra",
+            "renameFallbackOutput": "refused"
+          }
+        }
+      },
+      {
+        "id": "09e58ecf-02d8-4028-8844-4fa4f2afd9da",
+        "name": "List GitHub workflows",
+        "type": "n8n-nodes-base.github",
+        "typeVersion": 1.1,
+        "position": [
+          560,
+          -240
+        ],
+        "parameters": {
+          "authentication": "oAuth2",
+          "resource": "workflow",
+          "operation": "list",
+          "owner": {
+            "__rl": true,
+            "mode": "name",
+            "value": "={{ $('Receive Actions request').item.json.owner }}"
+          },
+          "repository": {
+            "__rl": true,
+            "mode": "name",
+            "value": "={{ $('Receive Actions request').item.json.repository }}"
+          }
+        },
+        "credentials": {
+          "githubOAuth2Api": {
+            "id": "stt7O3UtIsjdKCqg",
+            "name": "NTLx"
+          }
+        },
+        "webhookId": "adbe5017-6540-426a-b117-753cab365c58"
+      },
+      {
+        "id": "537f77cf-47fa-4e61-a09c-33824029a0e6",
+        "name": "Get GitHub workflow",
+        "type": "n8n-nodes-base.github",
+        "typeVersion": 1.1,
+        "position": [
+          560,
+          -80
+        ],
+        "parameters": {
+          "authentication": "oAuth2",
+          "resource": "workflow",
+          "operation": "get",
+          "owner": {
+            "__rl": true,
+            "mode": "name",
+            "value": "={{ $('Receive Actions request').item.json.owner }}"
+          },
+          "repository": {
+            "__rl": true,
+            "mode": "name",
+            "value": "={{ $('Receive Actions request').item.json.repository }}"
+          },
+          "workflowId": {
+            "__rl": true,
+            "mode": "filename",
+            "value": "={{ $('Receive Actions request').item.json.workflow_id }}"
+          }
+        },
+        "credentials": {
+          "githubOAuth2Api": {
+            "id": "stt7O3UtIsjdKCqg",
+            "name": "NTLx"
+          }
+        },
+        "webhookId": "8cfdc825-488d-44bf-bde5-713c9212ec9e"
+      },
+      {
+        "id": "0c083669-557e-4482-8ec5-27063847d0bd",
+        "name": "Get GitHub workflow usage",
+        "type": "n8n-nodes-base.github",
+        "typeVersion": 1.1,
+        "position": [
+          560,
+          80
+        ],
+        "parameters": {
+          "authentication": "oAuth2",
+          "resource": "workflow",
+          "operation": "getUsage",
+          "owner": {
+            "__rl": true,
+            "mode": "name",
+            "value": "={{ $('Receive Actions request').item.json.owner }}"
+          },
+          "repository": {
+            "__rl": true,
+            "mode": "name",
+            "value": "={{ $('Receive Actions request').item.json.repository }}"
+          },
+          "workflowId": {
+            "__rl": true,
+            "mode": "filename",
+            "value": "={{ $('Receive Actions request').item.json.workflow_id }}"
+          }
+        },
+        "credentials": {
+          "githubOAuth2Api": {
+            "id": "stt7O3UtIsjdKCqg",
+            "name": "NTLx"
+          }
+        },
+        "webhookId": "2ee872e0-35b2-4467-a0da-c9e6fce13423"
+      },
+      {
+        "id": "6abf1449-4623-4800-af2c-5a6630dcd7e8",
+        "name": "Dispatch GitHub workflow",
+        "type": "n8n-nodes-base.github",
+        "typeVersion": 1.1,
+        "position": [
+          560,
+          240
+        ],
+        "parameters": {
+          "authentication": "oAuth2",
+          "resource": "workflow",
+          "operation": "dispatch",
+          "owner": {
+            "__rl": true,
+            "mode": "name",
+            "value": "={{ $('Receive Actions request').item.json.owner }}"
+          },
+          "repository": {
+            "__rl": true,
+            "mode": "name",
+            "value": "={{ $('Receive Actions request').item.json.repository }}"
+          },
+          "workflowId": {
+            "__rl": true,
+            "mode": "filename",
+            "value": "={{ $('Receive Actions request').item.json.workflow_id }}"
+          },
+          "ref": {
+            "__rl": true,
+            "mode": "name",
+            "value": "={{ $('Receive Actions request').item.json.ref }}"
+          },
+          "inputs": "={{ $('Receive Actions request').item.json.inputs || {} }}"
+        },
+        "credentials": {
+          "githubOAuth2Api": {
+            "id": "stt7O3UtIsjdKCqg",
+            "name": "NTLx"
+          }
+        },
+        "webhookId": "51a96c02-27ca-41c6-9acc-9641d6413b2b"
+      },
+      {
+        "id": "515eefdf-83e6-4c4a-a9da-4b884801da10",
+        "name": "Return refused Actions operation",
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.5,
+        "position": [
+          560,
+          400
+        ],
+        "parameters": {
+          "mode": "manual",
+          "assignments": {
+            "assignments": [
+              {
+                "id": "ok",
+                "name": "ok",
+                "type": "boolean",
+                "value": false
+              },
+              {
+                "id": "error",
+                "name": "error",
+                "type": "string",
+                "value": "unsupported_or_unconfirmed_action"
+              },
+              {
+                "id": "policy",
+                "name": "policy",
+                "type": "string",
+                "value": "dispatch requires confirmed=true; list/get/usage are read-only"
+              }
+            ]
+          },
+          "includeOtherFields": false
+        }
+      }
+    ],
+    "connections": {
+      "Receive Actions request": {
+        "main": [
+          [
+            {
+              "node": "Route Actions operation",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Route Actions operation": {
+        "main": [
+          [
+            {
+              "node": "List GitHub workflows",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Get GitHub workflow",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Get GitHub workflow usage",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Dispatch GitHub workflow",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Return refused Actions operation",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "nodeGroups": [],
+    "authors": "Administrator NTLx (via MCP)",
+    "name": "Initial native Actions control",
+    "description": "Adds native list/get/usage/dispatch operations with confirmed=true required for workflow dispatch.",
+    "autosaved": false,
+    "createdAt": "2026-10-28T15:44:29.501Z",
+    "updatedAt": "2026-10-28T15:44:29.501Z"
+  }
+}
