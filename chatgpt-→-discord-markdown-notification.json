@@ -4,7 +4,7 @@
   "active": true,
   "activeVersionId": "38b6ab92-be79-440e-aaae-4d4795bec390",
   "createdAt": "2026-10-25T13:51:08.776Z",
-  "updatedAt": "2026-10-27T09:31:43.045Z",
+  "updatedAt": "2026-10-28T08:00:34.712Z",
   "isArchived": false,
   "versionId": "38b6ab92-be79-440e-aaae-4d4795bec390",
   "triggerCount": 1,
@@ -92,7 +92,10 @@
   "nodeGroups": [],
   "settings": {
     "executionOrder": "v1",
-    "availableInMCP": true
+    "availableInMCP": true,
+    "saveManualExecutions": false,
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all"
   },
   "staticData": null,
   "pinData": null,
@@ -102,16 +105,16 @@
   },
   "tags": [
     {
-      "id": "xpWm4veSI3VnYxs0",
-      "name": "notification",
-      "createdAt": "2026-10-26T07:57:41.702Z",
-      "updatedAt": "2026-10-26T07:57:41.702Z"
-    },
-    {
       "id": "xx4RO3RRCGt61Y5L",
       "name": "discord",
       "createdAt": "2026-10-26T07:57:41.707Z",
       "updatedAt": "2026-10-26T07:57:41.707Z"
+    },
+    {
+      "id": "xpWm4veSI3VnYxs0",
+      "name": "notification",
+      "createdAt": "2026-10-26T07:57:41.702Z",
+      "updatedAt": "2026-10-26T07:57:41.702Z"
     }
   ],
   "shared": [
