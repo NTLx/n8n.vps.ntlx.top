@@ -1,0 +1,1062 @@
+{
+  "id": "zXpTmhL2ZYJ2QAVF",
+  "name": "Maintain execution retention",
+  "active": true,
+  "activeVersionId": "abd7ada1-e97e-4258-8dca-991890fb8a3b",
+  "createdAt": "2026-10-28T06:11:50.873Z",
+  "updatedAt": "2026-10-28T06:16:45.528Z",
+  "isArchived": false,
+  "versionId": "abd7ada1-e97e-4258-8dca-991890fb8a3b",
+  "triggerCount": 2,
+  "nodes": [
+    {
+      "id": "d9d17438-2270-438d-bce3-c09dbb4f55e2",
+      "name": "Normalize policy",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        224,
+        0
+      ],
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "confirm",
+              "name": "confirm",
+              "value": "={{ $json.confirm }}",
+              "type": "boolean"
+            },
+            {
+              "id": "successRetentionHours",
+              "name": "successRetentionHours",
+              "value": "={{ $json.successRetentionHours }}",
+              "type": "number"
+            },
+            {
+              "id": "issueRetentionDays",
+              "name": "issueRetentionDays",
+              "value": "={{ $json.issueRetentionDays }}",
+              "type": "number"
+            },
+            {
+              "id": "source",
+              "name": "source",
+              "value": "={{ $json.source }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": false
+      }
+    },
+    {
+      "id": "890b6882-1b89-4046-922b-e8e858e7d59d",
+      "name": "List executions",
+      "type": "n8n-nodes-base.n8n",
+      "typeVersion": 1,
+      "position": [
+        448,
+        0
+      ],
+      "parameters": {
+        "resource": "execution",
+        "operation": "getAll",
+        "returnAll": true
+      },
+      "credentials": {
+        "n8nApi": {
+          "id": "ZWhmVjb2nWJVoRkD",
+          "name": "self"
+        }
+      }
+    },
+    {
+      "id": "4b2991ff-3eb7-475a-aa58-890efd9342fe",
+      "name": "Keep retention targets",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.4,
+      "position": [
+        672,
+        0
+      ],
+      "parameters": {
+        "conditions": {
+          "combinator": "and",
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ (() => {\n            const e = $('List executions').item.json;\n            const p = $('Normalize policy').first().json;\n            const started = DateTime.fromISO(e.startedAt);\n            if (e.status === 'success') return started < DateTime.now().minus({ hours: p.successRetentionHours }) ? 'delete' : 'keep';\n            if (['error', 'crashed', 'waiting'].includes(e.status)) return started < DateTime.now().minus({ days: p.issueRetentionDays }) ? 'delete' : 'keep';\n            return 'keep';\n          })() }}",
+              "rightValue": "delete",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "314d11f8-01f6-42ae-8959-521833fd21a8",
+      "name": "Return dry-run target",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        1120,
+        120
+      ],
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "action",
+              "name": "action",
+              "value": "would_delete",
+              "type": "string"
+            },
+            {
+              "id": "executionId",
+              "name": "executionId",
+              "value": "={{ $('Keep retention targets').item.json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "workflowId",
+              "name": "workflowId",
+              "value": "={{ $('Keep retention targets').item.json.workflowId }}",
+              "type": "string"
+            },
+            {
+              "id": "status",
+              "name": "status",
+              "value": "={{ $('Keep retention targets').item.json.status }}",
+              "type": "string"
+            },
+            {
+              "id": "startedAt",
+              "name": "startedAt",
+              "value": "={{ $('Keep retention targets').item.json.startedAt }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": false
+      }
+    },
+    {
+      "id": "aca3b732-e46a-46a3-8ffa-c3708b468b67",
+      "name": "Retention cleanup request",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.2,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "maintenance/execution-retention",
+        "authentication": "headerAuth",
+        "responseMode": "lastNode",
+        "responseData": "allEntries"
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "RvmfH6qWSIUABPQO",
+          "name": "n8n Webhook（Bearer Auth）"
+        }
+      },
+      "webhookId": "15633787-3c1c-40cb-81ac-049409c7143d"
+    },
+    {
+      "id": "5da9d283-5f53-449a-b547-a4879376365b",
+      "name": "Policy from request",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        224,
+        -160
+      ],
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "confirm",
+              "name": "confirm",
+              "value": "={{ $('Retention cleanup request').item.json.body?.confirm === true }}",
+              "type": "boolean"
+            },
+            {
+              "id": "successRetentionHours",
+              "name": "successRetentionHours",
+              "value": "={{ Number($('Retention cleanup request').item.json.body?.successRetentionHours || 24) }}",
+              "type": "number"
+            },
+            {
+              "id": "issueRetentionDays",
+              "name": "issueRetentionDays",
+              "value": "={{ Number($('Retention cleanup request').item.json.body?.issueRetentionDays || 7) }}",
+              "type": "number"
+            },
+            {
+              "id": "source",
+              "name": "source",
+              "value": "request",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": false
+      }
+    },
+    {
+      "id": "e025f1df-65eb-463a-a4bf-0e5b8be69386",
+      "name": "Daily 03:30 retention",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        320
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "days",
+              "daysInterval": 1,
+              "triggerAtHour": 3,
+              "triggerAtMinute": 30
+            }
+          ]
+        },
+        "misfirePolicy": "skip",
+        "misfireGraceSeconds": 0
+      }
+    },
+    {
+      "id": "fb3aed23-043c-43e3-a173-fe742194e527",
+      "name": "Policy from schedule",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        224,
+        320
+      ],
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "confirm",
+              "name": "confirm",
+              "value": true,
+              "type": "boolean"
+            },
+            {
+              "id": "successRetentionHours",
+              "name": "successRetentionHours",
+              "value": 24,
+              "type": "number"
+            },
+            {
+              "id": "issueRetentionDays",
+              "name": "issueRetentionDays",
+              "value": 7,
+              "type": "number"
+            },
+            {
+              "id": "source",
+              "name": "source",
+              "value": "schedule",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": false
+      }
+    },
+    {
+      "id": "cc3de86c-4478-4eef-8e87-e03f4f4e7546",
+      "name": "Confirmed deletion?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.4,
+      "position": [
+        896,
+        0
+      ],
+      "parameters": {
+        "conditions": {
+          "combinator": "and",
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $('Normalize policy').first().json.confirm ? 'yes' : 'no' }}",
+              "rightValue": "yes",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "ca53e76a-6e9d-4050-b62b-e2c51458a858",
+      "name": "Delete execution",
+      "type": "n8n-nodes-base.n8n",
+      "typeVersion": 1,
+      "position": [
+        1120,
+        -120
+      ],
+      "parameters": {
+        "resource": "execution",
+        "operation": "delete",
+        "executionId": "={{ $('Keep retention targets').item.json.id }}"
+      },
+      "credentials": {
+        "n8nApi": {
+          "id": "ZWhmVjb2nWJVoRkD",
+          "name": "self"
+        }
+      }
+    },
+    {
+      "id": "4c11a7f8-50bf-4f00-9a99-6c1ef9359278",
+      "name": "Return deletion result",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        1344,
+        -120
+      ],
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "action",
+              "name": "action",
+              "value": "deleted",
+              "type": "string"
+            },
+            {
+              "id": "executionId",
+              "name": "executionId",
+              "value": "={{ $('Keep retention targets').item.json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "workflowId",
+              "name": "workflowId",
+              "value": "={{ $('Keep retention targets').item.json.workflowId }}",
+              "type": "string"
+            },
+            {
+              "id": "status",
+              "name": "status",
+              "value": "={{ $('Keep retention targets').item.json.status }}",
+              "type": "string"
+            },
+            {
+              "id": "startedAt",
+              "name": "startedAt",
+              "value": "={{ $('Keep retention targets').item.json.startedAt }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": false
+      }
+    }
+  ],
+  "connections": {
+    "Normalize policy": {
+      "main": [
+        [
+          {
+            "node": "List executions",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "List executions": {
+      "main": [
+        [
+          {
+            "node": "Keep retention targets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Retention cleanup request": {
+      "main": [
+        [
+          {
+            "node": "Policy from request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Policy from request": {
+      "main": [
+        [
+          {
+            "node": "Normalize policy",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Daily 03:30 retention": {
+      "main": [
+        [
+          {
+            "node": "Policy from schedule",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Policy from schedule": {
+      "main": [
+        [
+          {
+            "node": "Normalize policy",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Keep retention targets": {
+      "main": [
+        [
+          {
+            "node": "Confirmed deletion?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Confirmed deletion?": {
+      "main": [
+        [
+          {
+            "node": "Delete execution",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Return dry-run target",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete execution": {
+      "main": [
+        [
+          {
+            "node": "Return deletion result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [
+    {
+      "id": "85db0881-d936-4b33-b236-050591927218",
+      "name": "Evaluate retention targets",
+      "nodeIds": [
+        "d9d17438-2270-438d-bce3-c09dbb4f55e2",
+        "890b6882-1b89-4046-922b-e8e858e7d59d",
+        "4b2991ff-3eb7-475a-aa58-890efd9342fe",
+        "cc3de86c-4478-4eef-8e87-e03f4f4e7546"
+      ],
+      "description": "Normalize policy, enumerate executions, apply retention windows, and gate deletion."
+    },
+    {
+      "id": "ca630814-4b3d-48e4-92c6-564e8b8a8de0",
+      "name": "Delete confirmed targets",
+      "nodeIds": [
+        "ca53e76a-6e9d-4050-b62b-e2c51458a858",
+        "4c11a7f8-50bf-4f00-9a99-6c1ef9359278"
+      ],
+      "description": "Delete only candidates that passed the retention filter and explicit confirmation gate."
+    }
+  ],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true,
+    "timezone": "Asia/Shanghai",
+    "saveManualExecutions": false,
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "none"
+  },
+  "staticData": {
+    "node:Daily 03:30 retention": {
+      "recurrenceRules": [
+        null
+      ],
+      "recurrenceRuleSignatures": [
+        null
+      ]
+    }
+  },
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "zXpTmhL2ZYJ2QAVF",
+      "projectId": "cNMj0K6AdJmi0OAZ",
+      "createdAt": "2026-10-28T06:11:50.873Z",
+      "updatedAt": "2026-10-28T06:11:50.873Z"
+    }
+  ],
+  "activeVersion": {
+    "versionId": "abd7ada1-e97e-4258-8dca-991890fb8a3b",
+    "workflowId": "zXpTmhL2ZYJ2QAVF",
+    "nodes": [
+      {
+        "id": "d9d17438-2270-438d-bce3-c09dbb4f55e2",
+        "name": "Normalize policy",
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.5,
+        "position": [
+          224,
+          0
+        ],
+        "parameters": {
+          "mode": "manual",
+          "assignments": {
+            "assignments": [
+              {
+                "id": "confirm",
+                "name": "confirm",
+                "value": "={{ $json.confirm }}",
+                "type": "boolean"
+              },
+              {
+                "id": "successRetentionHours",
+                "name": "successRetentionHours",
+                "value": "={{ $json.successRetentionHours }}",
+                "type": "number"
+              },
+              {
+                "id": "issueRetentionDays",
+                "name": "issueRetentionDays",
+                "value": "={{ $json.issueRetentionDays }}",
+                "type": "number"
+              },
+              {
+                "id": "source",
+                "name": "source",
+                "value": "={{ $json.source }}",
+                "type": "string"
+              }
+            ]
+          },
+          "includeOtherFields": false
+        }
+      },
+      {
+        "id": "890b6882-1b89-4046-922b-e8e858e7d59d",
+        "name": "List executions",
+        "type": "n8n-nodes-base.n8n",
+        "typeVersion": 1,
+        "position": [
+          448,
+          0
+        ],
+        "parameters": {
+          "resource": "execution",
+          "operation": "getAll",
+          "returnAll": true
+        },
+        "credentials": {
+          "n8nApi": {
+            "id": "ZWhmVjb2nWJVoRkD",
+            "name": "self"
+          }
+        }
+      },
+      {
+        "id": "4b2991ff-3eb7-475a-aa58-890efd9342fe",
+        "name": "Keep retention targets",
+        "type": "n8n-nodes-base.filter",
+        "typeVersion": 2.4,
+        "position": [
+          672,
+          0
+        ],
+        "parameters": {
+          "conditions": {
+            "combinator": "and",
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict"
+            },
+            "conditions": [
+              {
+                "leftValue": "={{ (() => {\n            const e = $('List executions').item.json;\n            const p = $('Normalize policy').first().json;\n            const started = DateTime.fromISO(e.startedAt);\n            if (e.status === 'success') return started < DateTime.now().minus({ hours: p.successRetentionHours }) ? 'delete' : 'keep';\n            if (['error', 'crashed', 'waiting'].includes(e.status)) return started < DateTime.now().minus({ days: p.issueRetentionDays }) ? 'delete' : 'keep';\n            return 'keep';\n          })() }}",
+                "rightValue": "delete",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals"
+                }
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "314d11f8-01f6-42ae-8959-521833fd21a8",
+        "name": "Return dry-run target",
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.5,
+        "position": [
+          1120,
+          120
+        ],
+        "parameters": {
+          "mode": "manual",
+          "assignments": {
+            "assignments": [
+              {
+                "id": "action",
+                "name": "action",
+                "value": "would_delete",
+                "type": "string"
+              },
+              {
+                "id": "executionId",
+                "name": "executionId",
+                "value": "={{ $('Keep retention targets').item.json.id }}",
+                "type": "string"
+              },
+              {
+                "id": "workflowId",
+                "name": "workflowId",
+                "value": "={{ $('Keep retention targets').item.json.workflowId }}",
+                "type": "string"
+              },
+              {
+                "id": "status",
+                "name": "status",
+                "value": "={{ $('Keep retention targets').item.json.status }}",
+                "type": "string"
+              },
+              {
+                "id": "startedAt",
+                "name": "startedAt",
+                "value": "={{ $('Keep retention targets').item.json.startedAt }}",
+                "type": "string"
+              }
+            ]
+          },
+          "includeOtherFields": false
+        }
+      },
+      {
+        "id": "aca3b732-e46a-46a3-8ffa-c3708b468b67",
+        "name": "Retention cleanup request",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.2,
+        "position": [
+          0,
+          0
+        ],
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "maintenance/execution-retention",
+          "authentication": "headerAuth",
+          "responseMode": "lastNode",
+          "responseData": "allEntries"
+        },
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "RvmfH6qWSIUABPQO",
+            "name": "n8n Webhook（Bearer Auth）"
+          }
+        },
+        "webhookId": "15633787-3c1c-40cb-81ac-049409c7143d"
+      },
+      {
+        "id": "5da9d283-5f53-449a-b547-a4879376365b",
+        "name": "Policy from request",
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.5,
+        "position": [
+          224,
+          -160
+        ],
+        "parameters": {
+          "mode": "manual",
+          "assignments": {
+            "assignments": [
+              {
+                "id": "confirm",
+                "name": "confirm",
+                "value": "={{ $('Retention cleanup request').item.json.body?.confirm === true }}",
+                "type": "boolean"
+              },
+              {
+                "id": "successRetentionHours",
+                "name": "successRetentionHours",
+                "value": "={{ Number($('Retention cleanup request').item.json.body?.successRetentionHours || 24) }}",
+                "type": "number"
+              },
+              {
+                "id": "issueRetentionDays",
+                "name": "issueRetentionDays",
+                "value": "={{ Number($('Retention cleanup request').item.json.body?.issueRetentionDays || 7) }}",
+                "type": "number"
+              },
+              {
+                "id": "source",
+                "name": "source",
+                "value": "request",
+                "type": "string"
+              }
+            ]
+          },
+          "includeOtherFields": false
+        }
+      },
+      {
+        "id": "e025f1df-65eb-463a-a4bf-0e5b8be69386",
+        "name": "Daily 03:30 retention",
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.4,
+        "position": [
+          0,
+          320
+        ],
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "days",
+                "daysInterval": 1,
+                "triggerAtHour": 3,
+                "triggerAtMinute": 30
+              }
+            ]
+          },
+          "misfirePolicy": "skip",
+          "misfireGraceSeconds": 0
+        }
+      },
+      {
+        "id": "fb3aed23-043c-43e3-a173-fe742194e527",
+        "name": "Policy from schedule",
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.5,
+        "position": [
+          224,
+          320
+        ],
+        "parameters": {
+          "mode": "manual",
+          "assignments": {
+            "assignments": [
+              {
+                "id": "confirm",
+                "name": "confirm",
+                "value": true,
+                "type": "boolean"
+              },
+              {
+                "id": "successRetentionHours",
+                "name": "successRetentionHours",
+                "value": 24,
+                "type": "number"
+              },
+              {
+                "id": "issueRetentionDays",
+                "name": "issueRetentionDays",
+                "value": 7,
+                "type": "number"
+              },
+              {
+                "id": "source",
+                "name": "source",
+                "value": "schedule",
+                "type": "string"
+              }
+            ]
+          },
+          "includeOtherFields": false
+        }
+      },
+      {
+        "id": "cc3de86c-4478-4eef-8e87-e03f4f4e7546",
+        "name": "Confirmed deletion?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.4,
+        "position": [
+          896,
+          0
+        ],
+        "parameters": {
+          "conditions": {
+            "combinator": "and",
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict"
+            },
+            "conditions": [
+              {
+                "leftValue": "={{ $('Normalize policy').first().json.confirm ? 'yes' : 'no' }}",
+                "rightValue": "yes",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals"
+                }
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "ca53e76a-6e9d-4050-b62b-e2c51458a858",
+        "name": "Delete execution",
+        "type": "n8n-nodes-base.n8n",
+        "typeVersion": 1,
+        "position": [
+          1120,
+          -120
+        ],
+        "parameters": {
+          "resource": "execution",
+          "operation": "delete",
+          "executionId": "={{ $('Keep retention targets').item.json.id }}"
+        },
+        "credentials": {
+          "n8nApi": {
+            "id": "ZWhmVjb2nWJVoRkD",
+            "name": "self"
+          }
+        }
+      },
+      {
+        "id": "4c11a7f8-50bf-4f00-9a99-6c1ef9359278",
+        "name": "Return deletion result",
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.5,
+        "position": [
+          1344,
+          -120
+        ],
+        "parameters": {
+          "mode": "manual",
+          "assignments": {
+            "assignments": [
+              {
+                "id": "action",
+                "name": "action",
+                "value": "deleted",
+                "type": "string"
+              },
+              {
+                "id": "executionId",
+                "name": "executionId",
+                "value": "={{ $('Keep retention targets').item.json.id }}",
+                "type": "string"
+              },
+              {
+                "id": "workflowId",
+                "name": "workflowId",
+                "value": "={{ $('Keep retention targets').item.json.workflowId }}",
+                "type": "string"
+              },
+              {
+                "id": "status",
+                "name": "status",
+                "value": "={{ $('Keep retention targets').item.json.status }}",
+                "type": "string"
+              },
+              {
+                "id": "startedAt",
+                "name": "startedAt",
+                "value": "={{ $('Keep retention targets').item.json.startedAt }}",
+                "type": "string"
+              }
+            ]
+          },
+          "includeOtherFields": false
+        }
+      }
+    ],
+    "connections": {
+      "Normalize policy": {
+        "main": [
+          [
+            {
+              "node": "List executions",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "List executions": {
+        "main": [
+          [
+            {
+              "node": "Keep retention targets",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Retention cleanup request": {
+        "main": [
+          [
+            {
+              "node": "Policy from request",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Policy from request": {
+        "main": [
+          [
+            {
+              "node": "Normalize policy",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Daily 03:30 retention": {
+        "main": [
+          [
+            {
+              "node": "Policy from schedule",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Policy from schedule": {
+        "main": [
+          [
+            {
+              "node": "Normalize policy",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Keep retention targets": {
+        "main": [
+          [
+            {
+              "node": "Confirmed deletion?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Confirmed deletion?": {
+        "main": [
+          [
+            {
+              "node": "Delete execution",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Return dry-run target",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Delete execution": {
+        "main": [
+          [
+            {
+              "node": "Return deletion result",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "nodeGroups": [
+      {
+        "id": "85db0881-d936-4b33-b236-050591927218",
+        "name": "Evaluate retention targets",
+        "nodeIds": [
+          "d9d17438-2270-438d-bce3-c09dbb4f55e2",
+          "890b6882-1b89-4046-922b-e8e858e7d59d",
+          "4b2991ff-3eb7-475a-aa58-890efd9342fe",
+          "cc3de86c-4478-4eef-8e87-e03f4f4e7546"
+        ],
+        "description": "Normalize policy, enumerate executions, apply retention windows, and gate deletion."
+      },
+      {
+        "id": "ca630814-4b3d-48e4-92c6-564e8b8a8de0",
+        "name": "Delete confirmed targets",
+        "nodeIds": [
+          "ca53e76a-6e9d-4050-b62b-e2c51458a858",
+          "4c11a7f8-50bf-4f00-9a99-6c1ef9359278"
+        ],
+        "description": "Delete only candidates that passed the retention filter and explicit confirmation gate."
+      }
+    ],
+    "authors": "Administrator NTLx (via MCP)",
+    "name": "Group retention stages",
+    "description": "Organize the workflow into evaluation and confirmed-deletion stages to clear the lifecycle top-level-box warning.",
+    "autosaved": false,
+    "createdAt": "2026-10-28T06:14:29.345Z",
+    "updatedAt": "2026-10-28T06:14:29.345Z"
+  }
+}
