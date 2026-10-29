@@ -1267,12 +1267,6 @@
       "updatedAt": "2026-10-22T08:25:54.546Z"
     },
     {
-      "id": "ADAZhgvX1et8NkUZ",
-      "name": "rss",
-      "createdAt": "2026-10-22T09:19:50.833Z",
-      "updatedAt": "2026-10-22T09:19:50.833Z"
-    },
-    {
       "id": "9jw9Bhya2Ylf8E4D",
       "name": "ai-work-producer",
       "createdAt": "2026-10-22T09:14:35.367Z",
@@ -1283,6 +1277,12 @@
       "name": "event-producer",
       "createdAt": "2026-10-22T09:14:35.370Z",
       "updatedAt": "2026-10-22T09:14:35.370Z"
+    },
+    {
+      "id": "ADAZhgvX1et8NkUZ",
+      "name": "rss",
+      "createdAt": "2026-10-22T09:19:50.833Z",
+      "updatedAt": "2026-10-22T09:19:50.833Z"
     }
   ],
   "shared": [
