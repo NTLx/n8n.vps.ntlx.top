@@ -1,0 +1,404 @@
+{
+  "id": "3N5DpHApMhb64C6m",
+  "name": "ChatGPT → Enqueue AI work",
+  "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-10-28T02:03:45.435Z",
+  "updatedAt": "2026-10-28T02:17:55.799Z",
+  "isArchived": true,
+  "versionId": "aecc8ecf-c5bd-48ef-bc69-5cfd87da9951",
+  "triggerCount": 1,
+  "nodes": [
+    {
+      "id": "f17924c3-2eb1-460a-9199-6311ba23adc1",
+      "name": "ChatGPT AI Work Enqueue",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.2,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "chatgpt-ai-work-enqueue",
+        "authentication": "headerAuth",
+        "responseMode": "lastNode",
+        "responseData": "firstEntryJson"
+      },
+      "webhookId": "7ea7e8bf-0e46-46ea-9a92-faa19126999b",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "RvmfH6qWSIUABPQO",
+          "name": "n8n Webhook（Bearer Auth）"
+        }
+      }
+    },
+    {
+      "id": "31c015f2-d088-412f-bbca-a7620d0a4d96",
+      "name": "Normalize AI Work",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        224,
+        0
+      ],
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "work_id",
+              "name": "work_id",
+              "type": "string",
+              "value": "={{ (() => { const v=String($json.body?.work_id||'').trim(); if(!v) throw new Error('work_id is required'); return v; })() }}"
+            },
+            {
+              "id": "worker",
+              "name": "worker",
+              "type": "string",
+              "value": "={{ (() => { const v=String($json.body?.worker||'').trim(); if(!v) throw new Error('worker is required'); return v; })() }}"
+            },
+            {
+              "id": "kind",
+              "name": "kind",
+              "type": "string",
+              "value": "={{ (() => { const v=String($json.body?.kind||'').trim(); if(!v) throw new Error('kind is required'); return v; })() }}"
+            },
+            {
+              "id": "priority",
+              "name": "priority",
+              "type": "number",
+              "value": "={{ Number($json.body?.priority ?? 50) }}"
+            },
+            {
+              "id": "source_event_id",
+              "name": "source_event_id",
+              "type": "string",
+              "value": "={{ String($json.body?.source_event_id||'') }}"
+            },
+            {
+              "id": "correlation_id",
+              "name": "correlation_id",
+              "type": "string",
+              "value": "={{ String($json.body?.correlation_id||'') }}"
+            },
+            {
+              "id": "project",
+              "name": "project",
+              "type": "string",
+              "value": "={{ (() => { const v=String($json.body?.project||'').trim(); if(!v) throw new Error('project is required'); return v; })() }}"
+            },
+            {
+              "id": "input_ref",
+              "name": "input_ref",
+              "type": "string",
+              "value": "={{ String($json.body?.input_ref||'') }}"
+            },
+            {
+              "id": "summary",
+              "name": "summary",
+              "type": "string",
+              "value": "={{ String($json.body?.summary||'') }}"
+            },
+            {
+              "id": "not_before",
+              "name": "not_before",
+              "type": "string",
+              "value": "={{ String($json.body?.not_before||$now.toISO()) }}"
+            },
+            {
+              "id": "deadline",
+              "name": "deadline",
+              "type": "string",
+              "value": "={{ String($json.body?.deadline||'') }}"
+            },
+            {
+              "id": "event_id",
+              "name": "event_id",
+              "type": "string",
+              "value": "={{ String($json.body?.event_id||('ai.work.enqueued:'+String($json.body?.work_id||''))) }}"
+            },
+            {
+              "id": "event_occurred_at",
+              "name": "event_occurred_at",
+              "type": "string",
+              "value": "={{ String($json.body?.event_occurred_at||$now.toISO()) }}"
+            },
+            {
+              "id": "event_source",
+              "name": "event_source",
+              "type": "string",
+              "value": "={{ String($json.body?.event_source||'chatgpt') }}"
+            },
+            {
+              "id": "event_category",
+              "name": "event_category",
+              "type": "string",
+              "value": "={{ String($json.body?.event_category||'ai.work.enqueued') }}"
+            },
+            {
+              "id": "event_title",
+              "name": "event_title",
+              "type": "string",
+              "value": "={{ String($json.body?.event_title||('AI work enqueued: '+String($json.body?.work_id||''))) }}"
+            },
+            {
+              "id": "event_description",
+              "name": "event_description",
+              "type": "string",
+              "value": "={{ String($json.body?.event_description||$json.body?.summary||'') }}"
+            },
+            {
+              "id": "event_status",
+              "name": "event_status",
+              "type": "string",
+              "value": "={{ String($json.body?.event_status||'scheduled') }}"
+            },
+            {
+              "id": "event_url",
+              "name": "event_url",
+              "type": "string",
+              "value": "={{ String($json.body?.event_url||'') }}"
+            },
+            {
+              "id": "event_metadata_object",
+              "name": "event_metadata_object",
+              "type": "string",
+              "value": "={{ typeof $json.body?.event_metadata_object==='string' ? $json.body.event_metadata_object : (($json.body?.event_metadata||{}).toJsonString()) }}"
+            }
+          ]
+        },
+        "includeOtherFields": false,
+        "options": {}
+      }
+    },
+    {
+      "id": "98987fb7-3677-4ac1-8b55-9bf455571856",
+      "name": "Route to Enqueue AI work",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.4,
+      "position": [
+        448,
+        0
+      ],
+      "parameters": {
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "oe8KZW4nLbYUUDzA"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "work_id": "={{ $('Normalize AI Work').item.json.work_id }}",
+            "worker": "={{ $('Normalize AI Work').item.json.worker }}",
+            "kind": "={{ $('Normalize AI Work').item.json.kind }}",
+            "priority": "={{ $('Normalize AI Work').item.json.priority }}",
+            "source_event_id": "={{ $('Normalize AI Work').item.json.source_event_id }}",
+            "correlation_id": "={{ $('Normalize AI Work').item.json.correlation_id }}",
+            "project": "={{ $('Normalize AI Work').item.json.project }}",
+            "input_ref": "={{ $('Normalize AI Work').item.json.input_ref }}",
+            "summary": "={{ $('Normalize AI Work').item.json.summary }}",
+            "not_before": "={{ $('Normalize AI Work').item.json.not_before }}",
+            "deadline": "={{ $('Normalize AI Work').item.json.deadline }}",
+            "event_id": "={{ $('Normalize AI Work').item.json.event_id }}",
+            "event_occurred_at": "={{ $('Normalize AI Work').item.json.event_occurred_at }}",
+            "event_source": "={{ $('Normalize AI Work').item.json.event_source }}",
+            "event_category": "={{ $('Normalize AI Work').item.json.event_category }}",
+            "event_title": "={{ $('Normalize AI Work').item.json.event_title }}",
+            "event_description": "={{ $('Normalize AI Work').item.json.event_description }}",
+            "event_status": "={{ $('Normalize AI Work').item.json.event_status }}",
+            "event_url": "={{ $('Normalize AI Work').item.json.event_url }}",
+            "event_metadata_object": "={{ $('Normalize AI Work').item.json.event_metadata_object }}"
+          },
+          "schema": [
+            {
+              "id": "work_id",
+              "displayName": "work_id",
+              "type": "string"
+            },
+            {
+              "id": "worker",
+              "displayName": "worker",
+              "type": "string"
+            },
+            {
+              "id": "kind",
+              "displayName": "kind",
+              "type": "string"
+            },
+            {
+              "id": "priority",
+              "displayName": "priority",
+              "type": "number"
+            },
+            {
+              "id": "source_event_id",
+              "displayName": "source_event_id",
+              "type": "string"
+            },
+            {
+              "id": "correlation_id",
+              "displayName": "correlation_id",
+              "type": "string"
+            },
+            {
+              "id": "project",
+              "displayName": "project",
+              "type": "string"
+            },
+            {
+              "id": "input_ref",
+              "displayName": "input_ref",
+              "type": "string"
+            },
+            {
+              "id": "summary",
+              "displayName": "summary",
+              "type": "string"
+            },
+            {
+              "id": "not_before",
+              "displayName": "not_before",
+              "type": "string"
+            },
+            {
+              "id": "deadline",
+              "displayName": "deadline",
+              "type": "string"
+            },
+            {
+              "id": "event_id",
+              "displayName": "event_id",
+              "type": "string"
+            },
+            {
+              "id": "event_occurred_at",
+              "displayName": "event_occurred_at",
+              "type": "string"
+            },
+            {
+              "id": "event_source",
+              "displayName": "event_source",
+              "type": "string"
+            },
+            {
+              "id": "event_category",
+              "displayName": "event_category",
+              "type": "string"
+            },
+            {
+              "id": "event_title",
+              "displayName": "event_title",
+              "type": "string"
+            },
+            {
+              "id": "event_description",
+              "displayName": "event_description",
+              "type": "string"
+            },
+            {
+              "id": "event_status",
+              "displayName": "event_status",
+              "type": "string"
+            },
+            {
+              "id": "event_url",
+              "displayName": "event_url",
+              "type": "string"
+            },
+            {
+              "id": "event_metadata_object",
+              "displayName": "event_metadata_object",
+              "type": "string"
+            }
+          ]
+        },
+        "mode": "each",
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "onError": "stopWorkflow"
+    }
+  ],
+  "connections": {
+    "ChatGPT AI Work Enqueue": {
+      "main": [
+        [
+          {
+            "node": "Normalize AI Work",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize AI Work": {
+      "main": [
+        [
+          {
+            "node": "Route to Enqueue AI work",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true,
+    "errorWorkflow": "3LE3BnPfHSuIZCVR",
+    "timezone": "Asia/Shanghai",
+    "saveExecutionProgress": false,
+    "saveManualExecutions": false,
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "none",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [
+    {
+      "id": "SvzA8xykOpMtvbwk",
+      "name": "ai-work",
+      "createdAt": "2026-10-22T09:12:58.488Z",
+      "updatedAt": "2026-10-22T09:12:58.488Z"
+    },
+    {
+      "id": "twNsKNALbdWLw0Ox",
+      "name": "automation",
+      "createdAt": "2026-10-22T08:25:54.546Z",
+      "updatedAt": "2026-10-22T08:25:54.546Z"
+    },
+    {
+      "id": "BlGRvaSWqnmTk53i",
+      "name": "event-producer",
+      "createdAt": "2026-10-22T09:14:35.370Z",
+      "updatedAt": "2026-10-22T09:14:35.370Z"
+    },
+    {
+      "id": "9jw9Bhya2Ylf8E4D",
+      "name": "ai-work-producer",
+      "createdAt": "2026-10-22T09:14:35.367Z",
+      "updatedAt": "2026-10-22T09:14:35.367Z"
+    }
+  ],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "3N5DpHApMhb64C6m",
+      "projectId": "cNMj0K6AdJmi0OAZ",
+      "createdAt": "2026-10-28T02:03:45.435Z",
+      "updatedAt": "2026-10-28T02:03:45.435Z"
+    }
+  ],
+  "activeVersion": null
+}
