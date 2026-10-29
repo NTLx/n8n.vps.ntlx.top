@@ -1,0 +1,895 @@
+{
+  "id": "3OE0RGsFXHaMpjTd",
+  "name": "Act on GitHub issue",
+  "active": true,
+  "activeVersionId": "0e855566-9db1-466b-b84d-300a8b265289",
+  "createdAt": "2026-10-28T15:41:46.431Z",
+  "updatedAt": "2026-10-28T15:47:25.894Z",
+  "isArchived": false,
+  "versionId": "0e855566-9db1-466b-b84d-300a8b265289",
+  "triggerCount": 0,
+  "nodes": [
+    {
+      "id": "44d47369-bcfb-4a5a-920e-3f378b934ff2",
+      "name": "Receive issue action request",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "inputSource": "workflowInputs",
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "owner",
+              "type": "string"
+            },
+            {
+              "name": "repository",
+              "type": "string"
+            },
+            {
+              "name": "issue_number",
+              "type": "number"
+            },
+            {
+              "name": "action",
+              "type": "string"
+            },
+            {
+              "name": "body",
+              "type": "string"
+            },
+            {
+              "name": "lock_reason",
+              "type": "string"
+            },
+            {
+              "name": "confirmed",
+              "type": "boolean"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "d7be0c2e-7a3c-4bf5-95ae-59bae77227d6",
+      "name": "Route issue action",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        280,
+        0
+      ],
+      "parameters": {
+        "mode": "rules",
+        "rules": {
+          "values": [
+            {
+              "renameOutput": true,
+              "outputKey": "comment",
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Receive issue action request').item.json.action }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "rightValue": "comment"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "renameOutput": true,
+              "outputKey": "close",
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Receive issue action request').item.json.action }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "rightValue": "close"
+                  },
+                  {
+                    "leftValue": "={{ $('Receive issue action request').item.json.confirmed }}",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "isTrue"
+                    },
+                    "rightValue": true
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "renameOutput": true,
+              "outputKey": "reopen",
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Receive issue action request').item.json.action }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "rightValue": "reopen"
+                  },
+                  {
+                    "leftValue": "={{ $('Receive issue action request').item.json.confirmed }}",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "isTrue"
+                    },
+                    "rightValue": true
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "renameOutput": true,
+              "outputKey": "lock",
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Receive issue action request').item.json.action }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "rightValue": "lock"
+                  },
+                  {
+                    "leftValue": "={{ $('Receive issue action request').item.json.confirmed }}",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "isTrue"
+                    },
+                    "rightValue": true
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra",
+          "renameFallbackOutput": "refused"
+        }
+      }
+    },
+    {
+      "id": "ab878df7-feb8-423d-8a76-991440f1361a",
+      "name": "Comment on issue",
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1.1,
+      "position": [
+        560,
+        -240
+      ],
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "issue",
+        "operation": "createComment",
+        "owner": {
+          "__rl": true,
+          "mode": "name",
+          "value": "={{ $('Receive issue action request').item.json.owner }}"
+        },
+        "repository": {
+          "__rl": true,
+          "mode": "name",
+          "value": "={{ $('Receive issue action request').item.json.repository }}"
+        },
+        "issueNumber": "={{ $('Receive issue action request').item.json.issue_number }}",
+        "body": "={{ $('Receive issue action request').item.json.body + '\\n\\n<!-- chatgpt:n8n -->' }}"
+      },
+      "credentials": {
+        "githubOAuth2Api": {
+          "id": "stt7O3UtIsjdKCqg",
+          "name": "NTLx"
+        }
+      },
+      "webhookId": "96485823-69d6-47ac-be8a-29ee634d759e"
+    },
+    {
+      "id": "b4c0b807-badf-4249-8c71-663b9d359e68",
+      "name": "Close issue",
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1.1,
+      "position": [
+        560,
+        -80
+      ],
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "issue",
+        "operation": "edit",
+        "owner": {
+          "__rl": true,
+          "mode": "name",
+          "value": "={{ $('Receive issue action request').item.json.owner }}"
+        },
+        "repository": {
+          "__rl": true,
+          "mode": "name",
+          "value": "={{ $('Receive issue action request').item.json.repository }}"
+        },
+        "issueNumber": "={{ $('Receive issue action request').item.json.issue_number }}",
+        "editFields": {
+          "state": "closed",
+          "state_reason": "completed"
+        }
+      },
+      "credentials": {
+        "githubOAuth2Api": {
+          "id": "stt7O3UtIsjdKCqg",
+          "name": "NTLx"
+        }
+      },
+      "webhookId": "c17fb858-4077-4037-9b81-d2f0a6f87288"
+    },
+    {
+      "id": "f9e2594c-98d7-41bf-87f0-4c77a04471d2",
+      "name": "Reopen issue",
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1.1,
+      "position": [
+        560,
+        80
+      ],
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "issue",
+        "operation": "edit",
+        "owner": {
+          "__rl": true,
+          "mode": "name",
+          "value": "={{ $('Receive issue action request').item.json.owner }}"
+        },
+        "repository": {
+          "__rl": true,
+          "mode": "name",
+          "value": "={{ $('Receive issue action request').item.json.repository }}"
+        },
+        "issueNumber": "={{ $('Receive issue action request').item.json.issue_number }}",
+        "editFields": {
+          "state": "open",
+          "state_reason": "reopened"
+        }
+      },
+      "credentials": {
+        "githubOAuth2Api": {
+          "id": "stt7O3UtIsjdKCqg",
+          "name": "NTLx"
+        }
+      },
+      "webhookId": "36aa1cb8-6f40-4724-a10e-eb15ea1002a7"
+    },
+    {
+      "id": "0c651a69-79de-4a32-93b7-4d1f59572c75",
+      "name": "Lock issue",
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1.1,
+      "position": [
+        560,
+        240
+      ],
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "issue",
+        "operation": "lock",
+        "owner": {
+          "__rl": true,
+          "mode": "name",
+          "value": "={{ $('Receive issue action request').item.json.owner }}"
+        },
+        "repository": {
+          "__rl": true,
+          "mode": "name",
+          "value": "={{ $('Receive issue action request').item.json.repository }}"
+        },
+        "issueNumber": "={{ $('Receive issue action request').item.json.issue_number }}",
+        "lockReason": "={{ $('Receive issue action request').item.json.lock_reason || 'resolved' }}"
+      },
+      "credentials": {
+        "githubOAuth2Api": {
+          "id": "stt7O3UtIsjdKCqg",
+          "name": "NTLx"
+        }
+      },
+      "webhookId": "ad0dbfd3-cbd7-433e-866d-9c0a9bcfee5a"
+    },
+    {
+      "id": "d04afa98-9f23-4380-9d19-8bc8bd0e097e",
+      "name": "Return refused issue action",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        560,
+        400
+      ],
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ok",
+              "name": "ok",
+              "type": "boolean",
+              "value": false
+            },
+            {
+              "id": "error",
+              "name": "error",
+              "type": "string",
+              "value": "unsupported_or_unconfirmed_action"
+            },
+            {
+              "id": "policy",
+              "name": "policy",
+              "type": "string",
+              "value": "comment is advisory; close, reopen and lock require confirmed=true"
+            }
+          ]
+        },
+        "includeOtherFields": false
+      }
+    }
+  ],
+  "connections": {
+    "Receive issue action request": {
+      "main": [
+        [
+          {
+            "node": "Route issue action",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route issue action": {
+      "main": [
+        [
+          {
+            "node": "Comment on issue",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Close issue",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Reopen issue",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Lock issue",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Return refused issue action",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true,
+    "errorWorkflow": "3LE3BnPfHSuIZCVR",
+    "timezone": "Asia/Shanghai",
+    "saveExecutionProgress": false,
+    "saveManualExecutions": false,
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "none",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [
+    {
+      "id": "4K2bQrntVhmSikB8",
+      "name": "tool",
+      "createdAt": "2026-10-27T06:57:35.939Z",
+      "updatedAt": "2026-10-27T06:57:35.939Z"
+    },
+    {
+      "id": "jkffVXRb1S4v5PNj",
+      "name": "subworkflow",
+      "createdAt": "2026-10-22T15:59:43.410Z",
+      "updatedAt": "2026-10-22T15:59:43.410Z"
+    },
+    {
+      "id": "ZB1OFuryVXrNRjEy",
+      "name": "github",
+      "createdAt": "2026-10-23T02:30:52.063Z",
+      "updatedAt": "2026-10-23T02:30:52.063Z"
+    },
+    {
+      "id": "twNsKNALbdWLw0Ox",
+      "name": "automation",
+      "createdAt": "2026-10-22T08:25:54.546Z",
+      "updatedAt": "2026-10-22T08:25:54.546Z"
+    }
+  ],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "3OE0RGsFXHaMpjTd",
+      "projectId": "cNMj0K6AdJmi0OAZ",
+      "createdAt": "2026-10-28T15:41:46.431Z",
+      "updatedAt": "2026-10-28T15:41:46.431Z"
+    }
+  ],
+  "activeVersion": {
+    "versionId": "0e855566-9db1-466b-b84d-300a8b265289",
+    "workflowId": "3OE0RGsFXHaMpjTd",
+    "nodes": [
+      {
+        "id": "44d47369-bcfb-4a5a-920e-3f378b934ff2",
+        "name": "Receive issue action request",
+        "type": "n8n-nodes-base.executeWorkflowTrigger",
+        "typeVersion": 1.3,
+        "position": [
+          0,
+          0
+        ],
+        "parameters": {
+          "inputSource": "workflowInputs",
+          "workflowInputs": {
+            "values": [
+              {
+                "name": "owner",
+                "type": "string"
+              },
+              {
+                "name": "repository",
+                "type": "string"
+              },
+              {
+                "name": "issue_number",
+                "type": "number"
+              },
+              {
+                "name": "action",
+                "type": "string"
+              },
+              {
+                "name": "body",
+                "type": "string"
+              },
+              {
+                "name": "lock_reason",
+                "type": "string"
+              },
+              {
+                "name": "confirmed",
+                "type": "boolean"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "d7be0c2e-7a3c-4bf5-95ae-59bae77227d6",
+        "name": "Route issue action",
+        "type": "n8n-nodes-base.switch",
+        "typeVersion": 3.4,
+        "position": [
+          280,
+          0
+        ],
+        "parameters": {
+          "mode": "rules",
+          "rules": {
+            "values": [
+              {
+                "renameOutput": true,
+                "outputKey": "comment",
+                "conditions": {
+                  "options": {
+                    "caseSensitive": false,
+                    "leftValue": "",
+                    "typeValidation": "strict"
+                  },
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $('Receive issue action request').item.json.action }}",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals"
+                      },
+                      "rightValue": "comment"
+                    }
+                  ],
+                  "combinator": "and"
+                }
+              },
+              {
+                "renameOutput": true,
+                "outputKey": "close",
+                "conditions": {
+                  "options": {
+                    "caseSensitive": false,
+                    "leftValue": "",
+                    "typeValidation": "strict"
+                  },
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $('Receive issue action request').item.json.action }}",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals"
+                      },
+                      "rightValue": "close"
+                    },
+                    {
+                      "leftValue": "={{ $('Receive issue action request').item.json.confirmed }}",
+                      "operator": {
+                        "type": "boolean",
+                        "operation": "isTrue"
+                      },
+                      "rightValue": true
+                    }
+                  ],
+                  "combinator": "and"
+                }
+              },
+              {
+                "renameOutput": true,
+                "outputKey": "reopen",
+                "conditions": {
+                  "options": {
+                    "caseSensitive": false,
+                    "leftValue": "",
+                    "typeValidation": "strict"
+                  },
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $('Receive issue action request').item.json.action }}",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals"
+                      },
+                      "rightValue": "reopen"
+                    },
+                    {
+                      "leftValue": "={{ $('Receive issue action request').item.json.confirmed }}",
+                      "operator": {
+                        "type": "boolean",
+                        "operation": "isTrue"
+                      },
+                      "rightValue": true
+                    }
+                  ],
+                  "combinator": "and"
+                }
+              },
+              {
+                "renameOutput": true,
+                "outputKey": "lock",
+                "conditions": {
+                  "options": {
+                    "caseSensitive": false,
+                    "leftValue": "",
+                    "typeValidation": "strict"
+                  },
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $('Receive issue action request').item.json.action }}",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals"
+                      },
+                      "rightValue": "lock"
+                    },
+                    {
+                      "leftValue": "={{ $('Receive issue action request').item.json.confirmed }}",
+                      "operator": {
+                        "type": "boolean",
+                        "operation": "isTrue"
+                      },
+                      "rightValue": true
+                    }
+                  ],
+                  "combinator": "and"
+                }
+              }
+            ]
+          },
+          "options": {
+            "fallbackOutput": "extra",
+            "renameFallbackOutput": "refused"
+          }
+        }
+      },
+      {
+        "id": "ab878df7-feb8-423d-8a76-991440f1361a",
+        "name": "Comment on issue",
+        "type": "n8n-nodes-base.github",
+        "typeVersion": 1.1,
+        "position": [
+          560,
+          -240
+        ],
+        "parameters": {
+          "authentication": "oAuth2",
+          "resource": "issue",
+          "operation": "createComment",
+          "owner": {
+            "__rl": true,
+            "mode": "name",
+            "value": "={{ $('Receive issue action request').item.json.owner }}"
+          },
+          "repository": {
+            "__rl": true,
+            "mode": "name",
+            "value": "={{ $('Receive issue action request').item.json.repository }}"
+          },
+          "issueNumber": "={{ $('Receive issue action request').item.json.issue_number }}",
+          "body": "={{ $('Receive issue action request').item.json.body + '\\n\\n<!-- chatgpt:n8n -->' }}"
+        },
+        "credentials": {
+          "githubOAuth2Api": {
+            "id": "stt7O3UtIsjdKCqg",
+            "name": "NTLx"
+          }
+        },
+        "webhookId": "96485823-69d6-47ac-be8a-29ee634d759e"
+      },
+      {
+        "id": "b4c0b807-badf-4249-8c71-663b9d359e68",
+        "name": "Close issue",
+        "type": "n8n-nodes-base.github",
+        "typeVersion": 1.1,
+        "position": [
+          560,
+          -80
+        ],
+        "parameters": {
+          "authentication": "oAuth2",
+          "resource": "issue",
+          "operation": "edit",
+          "owner": {
+            "__rl": true,
+            "mode": "name",
+            "value": "={{ $('Receive issue action request').item.json.owner }}"
+          },
+          "repository": {
+            "__rl": true,
+            "mode": "name",
+            "value": "={{ $('Receive issue action request').item.json.repository }}"
+          },
+          "issueNumber": "={{ $('Receive issue action request').item.json.issue_number }}",
+          "editFields": {
+            "state": "closed",
+            "state_reason": "completed"
+          }
+        },
+        "credentials": {
+          "githubOAuth2Api": {
+            "id": "stt7O3UtIsjdKCqg",
+            "name": "NTLx"
+          }
+        },
+        "webhookId": "c17fb858-4077-4037-9b81-d2f0a6f87288"
+      },
+      {
+        "id": "f9e2594c-98d7-41bf-87f0-4c77a04471d2",
+        "name": "Reopen issue",
+        "type": "n8n-nodes-base.github",
+        "typeVersion": 1.1,
+        "position": [
+          560,
+          80
+        ],
+        "parameters": {
+          "authentication": "oAuth2",
+          "resource": "issue",
+          "operation": "edit",
+          "owner": {
+            "__rl": true,
+            "mode": "name",
+            "value": "={{ $('Receive issue action request').item.json.owner }}"
+          },
+          "repository": {
+            "__rl": true,
+            "mode": "name",
+            "value": "={{ $('Receive issue action request').item.json.repository }}"
+          },
+          "issueNumber": "={{ $('Receive issue action request').item.json.issue_number }}",
+          "editFields": {
+            "state": "open",
+            "state_reason": "reopened"
+          }
+        },
+        "credentials": {
+          "githubOAuth2Api": {
+            "id": "stt7O3UtIsjdKCqg",
+            "name": "NTLx"
+          }
+        },
+        "webhookId": "36aa1cb8-6f40-4724-a10e-eb15ea1002a7"
+      },
+      {
+        "id": "0c651a69-79de-4a32-93b7-4d1f59572c75",
+        "name": "Lock issue",
+        "type": "n8n-nodes-base.github",
+        "typeVersion": 1.1,
+        "position": [
+          560,
+          240
+        ],
+        "parameters": {
+          "authentication": "oAuth2",
+          "resource": "issue",
+          "operation": "lock",
+          "owner": {
+            "__rl": true,
+            "mode": "name",
+            "value": "={{ $('Receive issue action request').item.json.owner }}"
+          },
+          "repository": {
+            "__rl": true,
+            "mode": "name",
+            "value": "={{ $('Receive issue action request').item.json.repository }}"
+          },
+          "issueNumber": "={{ $('Receive issue action request').item.json.issue_number }}",
+          "lockReason": "={{ $('Receive issue action request').item.json.lock_reason || 'resolved' }}"
+        },
+        "credentials": {
+          "githubOAuth2Api": {
+            "id": "stt7O3UtIsjdKCqg",
+            "name": "NTLx"
+          }
+        },
+        "webhookId": "ad0dbfd3-cbd7-433e-866d-9c0a9bcfee5a"
+      },
+      {
+        "id": "d04afa98-9f23-4380-9d19-8bc8bd0e097e",
+        "name": "Return refused issue action",
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.5,
+        "position": [
+          560,
+          400
+        ],
+        "parameters": {
+          "mode": "manual",
+          "assignments": {
+            "assignments": [
+              {
+                "id": "ok",
+                "name": "ok",
+                "type": "boolean",
+                "value": false
+              },
+              {
+                "id": "error",
+                "name": "error",
+                "type": "string",
+                "value": "unsupported_or_unconfirmed_action"
+              },
+              {
+                "id": "policy",
+                "name": "policy",
+                "type": "string",
+                "value": "comment is advisory; close, reopen and lock require confirmed=true"
+              }
+            ]
+          },
+          "includeOtherFields": false
+        }
+      }
+    ],
+    "connections": {
+      "Receive issue action request": {
+        "main": [
+          [
+            {
+              "node": "Route issue action",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Route issue action": {
+        "main": [
+          [
+            {
+              "node": "Comment on issue",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Close issue",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Reopen issue",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Lock issue",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Return refused issue action",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "nodeGroups": [],
+    "authors": "Administrator NTLx (via MCP)",
+    "name": "Initial native issue actions",
+    "description": "Adds advisory comments plus confirmation-gated close, reopen, and lock actions using only the native GitHub node.",
+    "autosaved": false,
+    "createdAt": "2026-10-28T15:41:46.431Z",
+    "updatedAt": "2026-10-28T15:41:46.431Z"
+  }
+}
