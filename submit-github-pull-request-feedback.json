@@ -1,0 +1,863 @@
+{
+  "id": "PUudX4hasG0LpQdL",
+  "name": "Submit GitHub pull request feedback",
+  "active": true,
+  "activeVersionId": "4fee4249-827d-4d41-a371-440e2304c07d",
+  "createdAt": "2026-10-28T15:40:35.888Z",
+  "updatedAt": "2026-10-28T15:47:06.224Z",
+  "isArchived": false,
+  "versionId": "4fee4249-827d-4d41-a371-440e2304c07d",
+  "triggerCount": 0,
+  "nodes": [
+    {
+      "id": "4f9071df-23df-4932-8d17-b9ce6bf40696",
+      "name": "Receive PR feedback request",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "inputSource": "workflowInputs",
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "owner",
+              "type": "string"
+            },
+            {
+              "name": "repository",
+              "type": "string"
+            },
+            {
+              "name": "pull_request_number",
+              "type": "number"
+            },
+            {
+              "name": "action",
+              "type": "string"
+            },
+            {
+              "name": "body",
+              "type": "string"
+            },
+            {
+              "name": "confirmed",
+              "type": "boolean"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "88375f2d-dec2-491c-a92b-62c694c7e21b",
+      "name": "Route PR feedback action",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        280,
+        0
+      ],
+      "parameters": {
+        "mode": "rules",
+        "rules": {
+          "values": [
+            {
+              "renameOutput": true,
+              "outputKey": "comment",
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Receive PR feedback request').item.json.action }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "rightValue": "comment"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "renameOutput": true,
+              "outputKey": "review_comment",
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Receive PR feedback request').item.json.action }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "rightValue": "review_comment"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "renameOutput": true,
+              "outputKey": "request_changes",
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Receive PR feedback request').item.json.action }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "rightValue": "request_changes"
+                  },
+                  {
+                    "leftValue": "={{ $('Receive PR feedback request').item.json.confirmed }}",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "isTrue"
+                    },
+                    "rightValue": true
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "renameOutput": true,
+              "outputKey": "approve",
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Receive PR feedback request').item.json.action }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "rightValue": "approve"
+                  },
+                  {
+                    "leftValue": "={{ $('Receive PR feedback request').item.json.confirmed }}",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "isTrue"
+                    },
+                    "rightValue": true
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra",
+          "renameFallbackOutput": "refused"
+        }
+      }
+    },
+    {
+      "id": "2c946d1a-71bd-4e4b-80b8-5efd38c4a9f6",
+      "name": "Comment on pull request",
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1.1,
+      "position": [
+        560,
+        -240
+      ],
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "pullRequest",
+        "operation": "createComment",
+        "owner": {
+          "__rl": true,
+          "mode": "name",
+          "value": "={{ $('Receive PR feedback request').item.json.owner }}"
+        },
+        "repository": {
+          "__rl": true,
+          "mode": "name",
+          "value": "={{ $('Receive PR feedback request').item.json.repository }}"
+        },
+        "pullRequestNumber": "={{ $('Receive PR feedback request').item.json.pull_request_number }}",
+        "body": "={{ $('Receive PR feedback request').item.json.body + '\\n\\n<!-- chatgpt:n8n -->' }}"
+      },
+      "credentials": {
+        "githubOAuth2Api": {
+          "id": "stt7O3UtIsjdKCqg",
+          "name": "NTLx"
+        }
+      },
+      "webhookId": "3a526fd0-e584-4689-86a0-c12f4b13710d"
+    },
+    {
+      "id": "65b8bf12-765c-4062-97bf-f073e4d3c1f7",
+      "name": "Submit comment review",
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1.1,
+      "position": [
+        560,
+        -80
+      ],
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "review",
+        "operation": "create",
+        "owner": {
+          "__rl": true,
+          "mode": "name",
+          "value": "={{ $('Receive PR feedback request').item.json.owner }}"
+        },
+        "repository": {
+          "__rl": true,
+          "mode": "name",
+          "value": "={{ $('Receive PR feedback request').item.json.repository }}"
+        },
+        "pullRequestNumber": "={{ $('Receive PR feedback request').item.json.pull_request_number }}",
+        "event": "comment",
+        "body": "={{ $('Receive PR feedback request').item.json.body + '\\n\\n<!-- chatgpt:n8n -->' }}"
+      },
+      "credentials": {
+        "githubOAuth2Api": {
+          "id": "stt7O3UtIsjdKCqg",
+          "name": "NTLx"
+        }
+      },
+      "webhookId": "31222135-65e7-4862-bff5-0c28df1a08dc"
+    },
+    {
+      "id": "b8a2b42a-03b3-45c0-a4f4-e5a72a356dbe",
+      "name": "Request pull request changes",
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1.1,
+      "position": [
+        560,
+        80
+      ],
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "review",
+        "operation": "create",
+        "owner": {
+          "__rl": true,
+          "mode": "name",
+          "value": "={{ $('Receive PR feedback request').item.json.owner }}"
+        },
+        "repository": {
+          "__rl": true,
+          "mode": "name",
+          "value": "={{ $('Receive PR feedback request').item.json.repository }}"
+        },
+        "pullRequestNumber": "={{ $('Receive PR feedback request').item.json.pull_request_number }}",
+        "event": "requestChanges",
+        "body": "={{ $('Receive PR feedback request').item.json.body + '\\n\\n<!-- chatgpt:n8n -->' }}"
+      },
+      "credentials": {
+        "githubOAuth2Api": {
+          "id": "stt7O3UtIsjdKCqg",
+          "name": "NTLx"
+        }
+      },
+      "webhookId": "c13962cc-f99c-44be-aeb8-0ce4ff7ab12a"
+    },
+    {
+      "id": "30a6955e-5be0-4e32-9b31-cbd66783758d",
+      "name": "Approve pull request",
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1.1,
+      "position": [
+        560,
+        240
+      ],
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "review",
+        "operation": "create",
+        "owner": {
+          "__rl": true,
+          "mode": "name",
+          "value": "={{ $('Receive PR feedback request').item.json.owner }}"
+        },
+        "repository": {
+          "__rl": true,
+          "mode": "name",
+          "value": "={{ $('Receive PR feedback request').item.json.repository }}"
+        },
+        "pullRequestNumber": "={{ $('Receive PR feedback request').item.json.pull_request_number }}",
+        "event": "approve"
+      },
+      "credentials": {
+        "githubOAuth2Api": {
+          "id": "stt7O3UtIsjdKCqg",
+          "name": "NTLx"
+        }
+      },
+      "webhookId": "54ccbe3f-880a-4bb3-ae7f-d439be2f5033"
+    },
+    {
+      "id": "8116aefe-f95b-4d3e-ad2a-94b26fdcca66",
+      "name": "Return refused action",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        560,
+        400
+      ],
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ok",
+              "name": "ok",
+              "type": "boolean",
+              "value": false
+            },
+            {
+              "id": "error",
+              "name": "error",
+              "type": "string",
+              "value": "unsupported_or_unconfirmed_action"
+            },
+            {
+              "id": "policy",
+              "name": "policy",
+              "type": "string",
+              "value": "comment and review_comment are advisory; request_changes and approve require confirmed=true"
+            }
+          ]
+        },
+        "includeOtherFields": false
+      }
+    }
+  ],
+  "connections": {
+    "Receive PR feedback request": {
+      "main": [
+        [
+          {
+            "node": "Route PR feedback action",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route PR feedback action": {
+      "main": [
+        [
+          {
+            "node": "Comment on pull request",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Submit comment review",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Request pull request changes",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Approve pull request",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Return refused action",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true,
+    "errorWorkflow": "3LE3BnPfHSuIZCVR",
+    "timezone": "Asia/Shanghai",
+    "saveExecutionProgress": false,
+    "saveManualExecutions": false,
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "none",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [
+    {
+      "id": "jkffVXRb1S4v5PNj",
+      "name": "subworkflow",
+      "createdAt": "2026-10-22T15:59:43.410Z",
+      "updatedAt": "2026-10-22T15:59:43.410Z"
+    },
+    {
+      "id": "twNsKNALbdWLw0Ox",
+      "name": "automation",
+      "createdAt": "2026-10-22T08:25:54.546Z",
+      "updatedAt": "2026-10-22T08:25:54.546Z"
+    },
+    {
+      "id": "ZB1OFuryVXrNRjEy",
+      "name": "github",
+      "createdAt": "2026-10-23T02:30:52.063Z",
+      "updatedAt": "2026-10-23T02:30:52.063Z"
+    },
+    {
+      "id": "4K2bQrntVhmSikB8",
+      "name": "tool",
+      "createdAt": "2026-10-27T06:57:35.939Z",
+      "updatedAt": "2026-10-27T06:57:35.939Z"
+    }
+  ],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "PUudX4hasG0LpQdL",
+      "projectId": "cNMj0K6AdJmi0OAZ",
+      "createdAt": "2026-10-28T15:40:35.888Z",
+      "updatedAt": "2026-10-28T15:40:35.888Z"
+    }
+  ],
+  "activeVersion": {
+    "versionId": "4fee4249-827d-4d41-a371-440e2304c07d",
+    "workflowId": "PUudX4hasG0LpQdL",
+    "nodes": [
+      {
+        "id": "4f9071df-23df-4932-8d17-b9ce6bf40696",
+        "name": "Receive PR feedback request",
+        "type": "n8n-nodes-base.executeWorkflowTrigger",
+        "typeVersion": 1.3,
+        "position": [
+          0,
+          0
+        ],
+        "parameters": {
+          "inputSource": "workflowInputs",
+          "workflowInputs": {
+            "values": [
+              {
+                "name": "owner",
+                "type": "string"
+              },
+              {
+                "name": "repository",
+                "type": "string"
+              },
+              {
+                "name": "pull_request_number",
+                "type": "number"
+              },
+              {
+                "name": "action",
+                "type": "string"
+              },
+              {
+                "name": "body",
+                "type": "string"
+              },
+              {
+                "name": "confirmed",
+                "type": "boolean"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "88375f2d-dec2-491c-a92b-62c694c7e21b",
+        "name": "Route PR feedback action",
+        "type": "n8n-nodes-base.switch",
+        "typeVersion": 3.4,
+        "position": [
+          280,
+          0
+        ],
+        "parameters": {
+          "mode": "rules",
+          "rules": {
+            "values": [
+              {
+                "renameOutput": true,
+                "outputKey": "comment",
+                "conditions": {
+                  "options": {
+                    "caseSensitive": false,
+                    "leftValue": "",
+                    "typeValidation": "strict"
+                  },
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $('Receive PR feedback request').item.json.action }}",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals"
+                      },
+                      "rightValue": "comment"
+                    }
+                  ],
+                  "combinator": "and"
+                }
+              },
+              {
+                "renameOutput": true,
+                "outputKey": "review_comment",
+                "conditions": {
+                  "options": {
+                    "caseSensitive": false,
+                    "leftValue": "",
+                    "typeValidation": "strict"
+                  },
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $('Receive PR feedback request').item.json.action }}",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals"
+                      },
+                      "rightValue": "review_comment"
+                    }
+                  ],
+                  "combinator": "and"
+                }
+              },
+              {
+                "renameOutput": true,
+                "outputKey": "request_changes",
+                "conditions": {
+                  "options": {
+                    "caseSensitive": false,
+                    "leftValue": "",
+                    "typeValidation": "strict"
+                  },
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $('Receive PR feedback request').item.json.action }}",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals"
+                      },
+                      "rightValue": "request_changes"
+                    },
+                    {
+                      "leftValue": "={{ $('Receive PR feedback request').item.json.confirmed }}",
+                      "operator": {
+                        "type": "boolean",
+                        "operation": "isTrue"
+                      },
+                      "rightValue": true
+                    }
+                  ],
+                  "combinator": "and"
+                }
+              },
+              {
+                "renameOutput": true,
+                "outputKey": "approve",
+                "conditions": {
+                  "options": {
+                    "caseSensitive": false,
+                    "leftValue": "",
+                    "typeValidation": "strict"
+                  },
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $('Receive PR feedback request').item.json.action }}",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals"
+                      },
+                      "rightValue": "approve"
+                    },
+                    {
+                      "leftValue": "={{ $('Receive PR feedback request').item.json.confirmed }}",
+                      "operator": {
+                        "type": "boolean",
+                        "operation": "isTrue"
+                      },
+                      "rightValue": true
+                    }
+                  ],
+                  "combinator": "and"
+                }
+              }
+            ]
+          },
+          "options": {
+            "fallbackOutput": "extra",
+            "renameFallbackOutput": "refused"
+          }
+        }
+      },
+      {
+        "id": "2c946d1a-71bd-4e4b-80b8-5efd38c4a9f6",
+        "name": "Comment on pull request",
+        "type": "n8n-nodes-base.github",
+        "typeVersion": 1.1,
+        "position": [
+          560,
+          -240
+        ],
+        "parameters": {
+          "authentication": "oAuth2",
+          "resource": "pullRequest",
+          "operation": "createComment",
+          "owner": {
+            "__rl": true,
+            "mode": "name",
+            "value": "={{ $('Receive PR feedback request').item.json.owner }}"
+          },
+          "repository": {
+            "__rl": true,
+            "mode": "name",
+            "value": "={{ $('Receive PR feedback request').item.json.repository }}"
+          },
+          "pullRequestNumber": "={{ $('Receive PR feedback request').item.json.pull_request_number }}",
+          "body": "={{ $('Receive PR feedback request').item.json.body + '\\n\\n<!-- chatgpt:n8n -->' }}"
+        },
+        "credentials": {
+          "githubOAuth2Api": {
+            "id": "stt7O3UtIsjdKCqg",
+            "name": "NTLx"
+          }
+        },
+        "webhookId": "3a526fd0-e584-4689-86a0-c12f4b13710d"
+      },
+      {
+        "id": "65b8bf12-765c-4062-97bf-f073e4d3c1f7",
+        "name": "Submit comment review",
+        "type": "n8n-nodes-base.github",
+        "typeVersion": 1.1,
+        "position": [
+          560,
+          -80
+        ],
+        "parameters": {
+          "authentication": "oAuth2",
+          "resource": "review",
+          "operation": "create",
+          "owner": {
+            "__rl": true,
+            "mode": "name",
+            "value": "={{ $('Receive PR feedback request').item.json.owner }}"
+          },
+          "repository": {
+            "__rl": true,
+            "mode": "name",
+            "value": "={{ $('Receive PR feedback request').item.json.repository }}"
+          },
+          "pullRequestNumber": "={{ $('Receive PR feedback request').item.json.pull_request_number }}",
+          "event": "comment",
+          "body": "={{ $('Receive PR feedback request').item.json.body + '\\n\\n<!-- chatgpt:n8n -->' }}"
+        },
+        "credentials": {
+          "githubOAuth2Api": {
+            "id": "stt7O3UtIsjdKCqg",
+            "name": "NTLx"
+          }
+        },
+        "webhookId": "31222135-65e7-4862-bff5-0c28df1a08dc"
+      },
+      {
+        "id": "b8a2b42a-03b3-45c0-a4f4-e5a72a356dbe",
+        "name": "Request pull request changes",
+        "type": "n8n-nodes-base.github",
+        "typeVersion": 1.1,
+        "position": [
+          560,
+          80
+        ],
+        "parameters": {
+          "authentication": "oAuth2",
+          "resource": "review",
+          "operation": "create",
+          "owner": {
+            "__rl": true,
+            "mode": "name",
+            "value": "={{ $('Receive PR feedback request').item.json.owner }}"
+          },
+          "repository": {
+            "__rl": true,
+            "mode": "name",
+            "value": "={{ $('Receive PR feedback request').item.json.repository }}"
+          },
+          "pullRequestNumber": "={{ $('Receive PR feedback request').item.json.pull_request_number }}",
+          "event": "requestChanges",
+          "body": "={{ $('Receive PR feedback request').item.json.body + '\\n\\n<!-- chatgpt:n8n -->' }}"
+        },
+        "credentials": {
+          "githubOAuth2Api": {
+            "id": "stt7O3UtIsjdKCqg",
+            "name": "NTLx"
+          }
+        },
+        "webhookId": "c13962cc-f99c-44be-aeb8-0ce4ff7ab12a"
+      },
+      {
+        "id": "30a6955e-5be0-4e32-9b31-cbd66783758d",
+        "name": "Approve pull request",
+        "type": "n8n-nodes-base.github",
+        "typeVersion": 1.1,
+        "position": [
+          560,
+          240
+        ],
+        "parameters": {
+          "authentication": "oAuth2",
+          "resource": "review",
+          "operation": "create",
+          "owner": {
+            "__rl": true,
+            "mode": "name",
+            "value": "={{ $('Receive PR feedback request').item.json.owner }}"
+          },
+          "repository": {
+            "__rl": true,
+            "mode": "name",
+            "value": "={{ $('Receive PR feedback request').item.json.repository }}"
+          },
+          "pullRequestNumber": "={{ $('Receive PR feedback request').item.json.pull_request_number }}",
+          "event": "approve"
+        },
+        "credentials": {
+          "githubOAuth2Api": {
+            "id": "stt7O3UtIsjdKCqg",
+            "name": "NTLx"
+          }
+        },
+        "webhookId": "54ccbe3f-880a-4bb3-ae7f-d439be2f5033"
+      },
+      {
+        "id": "8116aefe-f95b-4d3e-ad2a-94b26fdcca66",
+        "name": "Return refused action",
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.5,
+        "position": [
+          560,
+          400
+        ],
+        "parameters": {
+          "mode": "manual",
+          "assignments": {
+            "assignments": [
+              {
+                "id": "ok",
+                "name": "ok",
+                "type": "boolean",
+                "value": false
+              },
+              {
+                "id": "error",
+                "name": "error",
+                "type": "string",
+                "value": "unsupported_or_unconfirmed_action"
+              },
+              {
+                "id": "policy",
+                "name": "policy",
+                "type": "string",
+                "value": "comment and review_comment are advisory; request_changes and approve require confirmed=true"
+              }
+            ]
+          },
+          "includeOtherFields": false
+        }
+      }
+    ],
+    "connections": {
+      "Receive PR feedback request": {
+        "main": [
+          [
+            {
+              "node": "Route PR feedback action",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Route PR feedback action": {
+        "main": [
+          [
+            {
+              "node": "Comment on pull request",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Submit comment review",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Request pull request changes",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Approve pull request",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Return refused action",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "nodeGroups": [],
+    "authors": "Administrator NTLx (via MCP)",
+    "name": "Initial native PR feedback",
+    "description": "Adds native PR comments and reviews with confirmation gates for consequential review states and a loop-prevention marker.",
+    "autosaved": false,
+    "createdAt": "2026-10-28T15:40:35.888Z",
+    "updatedAt": "2026-10-28T15:40:35.888Z"
+  }
+}
