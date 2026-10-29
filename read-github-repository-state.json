@@ -1,0 +1,979 @@
+{
+  "id": "MmDpHNTiuwpIrEDY",
+  "name": "Read GitHub repository state",
+  "active": true,
+  "activeVersionId": "074fa218-222e-4616-b610-2f8bf5232b55",
+  "createdAt": "2026-10-28T15:42:35.709Z",
+  "updatedAt": "2026-10-28T15:47:31.819Z",
+  "isArchived": false,
+  "versionId": "074fa218-222e-4616-b610-2f8bf5232b55",
+  "triggerCount": 0,
+  "nodes": [
+    {
+      "id": "b5cda510-fedc-4bae-98e1-a5badfadb35b",
+      "name": "Receive repository read request",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "inputSource": "workflowInputs",
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "owner",
+              "type": "string"
+            },
+            {
+              "name": "repository",
+              "type": "string"
+            },
+            {
+              "name": "view",
+              "type": "string"
+            },
+            {
+              "name": "limit",
+              "type": "number"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "79315274-9f07-4798-ab63-c4fd17514551",
+      "name": "Route repository read view",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        280,
+        0
+      ],
+      "parameters": {
+        "mode": "rules",
+        "rules": {
+          "values": [
+            {
+              "renameOutput": true,
+              "outputKey": "metadata",
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Receive repository read request').item.json.view }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "rightValue": "metadata"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "renameOutput": true,
+              "outputKey": "issues",
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Receive repository read request').item.json.view }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "rightValue": "issues"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "renameOutput": true,
+              "outputKey": "pull_requests",
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Receive repository read request').item.json.view }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "rightValue": "pull_requests"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "renameOutput": true,
+              "outputKey": "releases",
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Receive repository read request').item.json.view }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "rightValue": "releases"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "renameOutput": true,
+              "outputKey": "workflows",
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Receive repository read request').item.json.view }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "rightValue": "workflows"
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra",
+          "renameFallbackOutput": "unsupported"
+        }
+      }
+    },
+    {
+      "id": "aba6b109-7a99-43b6-b4a7-e6758b183c0b",
+      "name": "Get repository",
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1.1,
+      "position": [
+        560,
+        -320
+      ],
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "repository",
+        "operation": "get",
+        "owner": {
+          "__rl": true,
+          "mode": "name",
+          "value": "={{ $('Receive repository read request').item.json.owner }}"
+        },
+        "repository": {
+          "__rl": true,
+          "mode": "name",
+          "value": "={{ $('Receive repository read request').item.json.repository }}"
+        }
+      },
+      "credentials": {
+        "githubOAuth2Api": {
+          "id": "stt7O3UtIsjdKCqg",
+          "name": "NTLx"
+        }
+      },
+      "webhookId": "113a3771-b258-4121-bc16-901fe476b350"
+    },
+    {
+      "id": "137d4b16-4aa1-417b-a411-6cd31f363efe",
+      "name": "List repository issues",
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1.1,
+      "position": [
+        560,
+        -160
+      ],
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "repository",
+        "operation": "getIssues",
+        "owner": {
+          "__rl": true,
+          "mode": "name",
+          "value": "={{ $('Receive repository read request').item.json.owner }}"
+        },
+        "repository": {
+          "__rl": true,
+          "mode": "name",
+          "value": "={{ $('Receive repository read request').item.json.repository }}"
+        },
+        "returnAll": false,
+        "limit": "={{ $('Receive repository read request').item.json.limit || 50 }}",
+        "getRepositoryIssuesFilters": {
+          "state": "open",
+          "sort": "updated",
+          "direction": "desc"
+        }
+      },
+      "credentials": {
+        "githubOAuth2Api": {
+          "id": "stt7O3UtIsjdKCqg",
+          "name": "NTLx"
+        }
+      },
+      "webhookId": "8fb4af57-5b75-4c2f-99b1-0733a4847a04"
+    },
+    {
+      "id": "973493e1-a16f-4eb0-8bbf-e31f9d4a866d",
+      "name": "List repository pull requests",
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1.1,
+      "position": [
+        560,
+        0
+      ],
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "repository",
+        "operation": "getPullRequests",
+        "owner": {
+          "__rl": true,
+          "mode": "name",
+          "value": "={{ $('Receive repository read request').item.json.owner }}"
+        },
+        "repository": {
+          "__rl": true,
+          "mode": "name",
+          "value": "={{ $('Receive repository read request').item.json.repository }}"
+        },
+        "returnAll": false,
+        "limit": "={{ $('Receive repository read request').item.json.limit || 50 }}",
+        "getRepositoryPullRequestsFilters": {
+          "state": "open",
+          "sort": "updated",
+          "direction": "desc"
+        }
+      },
+      "credentials": {
+        "githubOAuth2Api": {
+          "id": "stt7O3UtIsjdKCqg",
+          "name": "NTLx"
+        }
+      },
+      "webhookId": "5dcd4efe-19fb-4f01-8836-4b5f916a7b10"
+    },
+    {
+      "id": "e1445bfd-c410-47a1-80b7-56b3a15c5172",
+      "name": "List repository releases",
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1.1,
+      "position": [
+        560,
+        160
+      ],
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "release",
+        "operation": "getAll",
+        "owner": {
+          "__rl": true,
+          "mode": "name",
+          "value": "={{ $('Receive repository read request').item.json.owner }}"
+        },
+        "repository": {
+          "__rl": true,
+          "mode": "name",
+          "value": "={{ $('Receive repository read request').item.json.repository }}"
+        },
+        "returnAll": false,
+        "limit": "={{ $('Receive repository read request').item.json.limit || 20 }}"
+      },
+      "credentials": {
+        "githubOAuth2Api": {
+          "id": "stt7O3UtIsjdKCqg",
+          "name": "NTLx"
+        }
+      },
+      "webhookId": "8a8e0f52-70ca-42c2-be49-af8c1a873fda"
+    },
+    {
+      "id": "0770df69-c6de-4d6e-a7b4-f60837697cef",
+      "name": "List repository workflows",
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1.1,
+      "position": [
+        560,
+        320
+      ],
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "workflow",
+        "operation": "list",
+        "owner": {
+          "__rl": true,
+          "mode": "name",
+          "value": "={{ $('Receive repository read request').item.json.owner }}"
+        },
+        "repository": {
+          "__rl": true,
+          "mode": "name",
+          "value": "={{ $('Receive repository read request').item.json.repository }}"
+        }
+      },
+      "credentials": {
+        "githubOAuth2Api": {
+          "id": "stt7O3UtIsjdKCqg",
+          "name": "NTLx"
+        }
+      },
+      "webhookId": "8f7600c3-7504-455d-8a1e-38f5075b0f3a"
+    },
+    {
+      "id": "1abd0076-62bf-43ab-93b4-10720ef7bab8",
+      "name": "Return unsupported repository view",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        560,
+        480
+      ],
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ok",
+              "name": "ok",
+              "type": "boolean",
+              "value": false
+            },
+            {
+              "id": "error",
+              "name": "error",
+              "type": "string",
+              "value": "unsupported_view"
+            },
+            {
+              "id": "supported",
+              "name": "supported",
+              "type": "array",
+              "value": "={{ ['metadata','issues','pull_requests','releases','workflows'] }}"
+            }
+          ]
+        },
+        "includeOtherFields": false
+      }
+    }
+  ],
+  "connections": {
+    "Receive repository read request": {
+      "main": [
+        [
+          {
+            "node": "Route repository read view",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route repository read view": {
+      "main": [
+        [
+          {
+            "node": "Get repository",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "List repository issues",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "List repository pull requests",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "List repository releases",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "List repository workflows",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Return unsupported repository view",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [
+    {
+      "id": "824266f4-321f-4ce2-a837-8be289778d04",
+      "name": "Repository read views",
+      "nodeIds": [
+        "79315274-9f07-4798-ab63-c4fd17514551",
+        "aba6b109-7a99-43b6-b4a7-e6758b183c0b",
+        "137d4b16-4aa1-417b-a411-6cd31f363efe",
+        "973493e1-a16f-4eb0-8bbf-e31f9d4a866d",
+        "e1445bfd-c410-47a1-80b7-56b3a15c5172",
+        "0770df69-c6de-4d6e-a7b4-f60837697cef",
+        "1abd0076-62bf-43ab-93b4-10720ef7bab8"
+      ],
+      "description": "Routes one typed repository request to the selected native GitHub read operation."
+    }
+  ],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true,
+    "errorWorkflow": "3LE3BnPfHSuIZCVR",
+    "timezone": "Asia/Shanghai",
+    "saveExecutionProgress": false,
+    "saveManualExecutions": false,
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "none",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [
+    {
+      "id": "4K2bQrntVhmSikB8",
+      "name": "tool",
+      "createdAt": "2026-10-27T06:57:35.939Z",
+      "updatedAt": "2026-10-27T06:57:35.939Z"
+    },
+    {
+      "id": "twNsKNALbdWLw0Ox",
+      "name": "automation",
+      "createdAt": "2026-10-22T08:25:54.546Z",
+      "updatedAt": "2026-10-22T08:25:54.546Z"
+    },
+    {
+      "id": "ZB1OFuryVXrNRjEy",
+      "name": "github",
+      "createdAt": "2026-10-23T02:30:52.063Z",
+      "updatedAt": "2026-10-23T02:30:52.063Z"
+    },
+    {
+      "id": "jkffVXRb1S4v5PNj",
+      "name": "subworkflow",
+      "createdAt": "2026-10-22T15:59:43.410Z",
+      "updatedAt": "2026-10-22T15:59:43.410Z"
+    }
+  ],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "MmDpHNTiuwpIrEDY",
+      "projectId": "cNMj0K6AdJmi0OAZ",
+      "createdAt": "2026-10-28T15:42:35.709Z",
+      "updatedAt": "2026-10-28T15:42:35.709Z"
+    }
+  ],
+  "activeVersion": {
+    "versionId": "074fa218-222e-4616-b610-2f8bf5232b55",
+    "workflowId": "MmDpHNTiuwpIrEDY",
+    "nodes": [
+      {
+        "id": "b5cda510-fedc-4bae-98e1-a5badfadb35b",
+        "name": "Receive repository read request",
+        "type": "n8n-nodes-base.executeWorkflowTrigger",
+        "typeVersion": 1.3,
+        "position": [
+          0,
+          0
+        ],
+        "parameters": {
+          "inputSource": "workflowInputs",
+          "workflowInputs": {
+            "values": [
+              {
+                "name": "owner",
+                "type": "string"
+              },
+              {
+                "name": "repository",
+                "type": "string"
+              },
+              {
+                "name": "view",
+                "type": "string"
+              },
+              {
+                "name": "limit",
+                "type": "number"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "79315274-9f07-4798-ab63-c4fd17514551",
+        "name": "Route repository read view",
+        "type": "n8n-nodes-base.switch",
+        "typeVersion": 3.4,
+        "position": [
+          280,
+          0
+        ],
+        "parameters": {
+          "mode": "rules",
+          "rules": {
+            "values": [
+              {
+                "renameOutput": true,
+                "outputKey": "metadata",
+                "conditions": {
+                  "options": {
+                    "caseSensitive": false,
+                    "leftValue": "",
+                    "typeValidation": "strict"
+                  },
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $('Receive repository read request').item.json.view }}",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals"
+                      },
+                      "rightValue": "metadata"
+                    }
+                  ],
+                  "combinator": "and"
+                }
+              },
+              {
+                "renameOutput": true,
+                "outputKey": "issues",
+                "conditions": {
+                  "options": {
+                    "caseSensitive": false,
+                    "leftValue": "",
+                    "typeValidation": "strict"
+                  },
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $('Receive repository read request').item.json.view }}",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals"
+                      },
+                      "rightValue": "issues"
+                    }
+                  ],
+                  "combinator": "and"
+                }
+              },
+              {
+                "renameOutput": true,
+                "outputKey": "pull_requests",
+                "conditions": {
+                  "options": {
+                    "caseSensitive": false,
+                    "leftValue": "",
+                    "typeValidation": "strict"
+                  },
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $('Receive repository read request').item.json.view }}",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals"
+                      },
+                      "rightValue": "pull_requests"
+                    }
+                  ],
+                  "combinator": "and"
+                }
+              },
+              {
+                "renameOutput": true,
+                "outputKey": "releases",
+                "conditions": {
+                  "options": {
+                    "caseSensitive": false,
+                    "leftValue": "",
+                    "typeValidation": "strict"
+                  },
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $('Receive repository read request').item.json.view }}",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals"
+                      },
+                      "rightValue": "releases"
+                    }
+                  ],
+                  "combinator": "and"
+                }
+              },
+              {
+                "renameOutput": true,
+                "outputKey": "workflows",
+                "conditions": {
+                  "options": {
+                    "caseSensitive": false,
+                    "leftValue": "",
+                    "typeValidation": "strict"
+                  },
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $('Receive repository read request').item.json.view }}",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals"
+                      },
+                      "rightValue": "workflows"
+                    }
+                  ],
+                  "combinator": "and"
+                }
+              }
+            ]
+          },
+          "options": {
+            "fallbackOutput": "extra",
+            "renameFallbackOutput": "unsupported"
+          }
+        }
+      },
+      {
+        "id": "aba6b109-7a99-43b6-b4a7-e6758b183c0b",
+        "name": "Get repository",
+        "type": "n8n-nodes-base.github",
+        "typeVersion": 1.1,
+        "position": [
+          560,
+          -320
+        ],
+        "parameters": {
+          "authentication": "oAuth2",
+          "resource": "repository",
+          "operation": "get",
+          "owner": {
+            "__rl": true,
+            "mode": "name",
+            "value": "={{ $('Receive repository read request').item.json.owner }}"
+          },
+          "repository": {
+            "__rl": true,
+            "mode": "name",
+            "value": "={{ $('Receive repository read request').item.json.repository }}"
+          }
+        },
+        "credentials": {
+          "githubOAuth2Api": {
+            "id": "stt7O3UtIsjdKCqg",
+            "name": "NTLx"
+          }
+        },
+        "webhookId": "113a3771-b258-4121-bc16-901fe476b350"
+      },
+      {
+        "id": "137d4b16-4aa1-417b-a411-6cd31f363efe",
+        "name": "List repository issues",
+        "type": "n8n-nodes-base.github",
+        "typeVersion": 1.1,
+        "position": [
+          560,
+          -160
+        ],
+        "parameters": {
+          "authentication": "oAuth2",
+          "resource": "repository",
+          "operation": "getIssues",
+          "owner": {
+            "__rl": true,
+            "mode": "name",
+            "value": "={{ $('Receive repository read request').item.json.owner }}"
+          },
+          "repository": {
+            "__rl": true,
+            "mode": "name",
+            "value": "={{ $('Receive repository read request').item.json.repository }}"
+          },
+          "returnAll": false,
+          "limit": "={{ $('Receive repository read request').item.json.limit || 50 }}",
+          "getRepositoryIssuesFilters": {
+            "state": "open",
+            "sort": "updated",
+            "direction": "desc"
+          }
+        },
+        "credentials": {
+          "githubOAuth2Api": {
+            "id": "stt7O3UtIsjdKCqg",
+            "name": "NTLx"
+          }
+        },
+        "webhookId": "8fb4af57-5b75-4c2f-99b1-0733a4847a04"
+      },
+      {
+        "id": "973493e1-a16f-4eb0-8bbf-e31f9d4a866d",
+        "name": "List repository pull requests",
+        "type": "n8n-nodes-base.github",
+        "typeVersion": 1.1,
+        "position": [
+          560,
+          0
+        ],
+        "parameters": {
+          "authentication": "oAuth2",
+          "resource": "repository",
+          "operation": "getPullRequests",
+          "owner": {
+            "__rl": true,
+            "mode": "name",
+            "value": "={{ $('Receive repository read request').item.json.owner }}"
+          },
+          "repository": {
+            "__rl": true,
+            "mode": "name",
+            "value": "={{ $('Receive repository read request').item.json.repository }}"
+          },
+          "returnAll": false,
+          "limit": "={{ $('Receive repository read request').item.json.limit || 50 }}",
+          "getRepositoryPullRequestsFilters": {
+            "state": "open",
+            "sort": "updated",
+            "direction": "desc"
+          }
+        },
+        "credentials": {
+          "githubOAuth2Api": {
+            "id": "stt7O3UtIsjdKCqg",
+            "name": "NTLx"
+          }
+        },
+        "webhookId": "5dcd4efe-19fb-4f01-8836-4b5f916a7b10"
+      },
+      {
+        "id": "e1445bfd-c410-47a1-80b7-56b3a15c5172",
+        "name": "List repository releases",
+        "type": "n8n-nodes-base.github",
+        "typeVersion": 1.1,
+        "position": [
+          560,
+          160
+        ],
+        "parameters": {
+          "authentication": "oAuth2",
+          "resource": "release",
+          "operation": "getAll",
+          "owner": {
+            "__rl": true,
+            "mode": "name",
+            "value": "={{ $('Receive repository read request').item.json.owner }}"
+          },
+          "repository": {
+            "__rl": true,
+            "mode": "name",
+            "value": "={{ $('Receive repository read request').item.json.repository }}"
+          },
+          "returnAll": false,
+          "limit": "={{ $('Receive repository read request').item.json.limit || 20 }}"
+        },
+        "credentials": {
+          "githubOAuth2Api": {
+            "id": "stt7O3UtIsjdKCqg",
+            "name": "NTLx"
+          }
+        },
+        "webhookId": "8a8e0f52-70ca-42c2-be49-af8c1a873fda"
+      },
+      {
+        "id": "0770df69-c6de-4d6e-a7b4-f60837697cef",
+        "name": "List repository workflows",
+        "type": "n8n-nodes-base.github",
+        "typeVersion": 1.1,
+        "position": [
+          560,
+          320
+        ],
+        "parameters": {
+          "authentication": "oAuth2",
+          "resource": "workflow",
+          "operation": "list",
+          "owner": {
+            "__rl": true,
+            "mode": "name",
+            "value": "={{ $('Receive repository read request').item.json.owner }}"
+          },
+          "repository": {
+            "__rl": true,
+            "mode": "name",
+            "value": "={{ $('Receive repository read request').item.json.repository }}"
+          }
+        },
+        "credentials": {
+          "githubOAuth2Api": {
+            "id": "stt7O3UtIsjdKCqg",
+            "name": "NTLx"
+          }
+        },
+        "webhookId": "8f7600c3-7504-455d-8a1e-38f5075b0f3a"
+      },
+      {
+        "id": "1abd0076-62bf-43ab-93b4-10720ef7bab8",
+        "name": "Return unsupported repository view",
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.5,
+        "position": [
+          560,
+          480
+        ],
+        "parameters": {
+          "mode": "manual",
+          "assignments": {
+            "assignments": [
+              {
+                "id": "ok",
+                "name": "ok",
+                "type": "boolean",
+                "value": false
+              },
+              {
+                "id": "error",
+                "name": "error",
+                "type": "string",
+                "value": "unsupported_view"
+              },
+              {
+                "id": "supported",
+                "name": "supported",
+                "type": "array",
+                "value": "={{ ['metadata','issues','pull_requests','releases','workflows'] }}"
+              }
+            ]
+          },
+          "includeOtherFields": false
+        }
+      }
+    ],
+    "connections": {
+      "Receive repository read request": {
+        "main": [
+          [
+            {
+              "node": "Route repository read view",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Route repository read view": {
+        "main": [
+          [
+            {
+              "node": "Get repository",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "List repository issues",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "List repository pull requests",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "List repository releases",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "List repository workflows",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Return unsupported repository view",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "nodeGroups": [
+      {
+        "id": "824266f4-321f-4ce2-a837-8be289778d04",
+        "name": "Repository read views",
+        "nodeIds": [
+          "79315274-9f07-4798-ab63-c4fd17514551",
+          "aba6b109-7a99-43b6-b4a7-e6758b183c0b",
+          "137d4b16-4aa1-417b-a411-6cd31f363efe",
+          "973493e1-a16f-4eb0-8bbf-e31f9d4a866d",
+          "e1445bfd-c410-47a1-80b7-56b3a15c5172",
+          "0770df69-c6de-4d6e-a7b4-f60837697cef",
+          "1abd0076-62bf-43ab-93b4-10720ef7bab8"
+        ],
+        "description": "Routes one typed repository request to the selected native GitHub read operation."
+      }
+    ],
+    "authors": "Administrator NTLx (via MCP)",
+    "name": "Apply production governance",
+    "description": "Adds standard GitHub/subworkflow governance and groups the repository read router for a compact, readable canvas.",
+    "autosaved": false,
+    "createdAt": "2026-10-28T15:47:31.822Z",
+    "updatedAt": "2026-10-28T15:47:31.822Z"
+  }
+}
