@@ -1,0 +1,120 @@
+{
+  "id": "CAVArHsAugqqCbhM",
+  "name": "One-time cleanup · Delete X workflows",
+  "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-10-28T15:02:18.623Z",
+  "updatedAt": "2026-10-28T15:03:43.573Z",
+  "isArchived": true,
+  "versionId": "8da29311-1e61-4570-87e8-4ae958b99add",
+  "triggerCount": 0,
+  "nodes": [
+    {
+      "id": "ce867293-0ee4-4dfc-a764-2149232d6472",
+      "name": "Start cleanup",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "999580f6-0cf5-4644-8ac7-0a93ae928f7f",
+      "name": "Delete Twitter API to MCP",
+      "type": "n8n-nodes-base.n8n",
+      "typeVersion": 1,
+      "position": [
+        224,
+        0
+      ],
+      "parameters": {
+        "resource": "workflow",
+        "operation": "delete",
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "9WfKGFaBbBKfmR8E"
+        }
+      },
+      "credentials": {
+        "n8nApi": {
+          "id": "ZWhmVjb2nWJVoRkD",
+          "name": "self"
+        }
+      }
+    },
+    {
+      "id": "3605f506-67f4-44d2-a528-8c9bab302796",
+      "name": "Delete Test Twitter API via MCP",
+      "type": "n8n-nodes-base.n8n",
+      "typeVersion": 1,
+      "position": [
+        448,
+        0
+      ],
+      "parameters": {
+        "resource": "workflow",
+        "operation": "delete",
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "NQInqgcNTEs2q9Nm"
+        }
+      },
+      "credentials": {
+        "n8nApi": {
+          "id": "ZWhmVjb2nWJVoRkD",
+          "name": "self"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Start cleanup": {
+      "main": [
+        [
+          {
+            "node": "Delete Twitter API to MCP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete Twitter API to MCP": {
+      "main": [
+        [
+          {
+            "node": "Delete Test Twitter API via MCP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "CAVArHsAugqqCbhM",
+      "projectId": "cNMj0K6AdJmi0OAZ",
+      "createdAt": "2026-10-28T15:02:18.623Z",
+      "updatedAt": "2026-10-28T15:02:18.623Z"
+    }
+  ],
+  "activeVersion": null
+}
