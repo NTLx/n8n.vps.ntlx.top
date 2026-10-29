@@ -2,11 +2,11 @@
   "id": "WgqmfMMeWpddtv4l",
   "name": "Mutate AI work state",
   "active": true,
-  "activeVersionId": "49e87cc2-c15f-4431-8a74-888807333037",
+  "activeVersionId": "5b3cfe4b-43a0-4e52-8e90-293bc2139a84",
   "createdAt": "2026-10-22T15:35:37.439Z",
-  "updatedAt": "2026-10-22T15:35:47.888Z",
+  "updatedAt": "2026-10-28T01:53:06.132Z",
   "isArchived": false,
-  "versionId": "49e87cc2-c15f-4431-8a74-888807333037",
+  "versionId": "5b3cfe4b-43a0-4e52-8e90-293bc2139a84",
   "triggerCount": 5,
   "nodes": [
     {
@@ -781,16 +781,16 @@
   },
   "tags": [
     {
-      "id": "SvzA8xykOpMtvbwk",
-      "name": "ai-work",
-      "createdAt": "2026-10-22T09:12:58.488Z",
-      "updatedAt": "2026-10-22T09:12:58.488Z"
-    },
-    {
       "id": "twNsKNALbdWLw0Ox",
       "name": "automation",
       "createdAt": "2026-10-22T08:25:54.546Z",
       "updatedAt": "2026-10-22T08:25:54.546Z"
+    },
+    {
+      "id": "SvzA8xykOpMtvbwk",
+      "name": "ai-work",
+      "createdAt": "2026-10-22T09:12:58.488Z",
+      "updatedAt": "2026-10-22T09:12:58.488Z"
     },
     {
       "id": "Yf0sE6r3CHF6WaAZ",
@@ -809,7 +809,7 @@
     }
   ],
   "activeVersion": {
-    "versionId": "49e87cc2-c15f-4431-8a74-888807333037",
+    "versionId": "5b3cfe4b-43a0-4e52-8e90-293bc2139a84",
     "workflowId": "WgqmfMMeWpddtv4l",
     "nodes": [
       {
@@ -1567,10 +1567,10 @@
     },
     "nodeGroups": [],
     "authors": "Administrator NTLx (via MCP)",
-    "name": "Initial direct n8n-VPS state bridge",
-    "description": "Replaces the retired Automation Runtime MCP with bearer-protected webhook branches that n8n-VPS.execute_workflow can invoke internally for durable AI work state transitions.",
+    "name": "Keep terminal states immutable",
+    "description": "Remove the unused reopen trigger. Blocked remains terminal; future recoveries use a new work_id with recovery_of lineage, while temporary conditions should use Defer.",
     "autosaved": false,
-    "createdAt": "2026-10-22T15:35:37.439Z",
-    "updatedAt": "2026-10-22T15:35:37.439Z"
+    "createdAt": "2026-10-28T01:53:06.138Z",
+    "updatedAt": "2026-10-28T01:53:06.138Z"
   }
 }
