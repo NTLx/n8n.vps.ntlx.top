@@ -1,0 +1,1059 @@
+{
+  "id": "qdxuSpqMjpMQM0jQ",
+  "name": "Manage GitHub release",
+  "active": true,
+  "activeVersionId": "9aa42b3a-fb3d-41f2-8295-d755c316a41a",
+  "createdAt": "2026-10-28T15:43:39.773Z",
+  "updatedAt": "2026-10-28T15:47:36.498Z",
+  "isArchived": false,
+  "versionId": "9aa42b3a-fb3d-41f2-8295-d755c316a41a",
+  "triggerCount": 0,
+  "nodes": [
+    {
+      "id": "dcc42422-2ba0-4026-9944-a054d83c1374",
+      "name": "Receive release request",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "inputSource": "workflowInputs",
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "owner",
+              "type": "string"
+            },
+            {
+              "name": "repository",
+              "type": "string"
+            },
+            {
+              "name": "action",
+              "type": "string"
+            },
+            {
+              "name": "release_id",
+              "type": "string"
+            },
+            {
+              "name": "release_tag",
+              "type": "string"
+            },
+            {
+              "name": "name",
+              "type": "string"
+            },
+            {
+              "name": "body",
+              "type": "string"
+            },
+            {
+              "name": "prerelease",
+              "type": "boolean"
+            },
+            {
+              "name": "confirmed",
+              "type": "boolean"
+            },
+            {
+              "name": "limit",
+              "type": "number"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "94b71211-6bf7-4e5a-86aa-d5d3a23b03cb",
+      "name": "Route release action",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        280,
+        0
+      ],
+      "parameters": {
+        "mode": "rules",
+        "rules": {
+          "values": [
+            {
+              "renameOutput": true,
+              "outputKey": "list",
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Receive release request').item.json.action }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "rightValue": "list"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "renameOutput": true,
+              "outputKey": "get",
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Receive release request').item.json.action }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "rightValue": "get"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "renameOutput": true,
+              "outputKey": "create_draft",
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Receive release request').item.json.action }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "rightValue": "create_draft"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "renameOutput": true,
+              "outputKey": "update_draft",
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Receive release request').item.json.action }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "rightValue": "update_draft"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "renameOutput": true,
+              "outputKey": "publish",
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Receive release request').item.json.action }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "rightValue": "publish"
+                  },
+                  {
+                    "leftValue": "={{ $('Receive release request').item.json.confirmed }}",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "isTrue"
+                    },
+                    "rightValue": true
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra",
+          "renameFallbackOutput": "refused"
+        }
+      }
+    },
+    {
+      "id": "f6650465-87c8-4f27-ab69-698796c09c9c",
+      "name": "List releases",
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1.1,
+      "position": [
+        560,
+        -320
+      ],
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "release",
+        "operation": "getAll",
+        "owner": {
+          "__rl": true,
+          "mode": "name",
+          "value": "={{ $('Receive release request').item.json.owner }}"
+        },
+        "repository": {
+          "__rl": true,
+          "mode": "name",
+          "value": "={{ $('Receive release request').item.json.repository }}"
+        },
+        "returnAll": false,
+        "limit": "={{ $('Receive release request').item.json.limit || 20 }}"
+      },
+      "credentials": {
+        "githubOAuth2Api": {
+          "id": "stt7O3UtIsjdKCqg",
+          "name": "NTLx"
+        }
+      },
+      "webhookId": "47a3bf35-ee90-4e5b-8707-f26ce8a173c4"
+    },
+    {
+      "id": "180fd32c-be56-4904-aee3-c26be0b3aef6",
+      "name": "Get release",
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1.1,
+      "position": [
+        560,
+        -160
+      ],
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "release",
+        "operation": "get",
+        "owner": {
+          "__rl": true,
+          "mode": "name",
+          "value": "={{ $('Receive release request').item.json.owner }}"
+        },
+        "repository": {
+          "__rl": true,
+          "mode": "name",
+          "value": "={{ $('Receive release request').item.json.repository }}"
+        },
+        "release_id": "={{ $('Receive release request').item.json.release_id }}"
+      },
+      "credentials": {
+        "githubOAuth2Api": {
+          "id": "stt7O3UtIsjdKCqg",
+          "name": "NTLx"
+        }
+      },
+      "webhookId": "303e0a3b-1172-421c-911d-c39a6aeb6009"
+    },
+    {
+      "id": "ea8d635f-44a9-43de-92f8-a3668309d235",
+      "name": "Create draft release",
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1.1,
+      "position": [
+        560,
+        0
+      ],
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "release",
+        "operation": "create",
+        "owner": {
+          "__rl": true,
+          "mode": "name",
+          "value": "={{ $('Receive release request').item.json.owner }}"
+        },
+        "repository": {
+          "__rl": true,
+          "mode": "name",
+          "value": "={{ $('Receive release request').item.json.repository }}"
+        },
+        "releaseTag": "={{ $('Receive release request').item.json.release_tag }}",
+        "additionalFields": {
+          "name": "={{ $('Receive release request').item.json.name }}",
+          "body": "={{ $('Receive release request').item.json.body + '\\n\\n<!-- chatgpt:n8n -->' }}",
+          "draft": true,
+          "prerelease": "={{ $('Receive release request').item.json.prerelease }}"
+        }
+      },
+      "credentials": {
+        "githubOAuth2Api": {
+          "id": "stt7O3UtIsjdKCqg",
+          "name": "NTLx"
+        }
+      },
+      "webhookId": "58e7e392-dfbf-4017-be0b-e750e09ed76c"
+    },
+    {
+      "id": "f62e62b1-9c41-43c2-bc63-bb05583718a2",
+      "name": "Update draft release",
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1.1,
+      "position": [
+        560,
+        160
+      ],
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "release",
+        "operation": "update",
+        "owner": {
+          "__rl": true,
+          "mode": "name",
+          "value": "={{ $('Receive release request').item.json.owner }}"
+        },
+        "repository": {
+          "__rl": true,
+          "mode": "name",
+          "value": "={{ $('Receive release request').item.json.repository }}"
+        },
+        "release_id": "={{ $('Receive release request').item.json.release_id }}",
+        "additionalFields": {
+          "name": "={{ $('Receive release request').item.json.name }}",
+          "body": "={{ $('Receive release request').item.json.body + '\\n\\n<!-- chatgpt:n8n -->' }}",
+          "draft": true,
+          "prerelease": "={{ $('Receive release request').item.json.prerelease }}"
+        }
+      },
+      "credentials": {
+        "githubOAuth2Api": {
+          "id": "stt7O3UtIsjdKCqg",
+          "name": "NTLx"
+        }
+      },
+      "webhookId": "88ab4282-fd7e-4d9a-8108-0f9d11222d2d"
+    },
+    {
+      "id": "d7118da5-aab2-4da2-a259-e4fab2ce8424",
+      "name": "Publish release",
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1.1,
+      "position": [
+        560,
+        320
+      ],
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "release",
+        "operation": "update",
+        "owner": {
+          "__rl": true,
+          "mode": "name",
+          "value": "={{ $('Receive release request').item.json.owner }}"
+        },
+        "repository": {
+          "__rl": true,
+          "mode": "name",
+          "value": "={{ $('Receive release request').item.json.repository }}"
+        },
+        "release_id": "={{ $('Receive release request').item.json.release_id }}",
+        "additionalFields": {
+          "draft": false
+        }
+      },
+      "credentials": {
+        "githubOAuth2Api": {
+          "id": "stt7O3UtIsjdKCqg",
+          "name": "NTLx"
+        }
+      },
+      "webhookId": "17850862-20c5-4b51-9d81-3e2b5d1fd2c2"
+    },
+    {
+      "id": "f5413474-21ed-4e2d-a36d-f936f1cfb95c",
+      "name": "Return refused release action",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        560,
+        480
+      ],
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ok",
+              "name": "ok",
+              "type": "boolean",
+              "value": false
+            },
+            {
+              "id": "error",
+              "name": "error",
+              "type": "string",
+              "value": "unsupported_or_unconfirmed_action"
+            },
+            {
+              "id": "policy",
+              "name": "policy",
+              "type": "string",
+              "value": "publish requires confirmed=true; draft creation and update remain non-public"
+            }
+          ]
+        },
+        "includeOtherFields": false
+      }
+    }
+  ],
+  "connections": {
+    "Receive release request": {
+      "main": [
+        [
+          {
+            "node": "Route release action",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route release action": {
+      "main": [
+        [
+          {
+            "node": "List releases",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get release",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Create draft release",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Update draft release",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Publish release",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Return refused release action",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [
+    {
+      "id": "a17cc688-e3fb-46db-bf2f-5bd184ad28c4",
+      "name": "Release operations",
+      "nodeIds": [
+        "94b71211-6bf7-4e5a-86aa-d5d3a23b03cb",
+        "f6650465-87c8-4f27-ab69-698796c09c9c",
+        "180fd32c-be56-4904-aee3-c26be0b3aef6",
+        "ea8d635f-44a9-43de-92f8-a3668309d235",
+        "f62e62b1-9c41-43c2-bc63-bb05583718a2",
+        "d7118da5-aab2-4da2-a259-e4fab2ce8424",
+        "f5413474-21ed-4e2d-a36d-f936f1cfb95c"
+      ],
+      "description": "Routes release reads, draft writes, and confirmation-gated publication through native GitHub nodes."
+    }
+  ],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true,
+    "errorWorkflow": "3LE3BnPfHSuIZCVR",
+    "timezone": "Asia/Shanghai",
+    "saveExecutionProgress": false,
+    "saveManualExecutions": false,
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "none",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [
+    {
+      "id": "4K2bQrntVhmSikB8",
+      "name": "tool",
+      "createdAt": "2026-10-27T06:57:35.939Z",
+      "updatedAt": "2026-10-27T06:57:35.939Z"
+    },
+    {
+      "id": "twNsKNALbdWLw0Ox",
+      "name": "automation",
+      "createdAt": "2026-10-22T08:25:54.546Z",
+      "updatedAt": "2026-10-22T08:25:54.546Z"
+    },
+    {
+      "id": "ZB1OFuryVXrNRjEy",
+      "name": "github",
+      "createdAt": "2026-10-23T02:30:52.063Z",
+      "updatedAt": "2026-10-23T02:30:52.063Z"
+    },
+    {
+      "id": "jkffVXRb1S4v5PNj",
+      "name": "subworkflow",
+      "createdAt": "2026-10-22T15:59:43.410Z",
+      "updatedAt": "2026-10-22T15:59:43.410Z"
+    },
+    {
+      "id": "6JiP5qcpM7unTu9m",
+      "name": "release",
+      "createdAt": "2026-10-22T08:30:55.419Z",
+      "updatedAt": "2026-10-22T08:30:55.419Z"
+    }
+  ],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "qdxuSpqMjpMQM0jQ",
+      "projectId": "cNMj0K6AdJmi0OAZ",
+      "createdAt": "2026-10-28T15:43:39.773Z",
+      "updatedAt": "2026-10-28T15:43:39.773Z"
+    }
+  ],
+  "activeVersion": {
+    "versionId": "9aa42b3a-fb3d-41f2-8295-d755c316a41a",
+    "workflowId": "qdxuSpqMjpMQM0jQ",
+    "nodes": [
+      {
+        "id": "dcc42422-2ba0-4026-9944-a054d83c1374",
+        "name": "Receive release request",
+        "type": "n8n-nodes-base.executeWorkflowTrigger",
+        "typeVersion": 1.3,
+        "position": [
+          0,
+          0
+        ],
+        "parameters": {
+          "inputSource": "workflowInputs",
+          "workflowInputs": {
+            "values": [
+              {
+                "name": "owner",
+                "type": "string"
+              },
+              {
+                "name": "repository",
+                "type": "string"
+              },
+              {
+                "name": "action",
+                "type": "string"
+              },
+              {
+                "name": "release_id",
+                "type": "string"
+              },
+              {
+                "name": "release_tag",
+                "type": "string"
+              },
+              {
+                "name": "name",
+                "type": "string"
+              },
+              {
+                "name": "body",
+                "type": "string"
+              },
+              {
+                "name": "prerelease",
+                "type": "boolean"
+              },
+              {
+                "name": "confirmed",
+                "type": "boolean"
+              },
+              {
+                "name": "limit",
+                "type": "number"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "94b71211-6bf7-4e5a-86aa-d5d3a23b03cb",
+        "name": "Route release action",
+        "type": "n8n-nodes-base.switch",
+        "typeVersion": 3.4,
+        "position": [
+          280,
+          0
+        ],
+        "parameters": {
+          "mode": "rules",
+          "rules": {
+            "values": [
+              {
+                "renameOutput": true,
+                "outputKey": "list",
+                "conditions": {
+                  "options": {
+                    "caseSensitive": false,
+                    "leftValue": "",
+                    "typeValidation": "strict"
+                  },
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $('Receive release request').item.json.action }}",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals"
+                      },
+                      "rightValue": "list"
+                    }
+                  ],
+                  "combinator": "and"
+                }
+              },
+              {
+                "renameOutput": true,
+                "outputKey": "get",
+                "conditions": {
+                  "options": {
+                    "caseSensitive": false,
+                    "leftValue": "",
+                    "typeValidation": "strict"
+                  },
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $('Receive release request').item.json.action }}",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals"
+                      },
+                      "rightValue": "get"
+                    }
+                  ],
+                  "combinator": "and"
+                }
+              },
+              {
+                "renameOutput": true,
+                "outputKey": "create_draft",
+                "conditions": {
+                  "options": {
+                    "caseSensitive": false,
+                    "leftValue": "",
+                    "typeValidation": "strict"
+                  },
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $('Receive release request').item.json.action }}",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals"
+                      },
+                      "rightValue": "create_draft"
+                    }
+                  ],
+                  "combinator": "and"
+                }
+              },
+              {
+                "renameOutput": true,
+                "outputKey": "update_draft",
+                "conditions": {
+                  "options": {
+                    "caseSensitive": false,
+                    "leftValue": "",
+                    "typeValidation": "strict"
+                  },
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $('Receive release request').item.json.action }}",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals"
+                      },
+                      "rightValue": "update_draft"
+                    }
+                  ],
+                  "combinator": "and"
+                }
+              },
+              {
+                "renameOutput": true,
+                "outputKey": "publish",
+                "conditions": {
+                  "options": {
+                    "caseSensitive": false,
+                    "leftValue": "",
+                    "typeValidation": "strict"
+                  },
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $('Receive release request').item.json.action }}",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals"
+                      },
+                      "rightValue": "publish"
+                    },
+                    {
+                      "leftValue": "={{ $('Receive release request').item.json.confirmed }}",
+                      "operator": {
+                        "type": "boolean",
+                        "operation": "isTrue"
+                      },
+                      "rightValue": true
+                    }
+                  ],
+                  "combinator": "and"
+                }
+              }
+            ]
+          },
+          "options": {
+            "fallbackOutput": "extra",
+            "renameFallbackOutput": "refused"
+          }
+        }
+      },
+      {
+        "id": "f6650465-87c8-4f27-ab69-698796c09c9c",
+        "name": "List releases",
+        "type": "n8n-nodes-base.github",
+        "typeVersion": 1.1,
+        "position": [
+          560,
+          -320
+        ],
+        "parameters": {
+          "authentication": "oAuth2",
+          "resource": "release",
+          "operation": "getAll",
+          "owner": {
+            "__rl": true,
+            "mode": "name",
+            "value": "={{ $('Receive release request').item.json.owner }}"
+          },
+          "repository": {
+            "__rl": true,
+            "mode": "name",
+            "value": "={{ $('Receive release request').item.json.repository }}"
+          },
+          "returnAll": false,
+          "limit": "={{ $('Receive release request').item.json.limit || 20 }}"
+        },
+        "credentials": {
+          "githubOAuth2Api": {
+            "id": "stt7O3UtIsjdKCqg",
+            "name": "NTLx"
+          }
+        },
+        "webhookId": "47a3bf35-ee90-4e5b-8707-f26ce8a173c4"
+      },
+      {
+        "id": "180fd32c-be56-4904-aee3-c26be0b3aef6",
+        "name": "Get release",
+        "type": "n8n-nodes-base.github",
+        "typeVersion": 1.1,
+        "position": [
+          560,
+          -160
+        ],
+        "parameters": {
+          "authentication": "oAuth2",
+          "resource": "release",
+          "operation": "get",
+          "owner": {
+            "__rl": true,
+            "mode": "name",
+            "value": "={{ $('Receive release request').item.json.owner }}"
+          },
+          "repository": {
+            "__rl": true,
+            "mode": "name",
+            "value": "={{ $('Receive release request').item.json.repository }}"
+          },
+          "release_id": "={{ $('Receive release request').item.json.release_id }}"
+        },
+        "credentials": {
+          "githubOAuth2Api": {
+            "id": "stt7O3UtIsjdKCqg",
+            "name": "NTLx"
+          }
+        },
+        "webhookId": "303e0a3b-1172-421c-911d-c39a6aeb6009"
+      },
+      {
+        "id": "ea8d635f-44a9-43de-92f8-a3668309d235",
+        "name": "Create draft release",
+        "type": "n8n-nodes-base.github",
+        "typeVersion": 1.1,
+        "position": [
+          560,
+          0
+        ],
+        "parameters": {
+          "authentication": "oAuth2",
+          "resource": "release",
+          "operation": "create",
+          "owner": {
+            "__rl": true,
+            "mode": "name",
+            "value": "={{ $('Receive release request').item.json.owner }}"
+          },
+          "repository": {
+            "__rl": true,
+            "mode": "name",
+            "value": "={{ $('Receive release request').item.json.repository }}"
+          },
+          "releaseTag": "={{ $('Receive release request').item.json.release_tag }}",
+          "additionalFields": {
+            "name": "={{ $('Receive release request').item.json.name }}",
+            "body": "={{ $('Receive release request').item.json.body + '\\n\\n<!-- chatgpt:n8n -->' }}",
+            "draft": true,
+            "prerelease": "={{ $('Receive release request').item.json.prerelease }}"
+          }
+        },
+        "credentials": {
+          "githubOAuth2Api": {
+            "id": "stt7O3UtIsjdKCqg",
+            "name": "NTLx"
+          }
+        },
+        "webhookId": "58e7e392-dfbf-4017-be0b-e750e09ed76c"
+      },
+      {
+        "id": "f62e62b1-9c41-43c2-bc63-bb05583718a2",
+        "name": "Update draft release",
+        "type": "n8n-nodes-base.github",
+        "typeVersion": 1.1,
+        "position": [
+          560,
+          160
+        ],
+        "parameters": {
+          "authentication": "oAuth2",
+          "resource": "release",
+          "operation": "update",
+          "owner": {
+            "__rl": true,
+            "mode": "name",
+            "value": "={{ $('Receive release request').item.json.owner }}"
+          },
+          "repository": {
+            "__rl": true,
+            "mode": "name",
+            "value": "={{ $('Receive release request').item.json.repository }}"
+          },
+          "release_id": "={{ $('Receive release request').item.json.release_id }}",
+          "additionalFields": {
+            "name": "={{ $('Receive release request').item.json.name }}",
+            "body": "={{ $('Receive release request').item.json.body + '\\n\\n<!-- chatgpt:n8n -->' }}",
+            "draft": true,
+            "prerelease": "={{ $('Receive release request').item.json.prerelease }}"
+          }
+        },
+        "credentials": {
+          "githubOAuth2Api": {
+            "id": "stt7O3UtIsjdKCqg",
+            "name": "NTLx"
+          }
+        },
+        "webhookId": "88ab4282-fd7e-4d9a-8108-0f9d11222d2d"
+      },
+      {
+        "id": "d7118da5-aab2-4da2-a259-e4fab2ce8424",
+        "name": "Publish release",
+        "type": "n8n-nodes-base.github",
+        "typeVersion": 1.1,
+        "position": [
+          560,
+          320
+        ],
+        "parameters": {
+          "authentication": "oAuth2",
+          "resource": "release",
+          "operation": "update",
+          "owner": {
+            "__rl": true,
+            "mode": "name",
+            "value": "={{ $('Receive release request').item.json.owner }}"
+          },
+          "repository": {
+            "__rl": true,
+            "mode": "name",
+            "value": "={{ $('Receive release request').item.json.repository }}"
+          },
+          "release_id": "={{ $('Receive release request').item.json.release_id }}",
+          "additionalFields": {
+            "draft": false
+          }
+        },
+        "credentials": {
+          "githubOAuth2Api": {
+            "id": "stt7O3UtIsjdKCqg",
+            "name": "NTLx"
+          }
+        },
+        "webhookId": "17850862-20c5-4b51-9d81-3e2b5d1fd2c2"
+      },
+      {
+        "id": "f5413474-21ed-4e2d-a36d-f936f1cfb95c",
+        "name": "Return refused release action",
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.5,
+        "position": [
+          560,
+          480
+        ],
+        "parameters": {
+          "mode": "manual",
+          "assignments": {
+            "assignments": [
+              {
+                "id": "ok",
+                "name": "ok",
+                "type": "boolean",
+                "value": false
+              },
+              {
+                "id": "error",
+                "name": "error",
+                "type": "string",
+                "value": "unsupported_or_unconfirmed_action"
+              },
+              {
+                "id": "policy",
+                "name": "policy",
+                "type": "string",
+                "value": "publish requires confirmed=true; draft creation and update remain non-public"
+              }
+            ]
+          },
+          "includeOtherFields": false
+        }
+      }
+    ],
+    "connections": {
+      "Receive release request": {
+        "main": [
+          [
+            {
+              "node": "Route release action",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Route release action": {
+        "main": [
+          [
+            {
+              "node": "List releases",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Get release",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Create draft release",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Update draft release",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Publish release",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Return refused release action",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "nodeGroups": [
+      {
+        "id": "a17cc688-e3fb-46db-bf2f-5bd184ad28c4",
+        "name": "Release operations",
+        "nodeIds": [
+          "94b71211-6bf7-4e5a-86aa-d5d3a23b03cb",
+          "f6650465-87c8-4f27-ab69-698796c09c9c",
+          "180fd32c-be56-4904-aee3-c26be0b3aef6",
+          "ea8d635f-44a9-43de-92f8-a3668309d235",
+          "f62e62b1-9c41-43c2-bc63-bb05583718a2",
+          "d7118da5-aab2-4da2-a259-e4fab2ce8424",
+          "f5413474-21ed-4e2d-a36d-f936f1cfb95c"
+        ],
+        "description": "Routes release reads, draft writes, and confirmation-gated publication through native GitHub nodes."
+      }
+    ],
+    "authors": "Administrator NTLx (via MCP)",
+    "name": "Apply production governance",
+    "description": "Adds standard GitHub/subworkflow governance and groups the native release operations for a compact canvas.",
+    "autosaved": false,
+    "createdAt": "2026-10-28T15:47:36.500Z",
+    "updatedAt": "2026-10-28T15:47:36.500Z"
+  }
+}
