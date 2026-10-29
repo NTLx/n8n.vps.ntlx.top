@@ -1,0 +1,870 @@
+{
+  "id": "IiJEJb0OwbfrQCoO",
+  "name": "Schedule knowledge governance review",
+  "active": true,
+  "activeVersionId": "4c6b40bc-26b4-48ed-bb8f-04cc54e648e6",
+  "createdAt": "2026-10-28T01:55:27.714Z",
+  "updatedAt": "2026-10-28T01:55:37.749Z",
+  "isArchived": false,
+  "versionId": "4c6b40bc-26b4-48ed-bb8f-04cc54e648e6",
+  "triggerCount": 1,
+  "nodes": [
+    {
+      "id": "dccfedd8-d9f5-4602-8a4b-0b55d177282b",
+      "name": "Monthly day 1 12:10",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 10 12 1 * *"
+            }
+          ]
+        },
+        "misfirePolicy": "coalesce",
+        "misfireGraceSeconds": 21600
+      }
+    },
+    {
+      "id": "a4fedd35-c41e-4c4c-ba1f-6669bbbe0255",
+      "name": "Record knowledge governance heartbeat",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        224,
+        0
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "upsert",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "automation_heartbeats"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "monitor_key",
+              "condition": "eq",
+              "keyValue": "knowledge_governance_monthly"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "monitor_key": "knowledge_governance_monthly",
+            "workflow_id": "={{ $workflow.id }}",
+            "workflow_name": "Schedule knowledge governance review",
+            "last_seen_at": "={{ $now.toISO() }}",
+            "next_expected_at": "={{ $now.setZone('Asia/Shanghai').startOf('month').plus({ months: 1 }).set({ day: 1, hour: 12, minute: 10, second: 0, millisecond: 0 }).toISO() }}",
+            "grace_minutes": 120,
+            "priority": 3
+          }
+        },
+        "options": {}
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "059a5316-2dc0-47bf-8acd-01c4674ba58c",
+      "name": "Prepare knowledge governance review",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        448,
+        0
+      ],
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "work-id",
+              "name": "work_id",
+              "type": "string",
+              "value": "={{ 'knowledge_governance:month-' + $now.setZone('Asia/Shanghai').toFormat('yyyy-LL') }}"
+            },
+            {
+              "id": "worker",
+              "name": "worker",
+              "type": "string",
+              "value": "monthly"
+            },
+            {
+              "id": "kind",
+              "name": "kind",
+              "type": "string",
+              "value": "knowledge_utility_review"
+            },
+            {
+              "id": "priority",
+              "name": "priority",
+              "type": "number",
+              "value": 30
+            },
+            {
+              "id": "source-event-id",
+              "name": "source_event_id",
+              "type": "string",
+              "value": "={{ 'knowledge.governance.scheduled:' + $now.setZone('Asia/Shanghai').toFormat('yyyy-LL') }}"
+            },
+            {
+              "id": "correlation-id",
+              "name": "correlation_id",
+              "type": "string",
+              "value": "={{ 'knowledge-governance:' + $now.setZone('Asia/Shanghai').toFormat('yyyy-LL') }}"
+            },
+            {
+              "id": "project",
+              "name": "project",
+              "type": "string",
+              "value": "agentic-work-atlas"
+            },
+            {
+              "id": "input-ref",
+              "name": "input_ref",
+              "type": "string",
+              "value": "={{ 'knowledge://governance/monthly?month=' + $now.setZone('Asia/Shanghai').toFormat('yyyy-LL') + '&mode=full' }}"
+            },
+            {
+              "id": "summary",
+              "name": "summary",
+              "type": "string",
+              "value": "Run the monthly LLM WiKi Knowledge Utility Full Run and bounded governance over existing stable knowledge; route any genuinely new evidence or knowledge claim back to Weekly Promotion."
+            },
+            {
+              "id": "not-before",
+              "name": "not_before",
+              "type": "string",
+              "value": "={{ $now.toISO() }}"
+            },
+            {
+              "id": "deadline",
+              "name": "deadline",
+              "type": "string",
+              "value": ""
+            },
+            {
+              "id": "event-id",
+              "name": "event_id",
+              "type": "string",
+              "value": "={{ 'knowledge.governance.scheduled:' + $now.setZone('Asia/Shanghai').toFormat('yyyy-LL') }}"
+            },
+            {
+              "id": "event-time",
+              "name": "event_occurred_at",
+              "type": "string",
+              "value": "={{ $now.toISO() }}"
+            },
+            {
+              "id": "event-source",
+              "name": "event_source",
+              "type": "string",
+              "value": "n8n:knowledge-metabolism"
+            },
+            {
+              "id": "event-category",
+              "name": "event_category",
+              "type": "string",
+              "value": "knowledge.governance.scheduled"
+            },
+            {
+              "id": "event-title",
+              "name": "event_title",
+              "type": "string",
+              "value": "Monthly knowledge governance review scheduled"
+            },
+            {
+              "id": "event-description",
+              "name": "event_description",
+              "type": "string",
+              "value": "Monthly directly governs existing stable LLM WiKi knowledge and performs Knowledge Utility evaluation; it does not bypass Weekly Promotion for new evidence."
+            },
+            {
+              "id": "event-status",
+              "name": "event_status",
+              "type": "string",
+              "value": "scheduled"
+            },
+            {
+              "id": "event-url",
+              "name": "event_url",
+              "type": "string",
+              "value": ""
+            },
+            {
+              "id": "event-meta",
+              "name": "event_metadata_object",
+              "type": "string",
+              "value": "={{ ({ architecture_version: 3, mode: 'full', worker: 'monthly', kind: 'knowledge_utility_review', target: 'agentic-work-atlas', governance_scope: ['find','synthesize','reuse','duplicate','merge','supersede','stale','orphan','alias','relationship','structure','provenance','knowledge_debt'], new_evidence_route: 'weekly', integration_route: 'hourly:wiki_compile', principle: 'daily_discovers_weekly_decides_hourly_integrates_monthly_governs' }).toJsonString() }}"
+            }
+          ]
+        },
+        "includeOtherFields": false,
+        "options": {}
+      }
+    },
+    {
+      "id": "877cc2da-dc2d-49a8-9c54-c08f0aa58873",
+      "name": "Enqueue knowledge governance review",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.4,
+      "position": [
+        672,
+        0
+      ],
+      "parameters": {
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "oe8KZW4nLbYUUDzA"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "work_id": "={{ $('Prepare knowledge governance review').item.json.work_id }}",
+            "worker": "={{ $('Prepare knowledge governance review').item.json.worker }}",
+            "kind": "={{ $('Prepare knowledge governance review').item.json.kind }}",
+            "priority": "={{ $('Prepare knowledge governance review').item.json.priority }}",
+            "source_event_id": "={{ $('Prepare knowledge governance review').item.json.source_event_id }}",
+            "correlation_id": "={{ $('Prepare knowledge governance review').item.json.correlation_id }}",
+            "project": "={{ $('Prepare knowledge governance review').item.json.project }}",
+            "input_ref": "={{ $('Prepare knowledge governance review').item.json.input_ref }}",
+            "summary": "={{ $('Prepare knowledge governance review').item.json.summary }}",
+            "not_before": "={{ $('Prepare knowledge governance review').item.json.not_before }}",
+            "deadline": "={{ $('Prepare knowledge governance review').item.json.deadline }}",
+            "event_id": "={{ $('Prepare knowledge governance review').item.json.event_id }}",
+            "event_occurred_at": "={{ $('Prepare knowledge governance review').item.json.event_occurred_at }}",
+            "event_source": "={{ $('Prepare knowledge governance review').item.json.event_source }}",
+            "event_category": "={{ $('Prepare knowledge governance review').item.json.event_category }}",
+            "event_title": "={{ $('Prepare knowledge governance review').item.json.event_title }}",
+            "event_description": "={{ $('Prepare knowledge governance review').item.json.event_description }}",
+            "event_status": "={{ $('Prepare knowledge governance review').item.json.event_status }}",
+            "event_url": "={{ $('Prepare knowledge governance review').item.json.event_url }}",
+            "event_metadata_object": "={{ $('Prepare knowledge governance review').item.json.event_metadata_object }}"
+          },
+          "schema": [
+            {
+              "id": "work_id",
+              "displayName": "work_id",
+              "type": "string"
+            },
+            {
+              "id": "worker",
+              "displayName": "worker",
+              "type": "string"
+            },
+            {
+              "id": "kind",
+              "displayName": "kind",
+              "type": "string"
+            },
+            {
+              "id": "priority",
+              "displayName": "priority",
+              "type": "number"
+            },
+            {
+              "id": "source_event_id",
+              "displayName": "source_event_id",
+              "type": "string"
+            },
+            {
+              "id": "correlation_id",
+              "displayName": "correlation_id",
+              "type": "string"
+            },
+            {
+              "id": "project",
+              "displayName": "project",
+              "type": "string"
+            },
+            {
+              "id": "input_ref",
+              "displayName": "input_ref",
+              "type": "string"
+            },
+            {
+              "id": "summary",
+              "displayName": "summary",
+              "type": "string"
+            },
+            {
+              "id": "not_before",
+              "displayName": "not_before",
+              "type": "string"
+            },
+            {
+              "id": "deadline",
+              "displayName": "deadline",
+              "type": "string"
+            },
+            {
+              "id": "event_id",
+              "displayName": "event_id",
+              "type": "string"
+            },
+            {
+              "id": "event_occurred_at",
+              "displayName": "event_occurred_at",
+              "type": "string"
+            },
+            {
+              "id": "event_source",
+              "displayName": "event_source",
+              "type": "string"
+            },
+            {
+              "id": "event_category",
+              "displayName": "event_category",
+              "type": "string"
+            },
+            {
+              "id": "event_title",
+              "displayName": "event_title",
+              "type": "string"
+            },
+            {
+              "id": "event_description",
+              "displayName": "event_description",
+              "type": "string"
+            },
+            {
+              "id": "event_status",
+              "displayName": "event_status",
+              "type": "string"
+            },
+            {
+              "id": "event_url",
+              "displayName": "event_url",
+              "type": "string"
+            },
+            {
+              "id": "event_metadata_object",
+              "displayName": "event_metadata_object",
+              "type": "string"
+            }
+          ]
+        },
+        "mode": "each",
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Monthly day 1 12:10": {
+      "main": [
+        [
+          {
+            "node": "Record knowledge governance heartbeat",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Record knowledge governance heartbeat": {
+      "main": [
+        [
+          {
+            "node": "Prepare knowledge governance review",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare knowledge governance review": {
+      "main": [
+        [
+          {
+            "node": "Enqueue knowledge governance review",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true,
+    "errorWorkflow": "3LE3BnPfHSuIZCVR",
+    "timezone": "Asia/Shanghai",
+    "saveExecutionProgress": false,
+    "saveManualExecutions": false,
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "none",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "staticData": {
+    "node:Monthly day 1 12:10": {
+      "recurrenceRules": [
+        null
+      ],
+      "recurrenceRuleSignatures": [
+        null
+      ]
+    }
+  },
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [
+    {
+      "id": "BlGRvaSWqnmTk53i",
+      "name": "event-producer",
+      "createdAt": "2026-10-22T09:14:35.370Z",
+      "updatedAt": "2026-10-22T09:14:35.370Z"
+    },
+    {
+      "id": "Kmfi1DI0MjIRkwfZ",
+      "name": "deadman-heartbeat",
+      "createdAt": "2026-10-22T16:25:50.145Z",
+      "updatedAt": "2026-10-22T16:25:50.145Z"
+    },
+    {
+      "id": "twNsKNALbdWLw0Ox",
+      "name": "automation",
+      "createdAt": "2026-10-22T08:25:54.546Z",
+      "updatedAt": "2026-10-22T08:25:54.546Z"
+    },
+    {
+      "id": "N6trNzlMuM25fapz",
+      "name": "llm-wiki",
+      "createdAt": "2026-10-22T08:33:58.714Z",
+      "updatedAt": "2026-10-22T08:33:58.714Z"
+    },
+    {
+      "id": "9jw9Bhya2Ylf8E4D",
+      "name": "ai-work-producer",
+      "createdAt": "2026-10-22T09:14:35.367Z",
+      "updatedAt": "2026-10-22T09:14:35.367Z"
+    }
+  ],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "IiJEJb0OwbfrQCoO",
+      "projectId": "cNMj0K6AdJmi0OAZ",
+      "createdAt": "2026-10-28T01:55:27.714Z",
+      "updatedAt": "2026-10-28T01:55:27.714Z"
+    }
+  ],
+  "activeVersion": {
+    "versionId": "4c6b40bc-26b4-48ed-bb8f-04cc54e648e6",
+    "workflowId": "IiJEJb0OwbfrQCoO",
+    "nodes": [
+      {
+        "id": "dccfedd8-d9f5-4602-8a4b-0b55d177282b",
+        "name": "Monthly day 1 12:10",
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.4,
+        "position": [
+          0,
+          0
+        ],
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "cronExpression",
+                "expression": "0 10 12 1 * *"
+              }
+            ]
+          },
+          "misfirePolicy": "coalesce",
+          "misfireGraceSeconds": 21600
+        }
+      },
+      {
+        "id": "a4fedd35-c41e-4c4c-ba1f-6669bbbe0255",
+        "name": "Record knowledge governance heartbeat",
+        "type": "n8n-nodes-base.dataTable",
+        "typeVersion": 1.1,
+        "position": [
+          224,
+          0
+        ],
+        "parameters": {
+          "resource": "row",
+          "operation": "upsert",
+          "dataTableId": {
+            "__rl": true,
+            "mode": "name",
+            "value": "automation_heartbeats"
+          },
+          "matchType": "allConditions",
+          "filters": {
+            "conditions": [
+              {
+                "keyName": "monitor_key",
+                "condition": "eq",
+                "keyValue": "knowledge_governance_monthly"
+              }
+            ]
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "monitor_key": "knowledge_governance_monthly",
+              "workflow_id": "={{ $workflow.id }}",
+              "workflow_name": "Schedule knowledge governance review",
+              "last_seen_at": "={{ $now.toISO() }}",
+              "next_expected_at": "={{ $now.setZone('Asia/Shanghai').startOf('month').plus({ months: 1 }).set({ day: 1, hour: 12, minute: 10, second: 0, millisecond: 0 }).toISO() }}",
+              "grace_minutes": 120,
+              "priority": 3
+            }
+          },
+          "options": {}
+        },
+        "onError": "continueRegularOutput"
+      },
+      {
+        "id": "059a5316-2dc0-47bf-8acd-01c4674ba58c",
+        "name": "Prepare knowledge governance review",
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.5,
+        "position": [
+          448,
+          0
+        ],
+        "parameters": {
+          "mode": "manual",
+          "assignments": {
+            "assignments": [
+              {
+                "id": "work-id",
+                "name": "work_id",
+                "type": "string",
+                "value": "={{ 'knowledge_governance:month-' + $now.setZone('Asia/Shanghai').toFormat('yyyy-LL') }}"
+              },
+              {
+                "id": "worker",
+                "name": "worker",
+                "type": "string",
+                "value": "monthly"
+              },
+              {
+                "id": "kind",
+                "name": "kind",
+                "type": "string",
+                "value": "knowledge_utility_review"
+              },
+              {
+                "id": "priority",
+                "name": "priority",
+                "type": "number",
+                "value": 30
+              },
+              {
+                "id": "source-event-id",
+                "name": "source_event_id",
+                "type": "string",
+                "value": "={{ 'knowledge.governance.scheduled:' + $now.setZone('Asia/Shanghai').toFormat('yyyy-LL') }}"
+              },
+              {
+                "id": "correlation-id",
+                "name": "correlation_id",
+                "type": "string",
+                "value": "={{ 'knowledge-governance:' + $now.setZone('Asia/Shanghai').toFormat('yyyy-LL') }}"
+              },
+              {
+                "id": "project",
+                "name": "project",
+                "type": "string",
+                "value": "agentic-work-atlas"
+              },
+              {
+                "id": "input-ref",
+                "name": "input_ref",
+                "type": "string",
+                "value": "={{ 'knowledge://governance/monthly?month=' + $now.setZone('Asia/Shanghai').toFormat('yyyy-LL') + '&mode=full' }}"
+              },
+              {
+                "id": "summary",
+                "name": "summary",
+                "type": "string",
+                "value": "Run the monthly LLM WiKi Knowledge Utility Full Run and bounded governance over existing stable knowledge; route any genuinely new evidence or knowledge claim back to Weekly Promotion."
+              },
+              {
+                "id": "not-before",
+                "name": "not_before",
+                "type": "string",
+                "value": "={{ $now.toISO() }}"
+              },
+              {
+                "id": "deadline",
+                "name": "deadline",
+                "type": "string",
+                "value": ""
+              },
+              {
+                "id": "event-id",
+                "name": "event_id",
+                "type": "string",
+                "value": "={{ 'knowledge.governance.scheduled:' + $now.setZone('Asia/Shanghai').toFormat('yyyy-LL') }}"
+              },
+              {
+                "id": "event-time",
+                "name": "event_occurred_at",
+                "type": "string",
+                "value": "={{ $now.toISO() }}"
+              },
+              {
+                "id": "event-source",
+                "name": "event_source",
+                "type": "string",
+                "value": "n8n:knowledge-metabolism"
+              },
+              {
+                "id": "event-category",
+                "name": "event_category",
+                "type": "string",
+                "value": "knowledge.governance.scheduled"
+              },
+              {
+                "id": "event-title",
+                "name": "event_title",
+                "type": "string",
+                "value": "Monthly knowledge governance review scheduled"
+              },
+              {
+                "id": "event-description",
+                "name": "event_description",
+                "type": "string",
+                "value": "Monthly directly governs existing stable LLM WiKi knowledge and performs Knowledge Utility evaluation; it does not bypass Weekly Promotion for new evidence."
+              },
+              {
+                "id": "event-status",
+                "name": "event_status",
+                "type": "string",
+                "value": "scheduled"
+              },
+              {
+                "id": "event-url",
+                "name": "event_url",
+                "type": "string",
+                "value": ""
+              },
+              {
+                "id": "event-meta",
+                "name": "event_metadata_object",
+                "type": "string",
+                "value": "={{ ({ architecture_version: 3, mode: 'full', worker: 'monthly', kind: 'knowledge_utility_review', target: 'agentic-work-atlas', governance_scope: ['find','synthesize','reuse','duplicate','merge','supersede','stale','orphan','alias','relationship','structure','provenance','knowledge_debt'], new_evidence_route: 'weekly', integration_route: 'hourly:wiki_compile', principle: 'daily_discovers_weekly_decides_hourly_integrates_monthly_governs' }).toJsonString() }}"
+              }
+            ]
+          },
+          "includeOtherFields": false,
+          "options": {}
+        }
+      },
+      {
+        "id": "877cc2da-dc2d-49a8-9c54-c08f0aa58873",
+        "name": "Enqueue knowledge governance review",
+        "type": "n8n-nodes-base.executeWorkflow",
+        "typeVersion": 1.4,
+        "position": [
+          672,
+          0
+        ],
+        "parameters": {
+          "source": "database",
+          "workflowId": {
+            "__rl": true,
+            "mode": "id",
+            "value": "oe8KZW4nLbYUUDzA"
+          },
+          "workflowInputs": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "work_id": "={{ $('Prepare knowledge governance review').item.json.work_id }}",
+              "worker": "={{ $('Prepare knowledge governance review').item.json.worker }}",
+              "kind": "={{ $('Prepare knowledge governance review').item.json.kind }}",
+              "priority": "={{ $('Prepare knowledge governance review').item.json.priority }}",
+              "source_event_id": "={{ $('Prepare knowledge governance review').item.json.source_event_id }}",
+              "correlation_id": "={{ $('Prepare knowledge governance review').item.json.correlation_id }}",
+              "project": "={{ $('Prepare knowledge governance review').item.json.project }}",
+              "input_ref": "={{ $('Prepare knowledge governance review').item.json.input_ref }}",
+              "summary": "={{ $('Prepare knowledge governance review').item.json.summary }}",
+              "not_before": "={{ $('Prepare knowledge governance review').item.json.not_before }}",
+              "deadline": "={{ $('Prepare knowledge governance review').item.json.deadline }}",
+              "event_id": "={{ $('Prepare knowledge governance review').item.json.event_id }}",
+              "event_occurred_at": "={{ $('Prepare knowledge governance review').item.json.event_occurred_at }}",
+              "event_source": "={{ $('Prepare knowledge governance review').item.json.event_source }}",
+              "event_category": "={{ $('Prepare knowledge governance review').item.json.event_category }}",
+              "event_title": "={{ $('Prepare knowledge governance review').item.json.event_title }}",
+              "event_description": "={{ $('Prepare knowledge governance review').item.json.event_description }}",
+              "event_status": "={{ $('Prepare knowledge governance review').item.json.event_status }}",
+              "event_url": "={{ $('Prepare knowledge governance review').item.json.event_url }}",
+              "event_metadata_object": "={{ $('Prepare knowledge governance review').item.json.event_metadata_object }}"
+            },
+            "schema": [
+              {
+                "id": "work_id",
+                "displayName": "work_id",
+                "type": "string"
+              },
+              {
+                "id": "worker",
+                "displayName": "worker",
+                "type": "string"
+              },
+              {
+                "id": "kind",
+                "displayName": "kind",
+                "type": "string"
+              },
+              {
+                "id": "priority",
+                "displayName": "priority",
+                "type": "number"
+              },
+              {
+                "id": "source_event_id",
+                "displayName": "source_event_id",
+                "type": "string"
+              },
+              {
+                "id": "correlation_id",
+                "displayName": "correlation_id",
+                "type": "string"
+              },
+              {
+                "id": "project",
+                "displayName": "project",
+                "type": "string"
+              },
+              {
+                "id": "input_ref",
+                "displayName": "input_ref",
+                "type": "string"
+              },
+              {
+                "id": "summary",
+                "displayName": "summary",
+                "type": "string"
+              },
+              {
+                "id": "not_before",
+                "displayName": "not_before",
+                "type": "string"
+              },
+              {
+                "id": "deadline",
+                "displayName": "deadline",
+                "type": "string"
+              },
+              {
+                "id": "event_id",
+                "displayName": "event_id",
+                "type": "string"
+              },
+              {
+                "id": "event_occurred_at",
+                "displayName": "event_occurred_at",
+                "type": "string"
+              },
+              {
+                "id": "event_source",
+                "displayName": "event_source",
+                "type": "string"
+              },
+              {
+                "id": "event_category",
+                "displayName": "event_category",
+                "type": "string"
+              },
+              {
+                "id": "event_title",
+                "displayName": "event_title",
+                "type": "string"
+              },
+              {
+                "id": "event_description",
+                "displayName": "event_description",
+                "type": "string"
+              },
+              {
+                "id": "event_status",
+                "displayName": "event_status",
+                "type": "string"
+              },
+              {
+                "id": "event_url",
+                "displayName": "event_url",
+                "type": "string"
+              },
+              {
+                "id": "event_metadata_object",
+                "displayName": "event_metadata_object",
+                "type": "string"
+              }
+            ]
+          },
+          "mode": "each",
+          "options": {
+            "waitForSubWorkflow": true
+          }
+        }
+      }
+    ],
+    "connections": {
+      "Monthly day 1 12:10": {
+        "main": [
+          [
+            {
+              "node": "Record knowledge governance heartbeat",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Record knowledge governance heartbeat": {
+        "main": [
+          [
+            {
+              "node": "Prepare knowledge governance review",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prepare knowledge governance review": {
+        "main": [
+          [
+            {
+              "node": "Enqueue knowledge governance review",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "nodeGroups": [],
+    "authors": "Administrator NTLx (via MCP)",
+    "name": "Initial monthly governance producer",
+    "description": "Create the deterministic monthly producer for the four-layer LLM WiKi architecture. It schedules a Full Knowledge Utility/Governance work item and records the corresponding Event Ledger entry via the shared enqueue workflow.",
+    "autosaved": false,
+    "createdAt": "2026-10-28T01:55:27.714Z",
+    "updatedAt": "2026-10-28T01:55:27.714Z"
+  }
+}
