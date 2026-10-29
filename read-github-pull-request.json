@@ -1,0 +1,805 @@
+{
+  "id": "VqdEzbF5vrbxFZZ4",
+  "name": "Read GitHub pull request",
+  "active": true,
+  "activeVersionId": "e028b780-7326-434b-a17c-b2232058e096",
+  "createdAt": "2026-10-28T15:39:40.943Z",
+  "updatedAt": "2026-10-28T15:46:50.490Z",
+  "isArchived": false,
+  "versionId": "e028b780-7326-434b-a17c-b2232058e096",
+  "triggerCount": 0,
+  "nodes": [
+    {
+      "id": "14e0d7b4-6a66-46b0-a212-5ad12d482d74",
+      "name": "Receive PR read request",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "inputSource": "workflowInputs",
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "owner",
+              "type": "string"
+            },
+            {
+              "name": "repository",
+              "type": "string"
+            },
+            {
+              "name": "pull_request_number",
+              "type": "number"
+            },
+            {
+              "name": "view",
+              "type": "string"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "3f2f1503-72d0-470c-a963-e76c0113005b",
+      "name": "Route PR read view",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        280,
+        0
+      ],
+      "parameters": {
+        "mode": "rules",
+        "rules": {
+          "values": [
+            {
+              "renameOutput": true,
+              "outputKey": "metadata",
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Receive PR read request').item.json.view }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "rightValue": "metadata"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "renameOutput": true,
+              "outputKey": "diff",
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Receive PR read request').item.json.view }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "rightValue": "diff"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "renameOutput": true,
+              "outputKey": "patch",
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Receive PR read request').item.json.view }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "rightValue": "patch"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "renameOutput": true,
+              "outputKey": "reviews",
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Receive PR read request').item.json.view }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "rightValue": "reviews"
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra",
+          "renameFallbackOutput": "unsupported"
+        }
+      }
+    },
+    {
+      "id": "ceee80e1-3f21-4931-a8a0-dfd4bf1c26c1",
+      "name": "Get pull request",
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1.1,
+      "position": [
+        560,
+        -240
+      ],
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "pullRequest",
+        "operation": "get",
+        "owner": {
+          "__rl": true,
+          "mode": "name",
+          "value": "={{ $('Receive PR read request').item.json.owner }}"
+        },
+        "repository": {
+          "__rl": true,
+          "mode": "name",
+          "value": "={{ $('Receive PR read request').item.json.repository }}"
+        },
+        "pullRequestNumber": "={{ $('Receive PR read request').item.json.pull_request_number }}"
+      },
+      "credentials": {
+        "githubOAuth2Api": {
+          "id": "stt7O3UtIsjdKCqg",
+          "name": "NTLx"
+        }
+      },
+      "webhookId": "12305d66-31e8-4092-9ea5-66f6b8715e11"
+    },
+    {
+      "id": "accd08b6-e134-4468-959c-99c7b00c6d3d",
+      "name": "Get pull request diff",
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1.1,
+      "position": [
+        560,
+        -80
+      ],
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "pullRequest",
+        "operation": "getDiff",
+        "owner": {
+          "__rl": true,
+          "mode": "name",
+          "value": "={{ $('Receive PR read request').item.json.owner }}"
+        },
+        "repository": {
+          "__rl": true,
+          "mode": "name",
+          "value": "={{ $('Receive PR read request').item.json.repository }}"
+        },
+        "pullRequestNumber": "={{ $('Receive PR read request').item.json.pull_request_number }}"
+      },
+      "credentials": {
+        "githubOAuth2Api": {
+          "id": "stt7O3UtIsjdKCqg",
+          "name": "NTLx"
+        }
+      },
+      "webhookId": "3bc399ac-bb08-4896-ae13-40def8d8c674"
+    },
+    {
+      "id": "483b6992-9d41-4245-8612-166d87419940",
+      "name": "Get pull request patch",
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1.1,
+      "position": [
+        560,
+        80
+      ],
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "pullRequest",
+        "operation": "getPatch",
+        "owner": {
+          "__rl": true,
+          "mode": "name",
+          "value": "={{ $('Receive PR read request').item.json.owner }}"
+        },
+        "repository": {
+          "__rl": true,
+          "mode": "name",
+          "value": "={{ $('Receive PR read request').item.json.repository }}"
+        },
+        "pullRequestNumber": "={{ $('Receive PR read request').item.json.pull_request_number }}"
+      },
+      "credentials": {
+        "githubOAuth2Api": {
+          "id": "stt7O3UtIsjdKCqg",
+          "name": "NTLx"
+        }
+      },
+      "webhookId": "c5ed0e56-532e-41fd-96bb-c84e14afeab4"
+    },
+    {
+      "id": "6b2a7672-cb4a-47e2-b30d-c8b502320c4f",
+      "name": "Get pull request reviews",
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1.1,
+      "position": [
+        560,
+        240
+      ],
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "review",
+        "operation": "getAll",
+        "owner": {
+          "__rl": true,
+          "mode": "name",
+          "value": "={{ $('Receive PR read request').item.json.owner }}"
+        },
+        "repository": {
+          "__rl": true,
+          "mode": "name",
+          "value": "={{ $('Receive PR read request').item.json.repository }}"
+        },
+        "pullRequestNumber": "={{ $('Receive PR read request').item.json.pull_request_number }}",
+        "returnAll": true
+      },
+      "credentials": {
+        "githubOAuth2Api": {
+          "id": "stt7O3UtIsjdKCqg",
+          "name": "NTLx"
+        }
+      },
+      "webhookId": "e22b7a06-3c75-4861-98bd-14ca110e4e90"
+    },
+    {
+      "id": "51c4d506-872a-4de5-9087-fc70420dc431",
+      "name": "Return unsupported view",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        560,
+        400
+      ],
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ok",
+              "name": "ok",
+              "type": "boolean",
+              "value": false
+            },
+            {
+              "id": "error",
+              "name": "error",
+              "type": "string",
+              "value": "unsupported_view"
+            },
+            {
+              "id": "supported",
+              "name": "supported",
+              "type": "array",
+              "value": "={{ ['metadata','diff','patch','reviews'] }}"
+            }
+          ]
+        },
+        "includeOtherFields": false
+      }
+    }
+  ],
+  "connections": {
+    "Receive PR read request": {
+      "main": [
+        [
+          {
+            "node": "Route PR read view",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route PR read view": {
+      "main": [
+        [
+          {
+            "node": "Get pull request",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get pull request diff",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get pull request patch",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get pull request reviews",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Return unsupported view",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true,
+    "errorWorkflow": "3LE3BnPfHSuIZCVR",
+    "timezone": "Asia/Shanghai",
+    "saveExecutionProgress": false,
+    "saveManualExecutions": false,
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "none",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [
+    {
+      "id": "ZB1OFuryVXrNRjEy",
+      "name": "github",
+      "createdAt": "2026-10-23T02:30:52.063Z",
+      "updatedAt": "2026-10-23T02:30:52.063Z"
+    },
+    {
+      "id": "twNsKNALbdWLw0Ox",
+      "name": "automation",
+      "createdAt": "2026-10-22T08:25:54.546Z",
+      "updatedAt": "2026-10-22T08:25:54.546Z"
+    },
+    {
+      "id": "jkffVXRb1S4v5PNj",
+      "name": "subworkflow",
+      "createdAt": "2026-10-22T15:59:43.410Z",
+      "updatedAt": "2026-10-22T15:59:43.410Z"
+    },
+    {
+      "id": "4K2bQrntVhmSikB8",
+      "name": "tool",
+      "createdAt": "2026-10-27T06:57:35.939Z",
+      "updatedAt": "2026-10-27T06:57:35.939Z"
+    }
+  ],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "VqdEzbF5vrbxFZZ4",
+      "projectId": "cNMj0K6AdJmi0OAZ",
+      "createdAt": "2026-10-28T15:39:40.943Z",
+      "updatedAt": "2026-10-28T15:39:40.943Z"
+    }
+  ],
+  "activeVersion": {
+    "versionId": "e028b780-7326-434b-a17c-b2232058e096",
+    "workflowId": "VqdEzbF5vrbxFZZ4",
+    "nodes": [
+      {
+        "id": "14e0d7b4-6a66-46b0-a212-5ad12d482d74",
+        "name": "Receive PR read request",
+        "type": "n8n-nodes-base.executeWorkflowTrigger",
+        "typeVersion": 1.3,
+        "position": [
+          0,
+          0
+        ],
+        "parameters": {
+          "inputSource": "workflowInputs",
+          "workflowInputs": {
+            "values": [
+              {
+                "name": "owner",
+                "type": "string"
+              },
+              {
+                "name": "repository",
+                "type": "string"
+              },
+              {
+                "name": "pull_request_number",
+                "type": "number"
+              },
+              {
+                "name": "view",
+                "type": "string"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "3f2f1503-72d0-470c-a963-e76c0113005b",
+        "name": "Route PR read view",
+        "type": "n8n-nodes-base.switch",
+        "typeVersion": 3.4,
+        "position": [
+          280,
+          0
+        ],
+        "parameters": {
+          "mode": "rules",
+          "rules": {
+            "values": [
+              {
+                "renameOutput": true,
+                "outputKey": "metadata",
+                "conditions": {
+                  "options": {
+                    "caseSensitive": false,
+                    "leftValue": "",
+                    "typeValidation": "strict"
+                  },
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $('Receive PR read request').item.json.view }}",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals"
+                      },
+                      "rightValue": "metadata"
+                    }
+                  ],
+                  "combinator": "and"
+                }
+              },
+              {
+                "renameOutput": true,
+                "outputKey": "diff",
+                "conditions": {
+                  "options": {
+                    "caseSensitive": false,
+                    "leftValue": "",
+                    "typeValidation": "strict"
+                  },
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $('Receive PR read request').item.json.view }}",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals"
+                      },
+                      "rightValue": "diff"
+                    }
+                  ],
+                  "combinator": "and"
+                }
+              },
+              {
+                "renameOutput": true,
+                "outputKey": "patch",
+                "conditions": {
+                  "options": {
+                    "caseSensitive": false,
+                    "leftValue": "",
+                    "typeValidation": "strict"
+                  },
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $('Receive PR read request').item.json.view }}",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals"
+                      },
+                      "rightValue": "patch"
+                    }
+                  ],
+                  "combinator": "and"
+                }
+              },
+              {
+                "renameOutput": true,
+                "outputKey": "reviews",
+                "conditions": {
+                  "options": {
+                    "caseSensitive": false,
+                    "leftValue": "",
+                    "typeValidation": "strict"
+                  },
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $('Receive PR read request').item.json.view }}",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals"
+                      },
+                      "rightValue": "reviews"
+                    }
+                  ],
+                  "combinator": "and"
+                }
+              }
+            ]
+          },
+          "options": {
+            "fallbackOutput": "extra",
+            "renameFallbackOutput": "unsupported"
+          }
+        }
+      },
+      {
+        "id": "ceee80e1-3f21-4931-a8a0-dfd4bf1c26c1",
+        "name": "Get pull request",
+        "type": "n8n-nodes-base.github",
+        "typeVersion": 1.1,
+        "position": [
+          560,
+          -240
+        ],
+        "parameters": {
+          "authentication": "oAuth2",
+          "resource": "pullRequest",
+          "operation": "get",
+          "owner": {
+            "__rl": true,
+            "mode": "name",
+            "value": "={{ $('Receive PR read request').item.json.owner }}"
+          },
+          "repository": {
+            "__rl": true,
+            "mode": "name",
+            "value": "={{ $('Receive PR read request').item.json.repository }}"
+          },
+          "pullRequestNumber": "={{ $('Receive PR read request').item.json.pull_request_number }}"
+        },
+        "credentials": {
+          "githubOAuth2Api": {
+            "id": "stt7O3UtIsjdKCqg",
+            "name": "NTLx"
+          }
+        },
+        "webhookId": "12305d66-31e8-4092-9ea5-66f6b8715e11"
+      },
+      {
+        "id": "accd08b6-e134-4468-959c-99c7b00c6d3d",
+        "name": "Get pull request diff",
+        "type": "n8n-nodes-base.github",
+        "typeVersion": 1.1,
+        "position": [
+          560,
+          -80
+        ],
+        "parameters": {
+          "authentication": "oAuth2",
+          "resource": "pullRequest",
+          "operation": "getDiff",
+          "owner": {
+            "__rl": true,
+            "mode": "name",
+            "value": "={{ $('Receive PR read request').item.json.owner }}"
+          },
+          "repository": {
+            "__rl": true,
+            "mode": "name",
+            "value": "={{ $('Receive PR read request').item.json.repository }}"
+          },
+          "pullRequestNumber": "={{ $('Receive PR read request').item.json.pull_request_number }}"
+        },
+        "credentials": {
+          "githubOAuth2Api": {
+            "id": "stt7O3UtIsjdKCqg",
+            "name": "NTLx"
+          }
+        },
+        "webhookId": "3bc399ac-bb08-4896-ae13-40def8d8c674"
+      },
+      {
+        "id": "483b6992-9d41-4245-8612-166d87419940",
+        "name": "Get pull request patch",
+        "type": "n8n-nodes-base.github",
+        "typeVersion": 1.1,
+        "position": [
+          560,
+          80
+        ],
+        "parameters": {
+          "authentication": "oAuth2",
+          "resource": "pullRequest",
+          "operation": "getPatch",
+          "owner": {
+            "__rl": true,
+            "mode": "name",
+            "value": "={{ $('Receive PR read request').item.json.owner }}"
+          },
+          "repository": {
+            "__rl": true,
+            "mode": "name",
+            "value": "={{ $('Receive PR read request').item.json.repository }}"
+          },
+          "pullRequestNumber": "={{ $('Receive PR read request').item.json.pull_request_number }}"
+        },
+        "credentials": {
+          "githubOAuth2Api": {
+            "id": "stt7O3UtIsjdKCqg",
+            "name": "NTLx"
+          }
+        },
+        "webhookId": "c5ed0e56-532e-41fd-96bb-c84e14afeab4"
+      },
+      {
+        "id": "6b2a7672-cb4a-47e2-b30d-c8b502320c4f",
+        "name": "Get pull request reviews",
+        "type": "n8n-nodes-base.github",
+        "typeVersion": 1.1,
+        "position": [
+          560,
+          240
+        ],
+        "parameters": {
+          "authentication": "oAuth2",
+          "resource": "review",
+          "operation": "getAll",
+          "owner": {
+            "__rl": true,
+            "mode": "name",
+            "value": "={{ $('Receive PR read request').item.json.owner }}"
+          },
+          "repository": {
+            "__rl": true,
+            "mode": "name",
+            "value": "={{ $('Receive PR read request').item.json.repository }}"
+          },
+          "pullRequestNumber": "={{ $('Receive PR read request').item.json.pull_request_number }}",
+          "returnAll": true
+        },
+        "credentials": {
+          "githubOAuth2Api": {
+            "id": "stt7O3UtIsjdKCqg",
+            "name": "NTLx"
+          }
+        },
+        "webhookId": "e22b7a06-3c75-4861-98bd-14ca110e4e90"
+      },
+      {
+        "id": "51c4d506-872a-4de5-9087-fc70420dc431",
+        "name": "Return unsupported view",
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.5,
+        "position": [
+          560,
+          400
+        ],
+        "parameters": {
+          "mode": "manual",
+          "assignments": {
+            "assignments": [
+              {
+                "id": "ok",
+                "name": "ok",
+                "type": "boolean",
+                "value": false
+              },
+              {
+                "id": "error",
+                "name": "error",
+                "type": "string",
+                "value": "unsupported_view"
+              },
+              {
+                "id": "supported",
+                "name": "supported",
+                "type": "array",
+                "value": "={{ ['metadata','diff','patch','reviews'] }}"
+              }
+            ]
+          },
+          "includeOtherFields": false
+        }
+      }
+    ],
+    "connections": {
+      "Receive PR read request": {
+        "main": [
+          [
+            {
+              "node": "Route PR read view",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Route PR read view": {
+        "main": [
+          [
+            {
+              "node": "Get pull request",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Get pull request diff",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Get pull request patch",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Get pull request reviews",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Return unsupported view",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "nodeGroups": [],
+    "authors": "Administrator NTLx (via MCP)",
+    "name": "Initial native PR reader",
+    "description": "Adds a typed sub-workflow contract and routes metadata/diff/patch/review reads through native GitHub nodes only.",
+    "autosaved": false,
+    "createdAt": "2026-10-28T15:39:40.943Z",
+    "updatedAt": "2026-10-28T15:39:40.943Z"
+  }
+}
