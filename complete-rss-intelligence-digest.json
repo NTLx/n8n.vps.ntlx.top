@@ -2,11 +2,11 @@
   "id": "bSFpuTgbGCGVJTku",
   "name": "Complete RSS intelligence digest",
   "active": true,
-  "activeVersionId": "665e823d-4f88-4b02-bb22-bab7039c6cb9",
+  "activeVersionId": "20b2635d-67c0-44aa-af8c-cef6920ae9bc",
   "createdAt": "2026-10-22T16:43:08.721Z",
-  "updatedAt": "2026-10-22T16:46:32.632Z",
+  "updatedAt": "2026-10-28T01:51:38.130Z",
   "isArchived": false,
-  "versionId": "665e823d-4f88-4b02-bb22-bab7039c6cb9",
+  "versionId": "20b2635d-67c0-44aa-af8c-cef6920ae9bc",
   "triggerCount": 1,
   "nodes": [
     {
@@ -178,7 +178,7 @@
             "description": "={{ $('Complete RSS Digest').item.json.body.summary || 'Daily RSS intelligence digest completed.' }}",
             "status": "completed",
             "url": "={{ $('Complete RSS Digest').item.json.body.report_ref || '' }}",
-            "metadata_object": "={{ ({ digest_id: $('Complete RSS Digest').item.json.body.digest_id, item_count: Number($('Complete RSS Digest').item.json.body.item_count || 0), ingestion_table: 'rss_intelligence_items' }).toJsonString() }}",
+            "metadata_object": "={{ (() => { const b = $('Complete RSS Digest').item.json.body || {}; const ids = Array.isArray(b.canonical_candidate_event_ids) ? b.canonical_candidate_event_ids.map(String) : []; return ({ architecture_version: 3, digest_id: b.digest_id, item_count: Number(b.item_count || 0), ingestion_table: 'rss_intelligence_items', canonical_candidate_event_ids: ids, canonical_candidate_count: Number(b.canonical_candidate_count ?? ids.length), candidate_carrier: 'work_events:intelligence.candidate.canonicalized' }).toJsonString(); })() }}",
             "correlation_id": "={{ $('Complete RSS Digest').item.json.body.digest_id }}"
           },
           "schema": [
@@ -432,7 +432,7 @@
     }
   ],
   "activeVersion": {
-    "versionId": "665e823d-4f88-4b02-bb22-bab7039c6cb9",
+    "versionId": "20b2635d-67c0-44aa-af8c-cef6920ae9bc",
     "workflowId": "bSFpuTgbGCGVJTku",
     "nodes": [
       {
@@ -604,7 +604,7 @@
               "description": "={{ $('Complete RSS Digest').item.json.body.summary || 'Daily RSS intelligence digest completed.' }}",
               "status": "completed",
               "url": "={{ $('Complete RSS Digest').item.json.body.report_ref || '' }}",
-              "metadata_object": "={{ ({ digest_id: $('Complete RSS Digest').item.json.body.digest_id, item_count: Number($('Complete RSS Digest').item.json.body.item_count || 0), ingestion_table: 'rss_intelligence_items' }).toJsonString() }}",
+              "metadata_object": "={{ (() => { const b = $('Complete RSS Digest').item.json.body || {}; const ids = Array.isArray(b.canonical_candidate_event_ids) ? b.canonical_candidate_event_ids.map(String) : []; return ({ architecture_version: 3, digest_id: b.digest_id, item_count: Number(b.item_count || 0), ingestion_table: 'rss_intelligence_items', canonical_candidate_event_ids: ids, canonical_candidate_count: Number(b.canonical_candidate_count ?? ids.length), candidate_carrier: 'work_events:intelligence.candidate.canonicalized' }).toJsonString(); })() }}",
               "correlation_id": "={{ $('Complete RSS Digest').item.json.body.digest_id }}"
             },
             "schema": [
@@ -806,10 +806,10 @@
     },
     "nodeGroups": [],
     "authors": "Administrator NTLx (via MCP)",
-    "name": "Complete only claimed RSS batch",
-    "description": "Tighten digest completion so it processes only rows already claimed as processing for the same digest_id. New rows arriving after the claim remain for the next digest.",
+    "name": "Link canonical candidate events",
+    "description": "Keep RSS completion deterministic while persisting references to Daily canonical candidate events in the digest Event metadata; no sidecar or GitHub artifact is used.",
     "autosaved": false,
-    "createdAt": "2026-10-22T16:46:32.635Z",
-    "updatedAt": "2026-10-22T16:46:32.635Z"
+    "createdAt": "2026-10-28T01:51:38.132Z",
+    "updatedAt": "2026-10-28T01:51:38.132Z"
   }
 }
