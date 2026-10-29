@@ -2,11 +2,11 @@
   "id": "v9uNa6L8uLq2v0un",
   "name": "Schedule knowledge promotion review",
   "active": true,
-  "activeVersionId": "bf8c8298-ef90-4b4c-b8ef-28d59e55c4dc",
+  "activeVersionId": "3209c498-687b-4356-89ff-3fc9a1144928",
   "createdAt": "2026-10-23T15:44:54.531Z",
-  "updatedAt": "2026-10-25T12:31:11.352Z",
+  "updatedAt": "2026-10-28T01:51:04.194Z",
   "isArchived": false,
-  "versionId": "bf8c8298-ef90-4b4c-b8ef-28d59e55c4dc",
+  "versionId": "3209c498-687b-4356-89ff-3fc9a1144928",
   "triggerCount": 1,
   "nodes": [
     {
@@ -139,7 +139,7 @@
               "id": "summary",
               "name": "summary",
               "type": "string",
-              "value": "Review the last 7 days of already-processed Daily intelligence, decide what deserves durable retention, and enqueue bounded Hourly wiki execution work."
+              "value": "Review the last 7 days of structured canonical candidate events and current reliable evidence; resolve bounded evidence gaps directly in Weekly, decide promote/research_needed/ignore, and emit per-promotion manifests for Hourly wiki_compile only."
             },
             {
               "id": "not-before",
@@ -187,7 +187,7 @@
               "id": "event-description",
               "name": "event_description",
               "type": "string",
-              "value": "Weekly is the promotion gate over already-processed intelligence; repository-side integration is executed separately as Hourly wiki work."
+              "value": "Weekly is the only Promotion Gate. It consumes structured canonical candidate lineage from work_events, performs bounded evidence-gap resolution in ChatGPT, and creates Hourly wiki_compile work only for promoted knowledge."
             },
             {
               "id": "event-status",
@@ -205,7 +205,7 @@
               "id": "event-meta",
               "name": "event_metadata_object",
               "type": "string",
-              "value": "={{ ({ architecture_version: 2, window_days: 7, sources: ['NTLx/daily-artifacts:tech-intel-json','NTLx/daily-artifacts:github-trends-json','work_events'], worker: 'weekly', execution_worker: 'hourly', target: 'agentic-work-atlas', max_promotion_candidates: 3, decisions: ['promote','research_needed','ignore'], principle: 'weekly_decides_hourly_executes' }).toJsonString() }}"
+              "value": "={{ ({ architecture_version: 3, window_days: 7, sources: ['work_events:intelligence.candidate.canonicalized','rss_intelligence_items','daily_digest_events','current_primary_evidence','llm_wiki_current_state'], worker: 'weekly', integration_worker: 'hourly', target: 'agentic-work-atlas', max_promotion_candidates: 3, decisions: ['promote','research_needed','ignore'], promotion_manifest_carrier: 'work_events.metadata_object', queue_manifest_reference: 'source_event_id', principle: 'daily_discovers_weekly_decides_hourly_integrates_monthly_governs' }).toJsonString() }}"
             }
           ]
         },
@@ -427,24 +427,6 @@
   },
   "tags": [
     {
-      "id": "N6trNzlMuM25fapz",
-      "name": "llm-wiki",
-      "createdAt": "2026-10-22T08:33:58.714Z",
-      "updatedAt": "2026-10-22T08:33:58.714Z"
-    },
-    {
-      "id": "twNsKNALbdWLw0Ox",
-      "name": "automation",
-      "createdAt": "2026-10-22T08:25:54.546Z",
-      "updatedAt": "2026-10-22T08:25:54.546Z"
-    },
-    {
-      "id": "Kmfi1DI0MjIRkwfZ",
-      "name": "deadman-heartbeat",
-      "createdAt": "2026-10-22T16:25:50.145Z",
-      "updatedAt": "2026-10-22T16:25:50.145Z"
-    },
-    {
       "id": "BlGRvaSWqnmTk53i",
       "name": "event-producer",
       "createdAt": "2026-10-22T09:14:35.370Z",
@@ -455,6 +437,24 @@
       "name": "ai-work-producer",
       "createdAt": "2026-10-22T09:14:35.367Z",
       "updatedAt": "2026-10-22T09:14:35.367Z"
+    },
+    {
+      "id": "N6trNzlMuM25fapz",
+      "name": "llm-wiki",
+      "createdAt": "2026-10-22T08:33:58.714Z",
+      "updatedAt": "2026-10-22T08:33:58.714Z"
+    },
+    {
+      "id": "Kmfi1DI0MjIRkwfZ",
+      "name": "deadman-heartbeat",
+      "createdAt": "2026-10-22T16:25:50.145Z",
+      "updatedAt": "2026-10-22T16:25:50.145Z"
+    },
+    {
+      "id": "twNsKNALbdWLw0Ox",
+      "name": "automation",
+      "createdAt": "2026-10-22T08:25:54.546Z",
+      "updatedAt": "2026-10-22T08:25:54.546Z"
     }
   ],
   "shared": [
@@ -467,7 +467,7 @@
     }
   ],
   "activeVersion": {
-    "versionId": "bf8c8298-ef90-4b4c-b8ef-28d59e55c4dc",
+    "versionId": "3209c498-687b-4356-89ff-3fc9a1144928",
     "workflowId": "v9uNa6L8uLq2v0un",
     "nodes": [
       {
@@ -600,7 +600,7 @@
                 "id": "summary",
                 "name": "summary",
                 "type": "string",
-                "value": "Review the last 7 days of already-processed Daily intelligence, decide what deserves durable retention, and enqueue bounded Hourly wiki execution work."
+                "value": "Review the last 7 days of structured canonical candidate events and current reliable evidence; resolve bounded evidence gaps directly in Weekly, decide promote/research_needed/ignore, and emit per-promotion manifests for Hourly wiki_compile only."
               },
               {
                 "id": "not-before",
@@ -648,7 +648,7 @@
                 "id": "event-description",
                 "name": "event_description",
                 "type": "string",
-                "value": "Weekly is the promotion gate over already-processed intelligence; repository-side integration is executed separately as Hourly wiki work."
+                "value": "Weekly is the only Promotion Gate. It consumes structured canonical candidate lineage from work_events, performs bounded evidence-gap resolution in ChatGPT, and creates Hourly wiki_compile work only for promoted knowledge."
               },
               {
                 "id": "event-status",
@@ -666,7 +666,7 @@
                 "id": "event-meta",
                 "name": "event_metadata_object",
                 "type": "string",
-                "value": "={{ ({ architecture_version: 2, window_days: 7, sources: ['NTLx/daily-artifacts:tech-intel-json','NTLx/daily-artifacts:github-trends-json','work_events'], worker: 'weekly', execution_worker: 'hourly', target: 'agentic-work-atlas', max_promotion_candidates: 3, decisions: ['promote','research_needed','ignore'], principle: 'weekly_decides_hourly_executes' }).toJsonString() }}"
+                "value": "={{ ({ architecture_version: 3, window_days: 7, sources: ['work_events:intelligence.candidate.canonicalized','rss_intelligence_items','daily_digest_events','current_primary_evidence','llm_wiki_current_state'], worker: 'weekly', integration_worker: 'hourly', target: 'agentic-work-atlas', max_promotion_candidates: 3, decisions: ['promote','research_needed','ignore'], promotion_manifest_carrier: 'work_events.metadata_object', queue_manifest_reference: 'source_event_id', principle: 'daily_discovers_weekly_decides_hourly_integrates_monthly_governs' }).toJsonString() }}"
               }
             ]
           },
@@ -861,10 +861,10 @@
     },
     "nodeGroups": [],
     "authors": "Administrator NTLx (via MCP)",
-    "name": "Route promotion to Weekly V2",
-    "description": "Align knowledge promotion with the five-Worker architecture. Weekly owns promotion decisions; actual wiki compile/research/maintenance work is delegated to Hourly. Update metadata to architecture_version=2 and prefer machine-readable Daily sidecars.",
+    "name": "Remove sidecar dependency",
+    "description": "Replace GitHub Daily artifact/JSON sidecar sources with work_events canonical candidate lineage and document the four-layer Daily→Weekly→Hourly→Monthly contract.",
     "autosaved": false,
-    "createdAt": "2026-10-23T16:12:35.476Z",
-    "updatedAt": "2026-10-23T16:12:35.476Z"
+    "createdAt": "2026-10-28T01:51:04.197Z",
+    "updatedAt": "2026-10-28T01:51:04.197Z"
   }
 }
