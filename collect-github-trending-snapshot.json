@@ -1,0 +1,822 @@
+{
+  "id": "jtnPp8Zj1CaasiRk",
+  "name": "Collect GitHub Trending snapshot",
+  "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-11-01T11:08:19.379Z",
+  "updatedAt": "2026-11-01T11:08:56.525Z",
+  "isArchived": false,
+  "versionId": "b4063354-42f9-4caf-b6e9-715468d12b25",
+  "triggerCount": 0,
+  "nodes": [
+    {
+      "id": "11c4f129-e94f-42d5-a3f5-f868cd3ce98a",
+      "name": "Daily 08:30 Asia/Shanghai",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "days",
+              "daysInterval": 1,
+              "triggerAtHour": 8,
+              "triggerAtMinute": 30
+            }
+          ]
+        },
+        "misfirePolicy": "coalesce",
+        "misfireGraceSeconds": 7200
+      }
+    },
+    {
+      "id": "f7cf3cc1-51e2-49d2-b2b7-77d3b4dae281",
+      "name": "Fetch official GitHub Trending",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        272,
+        320
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "https://github.com/trending?since=daily",
+        "authentication": "none",
+        "sendHeaders": true,
+        "specifyHeaders": "keypair",
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0 Safari/537.36"
+            },
+            {
+              "name": "Accept",
+              "value": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+            },
+            {
+              "name": "Accept-Language",
+              "value": "en-US,en;q=0.9"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": false,
+              "neverError": false,
+              "responseFormat": "text",
+              "outputPropertyName": "data"
+            }
+          },
+          "timeout": 30000
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 4,
+      "waitBetweenTries": 2000,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "id": "f67cc42d-13eb-4339-abbf-d65f0e442456",
+      "name": "Extract trending articles",
+      "type": "n8n-nodes-base.html",
+      "typeVersion": 1.2,
+      "position": [
+        496,
+        176
+      ],
+      "parameters": {
+        "operation": "extractHtmlContent",
+        "sourceData": "json",
+        "extractionValues": {
+          "values": [
+            {
+              "key": "articles",
+              "cssSelector": "article.Box-row",
+              "returnValue": "html",
+              "returnArray": true
+            }
+          ]
+        },
+        "options": {
+          "trimValues": true,
+          "cleanUpText": false
+        }
+      }
+    },
+    {
+      "id": "77acf36b-4425-458a-92e8-0b48d16bcf95",
+      "name": "Official snapshot usable?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.4,
+      "position": [
+        720,
+        176
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ Array.isArray($json.articles) && $json.articles.length >= 3 }}",
+              "operator": {
+                "type": "boolean",
+                "operation": "isTrue"
+              },
+              "rightValue": true
+            }
+          ],
+          "combinator": "and"
+        }
+      }
+    },
+    {
+      "id": "458b7e2e-3e39-4a39-b1db-0862424148bd",
+      "name": "Split official articles",
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1.1,
+      "position": [
+        1168,
+        128
+      ],
+      "parameters": {
+        "fieldToSplitOut": "articles",
+        "include": "noOtherFields",
+        "options": {
+          "destinationFieldName": "data"
+        }
+      }
+    },
+    {
+      "id": "712d78cc-7a15-4f69-91f7-dc10535e52c5",
+      "name": "Parse official article",
+      "type": "n8n-nodes-base.html",
+      "typeVersion": 1.2,
+      "position": [
+        1392,
+        128
+      ],
+      "parameters": {
+        "operation": "extractHtmlContent",
+        "sourceData": "json",
+        "extractionValues": {
+          "values": [
+            {
+              "key": "repoPath",
+              "cssSelector": "h2 a",
+              "returnValue": "attribute",
+              "attribute": "href",
+              "returnArray": false
+            },
+            {
+              "key": "description",
+              "cssSelector": "p.col-9",
+              "returnValue": "text",
+              "returnArray": false
+            },
+            {
+              "key": "language",
+              "cssSelector": "span[itemprop=\"programmingLanguage\"]",
+              "returnValue": "text",
+              "returnArray": false
+            },
+            {
+              "key": "starsText",
+              "cssSelector": "a[href$=\"/stargazers\"]",
+              "returnValue": "text",
+              "returnArray": false
+            },
+            {
+              "key": "forksText",
+              "cssSelector": "a[href$=\"/forks\"]",
+              "returnValue": "text",
+              "returnArray": false
+            },
+            {
+              "key": "addedStarsLabel",
+              "cssSelector": "span.float-sm-right",
+              "returnValue": "text",
+              "returnArray": false
+            }
+          ]
+        },
+        "options": {
+          "trimValues": true,
+          "cleanUpText": true
+        }
+      }
+    },
+    {
+      "id": "2c4c4994-a149-414f-be4e-d7c1bdaafd2e",
+      "name": "Normalize official snapshot",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        1616,
+        128
+      ],
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "snapshotKey",
+              "name": "snapshotKey",
+              "value": "={{ 'daily:all:' + $now.setZone('Asia/Shanghai').toFormat('yyyy-MM-dd') + ':' + ($json.repoPath || '').replace(/^\\//, '').trim() }}",
+              "type": "string"
+            },
+            {
+              "id": "snapshotDate",
+              "name": "snapshotDate",
+              "value": "={{ $now.setZone('Asia/Shanghai').toFormat('yyyy-MM-dd') }}",
+              "type": "string"
+            },
+            {
+              "id": "period",
+              "name": "period",
+              "value": "daily",
+              "type": "string"
+            },
+            {
+              "id": "languageScope",
+              "name": "languageScope",
+              "value": "all",
+              "type": "string"
+            },
+            {
+              "id": "rank",
+              "name": "rank",
+              "value": "={{ $itemIndex + 1 }}",
+              "type": "number"
+            },
+            {
+              "id": "repoFullName",
+              "name": "repoFullName",
+              "value": "={{ ($json.repoPath || '').replace(/^\\//, '').trim() }}",
+              "type": "string"
+            },
+            {
+              "id": "repoUrl",
+              "name": "repoUrl",
+              "value": "={{ 'https://github.com' + ($json.repoPath || '') }}",
+              "type": "string"
+            },
+            {
+              "id": "description",
+              "name": "description",
+              "value": "={{ $json.description || '' }}",
+              "type": "string"
+            },
+            {
+              "id": "language",
+              "name": "language",
+              "value": "={{ $json.language || '' }}",
+              "type": "string"
+            },
+            {
+              "id": "stars",
+              "name": "stars",
+              "value": "={{ Number(($json.starsText || '0').replace(/[^0-9]/g, '')) || 0 }}",
+              "type": "number"
+            },
+            {
+              "id": "forks",
+              "name": "forks",
+              "value": "={{ Number(($json.forksText || '0').replace(/[^0-9]/g, '')) || 0 }}",
+              "type": "number"
+            },
+            {
+              "id": "addedStars",
+              "name": "addedStars",
+              "value": "={{ Number(($json.addedStarsLabel || '0').replace(/[^0-9]/g, '')) || 0 }}",
+              "type": "number"
+            },
+            {
+              "id": "source",
+              "name": "source",
+              "value": "github_trending_html",
+              "type": "string"
+            },
+            {
+              "id": "sourceAuthority",
+              "name": "sourceAuthority",
+              "value": "direct_official",
+              "type": "string"
+            },
+            {
+              "id": "sourceUrl",
+              "name": "sourceUrl",
+              "value": "https://github.com/trending?since=daily",
+              "type": "string"
+            },
+            {
+              "id": "sourcePublishedAt",
+              "name": "sourcePublishedAt",
+              "value": "={{ $now.toISO() }}",
+              "type": "string"
+            },
+            {
+              "id": "collectedAt",
+              "name": "collectedAt",
+              "value": "={{ $now.toISO() }}",
+              "type": "string"
+            },
+            {
+              "id": "freshnessStatus",
+              "name": "freshnessStatus",
+              "value": "fresh",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": false
+      }
+    },
+    {
+      "id": "07c8759b-9a0f-46e6-a265-6a0c26ae0cbb",
+      "name": "Upsert snapshot rows",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        1840,
+        224
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "upsert",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "AwcdYhHYyBN2tlR9",
+          "cachedResultName": "github_trending_snapshots"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "snapshotKey",
+              "condition": "eq",
+              "keyValue": "={{ $json.snapshotKey }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": null
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "cc423f69-0430-4990-b4b0-5be05f762992",
+      "name": "Fetch mirror snapshot",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        944,
+        416
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "https://raw.githubusercontent.com/hanishrao/trending-collection/main/api/daily/all.json",
+        "authentication": "none",
+        "sendHeaders": true,
+        "specifyHeaders": "keypair",
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/json"
+            },
+            {
+              "name": "User-Agent",
+              "value": "n8n-github-trending-collector/1.0"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": false,
+              "neverError": false,
+              "responseFormat": "json"
+            }
+          },
+          "timeout": 30000
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 4,
+      "waitBetweenTries": 2000
+    },
+    {
+      "id": "25ee73a6-ebb6-4c5c-b296-15f7c5a05d10",
+      "name": "Mirror snapshot usable?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.4,
+      "position": [
+        1168,
+        416
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ !!$json.pubDate && Array.isArray($json.items) && $json.items.length >= 3 && (Date.now() - new Date($json.pubDate).getTime()) <= 86400000 }}",
+              "operator": {
+                "type": "boolean",
+                "operation": "isTrue"
+              },
+              "rightValue": true
+            }
+          ],
+          "combinator": "and"
+        }
+      }
+    },
+    {
+      "id": "5e55d79c-26c3-4174-8ccf-862f9dbccb4a",
+      "name": "Split mirror items",
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1.1,
+      "position": [
+        1392,
+        320
+      ],
+      "parameters": {
+        "fieldToSplitOut": "items",
+        "include": "selectedOtherFields",
+        "fieldsToInclude": "pubDate",
+        "options": {
+          "destinationFieldName": "item"
+        }
+      }
+    },
+    {
+      "id": "6d16e2d3-2af4-41cc-ae5d-b3041c7bfa9b",
+      "name": "Normalize mirror snapshot",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        1616,
+        320
+      ],
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "snapshotKey",
+              "name": "snapshotKey",
+              "value": "={{ 'daily:all:' + new Date($json.pubDate).toLocaleDateString('en-CA', { timeZone: 'Asia/Shanghai' }) + ':' + ($json.item.url || '').replace('https://github.com/', '').replace(/\\/$/, '') }}",
+              "type": "string"
+            },
+            {
+              "id": "snapshotDate",
+              "name": "snapshotDate",
+              "value": "={{ new Date($json.pubDate).toLocaleDateString('en-CA', { timeZone: 'Asia/Shanghai' }) }}",
+              "type": "string"
+            },
+            {
+              "id": "period",
+              "name": "period",
+              "value": "daily",
+              "type": "string"
+            },
+            {
+              "id": "languageScope",
+              "name": "languageScope",
+              "value": "all",
+              "type": "string"
+            },
+            {
+              "id": "rank",
+              "name": "rank",
+              "value": "={{ $itemIndex + 1 }}",
+              "type": "number"
+            },
+            {
+              "id": "repoFullName",
+              "name": "repoFullName",
+              "value": "={{ ($json.item.url || '').replace('https://github.com/', '').replace(/\\/$/, '') }}",
+              "type": "string"
+            },
+            {
+              "id": "repoUrl",
+              "name": "repoUrl",
+              "value": "={{ $json.item.url || '' }}",
+              "type": "string"
+            },
+            {
+              "id": "description",
+              "name": "description",
+              "value": "={{ $json.item.description || '' }}",
+              "type": "string"
+            },
+            {
+              "id": "language",
+              "name": "language",
+              "value": "={{ $json.item.language || '' }}",
+              "type": "string"
+            },
+            {
+              "id": "stars",
+              "name": "stars",
+              "value": "={{ Number($json.item.stars || 0) || 0 }}",
+              "type": "number"
+            },
+            {
+              "id": "forks",
+              "name": "forks",
+              "value": "={{ Number($json.item.forks || 0) || 0 }}",
+              "type": "number"
+            },
+            {
+              "id": "addedStars",
+              "name": "addedStars",
+              "value": "={{ Number(String($json.item.added_stars || '0').replace(/[^0-9]/g, '')) || 0 }}",
+              "type": "number"
+            },
+            {
+              "id": "source",
+              "name": "source",
+              "value": "hanishrao_trending_collection",
+              "type": "string"
+            },
+            {
+              "id": "sourceAuthority",
+              "name": "sourceAuthority",
+              "value": "mirror_of_official",
+              "type": "string"
+            },
+            {
+              "id": "sourceUrl",
+              "name": "sourceUrl",
+              "value": "https://github.com/hanishrao/trending-collection/blob/main/api/daily/all.json",
+              "type": "string"
+            },
+            {
+              "id": "sourcePublishedAt",
+              "name": "sourcePublishedAt",
+              "value": "={{ new Date($json.pubDate).toISOString() }}",
+              "type": "string"
+            },
+            {
+              "id": "collectedAt",
+              "name": "collectedAt",
+              "value": "={{ $now.toISO() }}",
+              "type": "string"
+            },
+            {
+              "id": "freshnessStatus",
+              "name": "freshnessStatus",
+              "value": "={{ (Date.now() - new Date($json.pubDate).getTime()) <= 21600000 ? 'fresh' : 'stale' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": false
+      }
+    },
+    {
+      "id": "6c51b401-2f5e-4124-a991-9d4e59f9c1fc",
+      "name": "Reject stale mirror",
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        1392,
+        512
+      ],
+      "parameters": {
+        "errorType": "errorMessage",
+        "errorMessage": "GitHub Trending mirror is stale, malformed, or missing pubDate/items; no trustworthy official snapshot is available."
+      }
+    }
+  ],
+  "connections": {
+    "Daily 08:30 Asia/Shanghai": {
+      "main": [
+        [
+          {
+            "node": "Fetch official GitHub Trending",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch official GitHub Trending": {
+      "main": [
+        [
+          {
+            "node": "Extract trending articles",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Fetch mirror snapshot",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract trending articles": {
+      "main": [
+        [
+          {
+            "node": "Official snapshot usable?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Official snapshot usable?": {
+      "main": [
+        [
+          {
+            "node": "Split official articles",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Fetch mirror snapshot",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split official articles": {
+      "main": [
+        [
+          {
+            "node": "Parse official article",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse official article": {
+      "main": [
+        [
+          {
+            "node": "Normalize official snapshot",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize official snapshot": {
+      "main": [
+        [
+          {
+            "node": "Upsert snapshot rows",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch mirror snapshot": {
+      "main": [
+        [
+          {
+            "node": "Mirror snapshot usable?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mirror snapshot usable?": {
+      "main": [
+        [
+          {
+            "node": "Split mirror items",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Reject stale mirror",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split mirror items": {
+      "main": [
+        [
+          {
+            "node": "Normalize mirror snapshot",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize mirror snapshot": {
+      "main": [
+        [
+          {
+            "node": "Upsert snapshot rows",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [
+    {
+      "id": "c3ff6c13-5e78-4ac9-be6a-84cdeadacfad",
+      "name": "Acquire and persist Trending snapshot",
+      "nodeIds": [
+        "f7cf3cc1-51e2-49d2-b2b7-77d3b4dae281",
+        "f67cc42d-13eb-4339-abbf-d65f0e442456",
+        "77acf36b-4425-458a-92e8-0b48d16bcf95",
+        "458b7e2e-3e39-4a39-b1db-0862424148bd",
+        "712d78cc-7a15-4f69-91f7-dc10535e52c5",
+        "2c4c4994-a149-414f-be4e-d7c1bdaafd2e",
+        "cc423f69-0430-4990-b4b0-5be05f762992",
+        "25ee73a6-ebb6-4c5c-b296-15f7c5a05d10",
+        "5e55d79c-26c3-4174-8ccf-862f9dbccb4a",
+        "6d16e2d3-2af4-41cc-ae5d-b3041c7bfa9b",
+        "6c51b401-2f5e-4124-a991-9d4e59f9c1fc",
+        "07c8759b-9a0f-46e6-a265-6a0c26ae0cbb"
+      ],
+      "description": "Direct GitHub Trending first; fresh mirror only as fallback; normalized rows are idempotently persisted for Daily."
+    }
+  ],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true,
+    "errorWorkflow": "3LE3BnPfHSuIZCVR",
+    "timezone": "Asia/Shanghai",
+    "saveExecutionProgress": false,
+    "saveManualExecutions": true,
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [
+    {
+      "id": "ZB1OFuryVXrNRjEy",
+      "name": "github",
+      "createdAt": "2026-10-23T02:30:52.063Z",
+      "updatedAt": "2026-10-23T02:30:52.063Z"
+    },
+    {
+      "id": "YwjTMUhE83IXTCRg",
+      "name": "monitoring",
+      "createdAt": "2026-10-22T08:38:34.124Z",
+      "updatedAt": "2026-10-22T08:38:34.124Z"
+    },
+    {
+      "id": "twNsKNALbdWLw0Ox",
+      "name": "automation",
+      "createdAt": "2026-10-22T08:25:54.546Z",
+      "updatedAt": "2026-10-22T08:25:54.546Z"
+    }
+  ],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "jtnPp8Zj1CaasiRk",
+      "projectId": "cNMj0K6AdJmi0OAZ",
+      "createdAt": "2026-11-01T11:08:19.379Z",
+      "updatedAt": "2026-11-01T11:08:19.379Z"
+    }
+  ],
+  "activeVersion": null
+}
