@@ -387,12 +387,6 @@
   },
   "tags": [
     {
-      "id": "oohNAesAevHoxzJB",
-      "name": "deadman",
-      "createdAt": "2026-10-22T16:27:37.208Z",
-      "updatedAt": "2026-10-22T16:27:37.208Z"
-    },
-    {
       "id": "YwjTMUhE83IXTCRg",
       "name": "monitoring",
       "createdAt": "2026-10-22T08:38:34.124Z",
@@ -405,16 +399,22 @@
       "updatedAt": "2026-10-22T08:25:54.546Z"
     },
     {
+      "id": "9jw9Bhya2Ylf8E4D",
+      "name": "ai-work-producer",
+      "createdAt": "2026-10-22T09:14:35.367Z",
+      "updatedAt": "2026-10-22T09:14:35.367Z"
+    },
+    {
       "id": "fKoxhQDd26tREjYf",
       "name": "infrastructure",
       "createdAt": "2026-10-22T16:21:02.698Z",
       "updatedAt": "2026-10-22T16:21:02.698Z"
     },
     {
-      "id": "9jw9Bhya2Ylf8E4D",
-      "name": "ai-work-producer",
-      "createdAt": "2026-10-22T09:14:35.367Z",
-      "updatedAt": "2026-10-22T09:14:35.367Z"
+      "id": "oohNAesAevHoxzJB",
+      "name": "deadman",
+      "createdAt": "2026-10-22T16:27:37.208Z",
+      "updatedAt": "2026-10-22T16:27:37.208Z"
     }
   ],
   "shared": [
