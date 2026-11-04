@@ -1,0 +1,2181 @@
+{
+  "id": "OHJmwUsGO9c1imI4",
+  "name": "Dispatch ChatGPT internal commands",
+  "active": true,
+  "activeVersionId": "b12d8d60-b11f-43fc-ab2a-64c011443cfc",
+  "createdAt": "2026-11-03T12:02:28.085Z",
+  "updatedAt": "2026-11-03T12:02:40.839Z",
+  "isArchived": false,
+  "versionId": "b12d8d60-b11f-43fc-ab2a-64c011443cfc",
+  "triggerCount": 1,
+  "nodes": [
+    {
+      "id": "72524e26-95fe-46d0-8787-2b4d892dc4ec",
+      "name": "Poll ChatGPT Internal Commands",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        300
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 5
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "cf0c7550-81da-4189-b7a8-d3149c77e52e",
+      "name": "Get Pending Commands",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        240,
+        300
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "chatgpt_internal_commands"
+        },
+        "matchType": "anyCondition",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "status",
+              "condition": "eq",
+              "keyValue": "pending"
+            },
+            {
+              "keyName": "status",
+              "condition": "eq",
+              "keyValue": "processing"
+            }
+          ]
+        },
+        "returnAll": false,
+        "limit": 20,
+        "orderBy": true,
+        "orderByColumn": "createdAt",
+        "orderByDirection": "ASC"
+      }
+    },
+    {
+      "id": "cbc7894f-4612-4ec9-a9c4-bac12e52e26f",
+      "name": "Select Eligible Command",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        480,
+        300
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const now=Date.now();const retryMs=15*60*1000;const rows=$input.all().map(i=>i.json);const eligible=rows.filter(r=>{if(r.status==='pending')return true;if(r.status!=='processing')return false;const claimed=r.claimedAt?Date.parse(r.claimedAt):0;return !claimed||(now-claimed)>=retryMs;}).sort((a,b)=>String(a.createdAt||'').localeCompare(String(b.createdAt||'')));if(!eligible.length)return [];const row=eligible[0];let payload={};let validationError='';try{payload=JSON.parse(String(row.payloadJson||'{}'));if(!payload||Array.isArray(payload)||typeof payload!=='object')throw new Error('payload must be a JSON object');}catch(e){validationError='invalid payloadJson: '+String(e.message||e);}return [{json:{...row,payload,validationError}}];"
+      }
+    },
+    {
+      "id": "cd49c9d1-e78d-4dbd-bea0-bce4c7f8526a",
+      "name": "Mark Command Processing",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        720,
+        300
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "chatgpt_internal_commands"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "commandId",
+              "condition": "eq",
+              "keyValue": "={{ $('Select Eligible Command').item.json.commandId }}"
+            },
+            {
+              "keyName": "status",
+              "condition": "eq",
+              "keyValue": "={{ $('Select Eligible Command').item.json.status }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "status": "processing",
+            "claimedAt": "={{ $now.toISO() }}",
+            "error": ""
+          },
+          "schema": [
+            {
+              "id": "status",
+              "displayName": "status",
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "claimedAt",
+              "displayName": "claimedAt",
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "completedAt",
+              "displayName": "completedAt",
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "resultJson",
+              "displayName": "resultJson",
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "error",
+              "displayName": "error",
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "86d91c8d-67b6-48da-a58d-df4e80aa4019",
+      "name": "Route Command",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        960,
+        300
+      ],
+      "parameters": {
+        "mode": "expression",
+        "numberOutputs": 5,
+        "output": "={{ (()=>{const c=$('Select Eligible Command').item.json;if(c.validationError)return 4;return ({work_event:0,rss_complete:1,discord_markdown:2,rss_claim:3})[String(c.commandType)]??4;})() }}",
+        "looseTypeValidation": false
+      }
+    },
+    {
+      "id": "7e6fbdd3-6555-4f14-8387-1676c18b7c53",
+      "name": "Upsert Work Event",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        1240,
+        40
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "upsert",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "work_events"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "event_id",
+              "condition": "eq",
+              "keyValue": "={{ $('Select Eligible Command').item.json.payload.event_id }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "event_id": "={{ $('Select Eligible Command').item.json.payload.event_id }}",
+            "occurred_at": "={{ $('Select Eligible Command').item.json.payload.occurred_at }}",
+            "source": "={{ $('Select Eligible Command').item.json.payload.source }}",
+            "project": "={{ $('Select Eligible Command').item.json.payload.project||'' }}",
+            "category": "={{ $('Select Eligible Command').item.json.payload.category||'' }}",
+            "title": "={{ $('Select Eligible Command').item.json.payload.title }}",
+            "description": "={{ $('Select Eligible Command').item.json.payload.description||'' }}",
+            "status": "={{ $('Select Eligible Command').item.json.payload.status||'completed' }}",
+            "url": "={{ $('Select Eligible Command').item.json.payload.url||'' }}",
+            "metadata_object": "={{ (()=>{const p=$('Select Eligible Command').item.json.payload;return typeof p.metadata_object==='string'?p.metadata_object:(p.metadata_object??p.metadata??{}).toJsonString();})() }}",
+            "correlation_id": "={{ $('Select Eligible Command').item.json.payload.correlation_id||'' }}"
+          },
+          "schema": [
+            {
+              "id": "event_id",
+              "displayName": "event_id",
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "occurred_at",
+              "displayName": "occurred_at",
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "source",
+              "displayName": "source",
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "project",
+              "displayName": "project",
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "category",
+              "displayName": "category",
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "title",
+              "displayName": "title",
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "description",
+              "displayName": "description",
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "url",
+              "displayName": "url",
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "metadata_object",
+              "displayName": "metadata_object",
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "correlation_id",
+              "displayName": "correlation_id",
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "ca33ae2a-8558-40ee-aa97-9c531e62cce3",
+      "name": "Prepare Work Event Result",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1500,
+        40
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const p=$('Select Eligible Command').first().json.payload;return [{json:{result:{ok:true,type:'work_event',event_id:p.event_id}}}];"
+      }
+    },
+    {
+      "id": "0477f54e-51ad-4625-a34a-7c60c5ad0ec7",
+      "name": "Mark Command Completed",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        2040,
+        300
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "chatgpt_internal_commands"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "commandId",
+              "condition": "eq",
+              "keyValue": "={{ $('Select Eligible Command').item.json.commandId }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "status": "completed",
+            "completedAt": "={{ $now.toISO() }}",
+            "resultJson": "={{ $json.result.toJsonString() }}",
+            "error": ""
+          },
+          "schema": [
+            {
+              "id": "status",
+              "displayName": "status",
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "claimedAt",
+              "displayName": "claimedAt",
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "completedAt",
+              "displayName": "completedAt",
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "resultJson",
+              "displayName": "resultJson",
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "error",
+              "displayName": "error",
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "e4af2fdc-5328-448d-90a4-cee0036fc8fd",
+      "name": "Mark RSS Items Processed",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        1240,
+        200
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "rss_intelligence_items"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "status",
+              "condition": "eq",
+              "keyValue": "processing"
+            },
+            {
+              "keyName": "digest_id",
+              "condition": "eq",
+              "keyValue": "={{ $('Select Eligible Command').item.json.payload.digest_id }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "status": "processed",
+            "digest_id": "={{ $('Select Eligible Command').item.json.payload.digest_id }}",
+            "processed_at": "={{ $now.toISO() }}"
+          },
+          "schema": [
+            {
+              "id": "status",
+              "displayName": "status",
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "digest_id",
+              "displayName": "digest_id",
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "processed_at",
+              "displayName": "processed_at",
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "id": "694cc8ec-009b-4c45-8f59-75c19e76a2aa",
+      "name": "Record RSS Digest Event",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        1500,
+        200
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "upsert",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "work_events"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "event_id",
+              "condition": "eq",
+              "keyValue": "={{ 'rss.digest.completed:'+$('Select Eligible Command').item.json.payload.digest_id }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "event_id": "={{ 'rss.digest.completed:'+$('Select Eligible Command').item.json.payload.digest_id }}",
+            "occurred_at": "={{ $now.toISO() }}",
+            "source": "chatgpt:rss-intelligence",
+            "project": "tech-intelligence",
+            "category": "rss.digest.completed",
+            "title": "={{ $('Select Eligible Command').item.json.payload.title||('RSS Intelligence — '+$('Select Eligible Command').item.json.payload.digest_id) }}",
+            "description": "={{ $('Select Eligible Command').item.json.payload.summary||'Daily RSS intelligence digest completed.' }}",
+            "status": "completed",
+            "url": "={{ $('Select Eligible Command').item.json.payload.report_ref||'' }}",
+            "metadata_object": "={{ (()=>{const b=$('Select Eligible Command').item.json.payload;const ids=Array.isArray(b.canonical_candidate_event_ids)?b.canonical_candidate_event_ids.map(String):[];return ({architecture_version:3,digest_id:b.digest_id,item_count:Number(b.item_count||0),ingestion_table:'rss_intelligence_items',canonical_candidate_event_ids:ids,canonical_candidate_count:Number(b.canonical_candidate_count??ids.length),candidate_carrier:'work_events:intelligence.candidate.canonicalized'}).toJsonString();})() }}",
+            "correlation_id": "={{ $('Select Eligible Command').item.json.payload.digest_id }}"
+          },
+          "schema": [
+            {
+              "id": "event_id",
+              "displayName": "event_id",
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "occurred_at",
+              "displayName": "occurred_at",
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "source",
+              "displayName": "source",
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "project",
+              "displayName": "project",
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "category",
+              "displayName": "category",
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "title",
+              "displayName": "title",
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "description",
+              "displayName": "description",
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "url",
+              "displayName": "url",
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "metadata_object",
+              "displayName": "metadata_object",
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "correlation_id",
+              "displayName": "correlation_id",
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "executeOnce": true
+    },
+    {
+      "id": "868b34cc-ca16-4e34-8746-ddecb2781010",
+      "name": "Prepare RSS Complete Result",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1760,
+        200
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const p=$('Select Eligible Command').first().json.payload;return [{json:{result:{ok:true,type:'rss_complete',digest_id:p.digest_id}}}];"
+      }
+    },
+    {
+      "id": "1932ab41-18ee-4127-b9e9-d9ffd5435a91",
+      "name": "Send Discord Markdown",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.4,
+      "position": [
+        1240,
+        360
+      ],
+      "parameters": {
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "Gu9lvE61vyyJf2xm"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "channel": "={{ $('Select Eligible Command').item.json.payload.channel }}",
+            "markdown": "={{ $('Select Eligible Command').item.json.payload.markdown }}"
+          },
+          "schema": [
+            {
+              "id": "channel",
+              "displayName": "channel",
+              "type": "string"
+            },
+            {
+              "id": "markdown",
+              "displayName": "markdown",
+              "type": "string"
+            }
+          ]
+        },
+        "mode": "each",
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      }
+    },
+    {
+      "id": "5253853d-d2bb-453e-8ba0-50c8c1f3e1cc",
+      "name": "Prepare Discord Result",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1500,
+        360
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const messages=$input.all().map(i=>({id:i.json.id,channel_id:i.json.channel_id,embeds:i.json.embeds??[],components:i.json.components??[]}));return [{json:{result:{ok:true,type:'discord_markdown',messages}}}];"
+      }
+    },
+    {
+      "id": "1cb4ccaf-c58d-45f3-bf1e-8987ae23ef06",
+      "name": "Claim New RSS Items",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        1240,
+        520
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "rss_intelligence_items"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "status",
+              "condition": "eq",
+              "keyValue": "new"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "status": "processing",
+            "digest_id": "={{ $('Select Eligible Command').item.json.payload.digest_id }}",
+            "processed_at": null
+          },
+          "schema": [
+            {
+              "id": "status",
+              "displayName": "status",
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "digest_id",
+              "displayName": "digest_id",
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "processed_at",
+              "displayName": "processed_at",
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "id": "03db168d-6953-4edc-9822-9f15810eb3e6",
+      "name": "Recover Stale RSS Items",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        1500,
+        520
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "rss_intelligence_items"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "status",
+              "condition": "eq",
+              "keyValue": "processing"
+            },
+            {
+              "keyName": "updatedAt",
+              "condition": "lte",
+              "keyValue": "={{ $('Select Eligible Command').item.json.payload.stale_before }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "status": "processing",
+            "digest_id": "={{ $('Select Eligible Command').item.json.payload.digest_id }}",
+            "processed_at": null
+          },
+          "schema": [
+            {
+              "id": "status",
+              "displayName": "status",
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "digest_id",
+              "displayName": "digest_id",
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "processed_at",
+              "displayName": "processed_at",
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "executeOnce": true,
+      "alwaysOutputData": true
+    },
+    {
+      "id": "cf13bf9c-2c4f-474e-a008-58c65ed87a8f",
+      "name": "Prepare RSS Claim Result",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1760,
+        520
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const p=$('Select Eligible Command').first().json.payload;return [{json:{result:{ok:true,type:'rss_claim',digest_id:p.digest_id}}}];"
+      }
+    },
+    {
+      "id": "80e57011-bfa8-4162-bdad-7adede7e24d2",
+      "name": "Mark Unsupported Command Failed",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        1240,
+        680
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "chatgpt_internal_commands"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "commandId",
+              "condition": "eq",
+              "keyValue": "={{ $('Select Eligible Command').item.json.commandId }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "status": "failed",
+            "completedAt": "={{ $now.toISO() }}",
+            "resultJson": "",
+            "error": "={{ $('Select Eligible Command').item.json.validationError||('unsupported commandType: '+$('Select Eligible Command').item.json.commandType) }}"
+          },
+          "schema": [
+            {
+              "id": "status",
+              "displayName": "status",
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "claimedAt",
+              "displayName": "claimedAt",
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "completedAt",
+              "displayName": "completedAt",
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "resultJson",
+              "displayName": "resultJson",
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "error",
+              "displayName": "error",
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "options": {}
+      }
+    }
+  ],
+  "connections": {
+    "Poll ChatGPT Internal Commands": {
+      "main": [
+        [
+          {
+            "node": "Get Pending Commands",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Pending Commands": {
+      "main": [
+        [
+          {
+            "node": "Select Eligible Command",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Select Eligible Command": {
+      "main": [
+        [
+          {
+            "node": "Mark Command Processing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mark Command Processing": {
+      "main": [
+        [
+          {
+            "node": "Route Command",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route Command": {
+      "main": [
+        [
+          {
+            "node": "Upsert Work Event",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Mark RSS Items Processed",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send Discord Markdown",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Claim New RSS Items",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Mark Unsupported Command Failed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upsert Work Event": {
+      "main": [
+        [
+          {
+            "node": "Prepare Work Event Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Work Event Result": {
+      "main": [
+        [
+          {
+            "node": "Mark Command Completed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mark RSS Items Processed": {
+      "main": [
+        [
+          {
+            "node": "Record RSS Digest Event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Record RSS Digest Event": {
+      "main": [
+        [
+          {
+            "node": "Prepare RSS Complete Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare RSS Complete Result": {
+      "main": [
+        [
+          {
+            "node": "Mark Command Completed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Discord Markdown": {
+      "main": [
+        [
+          {
+            "node": "Prepare Discord Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Discord Result": {
+      "main": [
+        [
+          {
+            "node": "Mark Command Completed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Claim New RSS Items": {
+      "main": [
+        [
+          {
+            "node": "Recover Stale RSS Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recover Stale RSS Items": {
+      "main": [
+        [
+          {
+            "node": "Prepare RSS Claim Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare RSS Claim Result": {
+      "main": [
+        [
+          {
+            "node": "Mark Command Completed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [
+    {
+      "id": "ec875ed3-96c3-4c4c-833e-028289fd74d4",
+      "name": "Command intake and claim",
+      "nodeIds": [
+        "cf0c7550-81da-4189-b7a8-d3149c77e52e",
+        "cbc7894f-4612-4ec9-a9c4-bac12e52e26f",
+        "cd49c9d1-e78d-4dbd-bea0-bce4c7f8526a",
+        "86d91c8d-67b6-48da-a58d-df4e80aa4019"
+      ],
+      "description": "Read pending/stale commands, select one, claim it, and route by deterministic command type."
+    },
+    {
+      "id": "e20cc0ea-c201-4f6c-aef8-1ae2d97715c8",
+      "name": "Work event persistence",
+      "nodeIds": [
+        "7e6fbdd3-6555-4f14-8387-1676c18b7c53",
+        "ca33ae2a-8558-40ee-aa97-9c531e62cce3"
+      ],
+      "description": "Idempotently persist structured work events."
+    },
+    {
+      "id": "c4dd3ccf-7148-4058-bd93-f3e16470f6e2",
+      "name": "Discord delivery",
+      "nodeIds": [
+        "1932ab41-18ee-4127-b9e9-d9ffd5435a91",
+        "5253853d-d2bb-453e-8ba0-50c8c1f3e1cc"
+      ],
+      "description": "Invoke the existing Discord Markdown Notification Hub internally and capture message results."
+    }
+  ],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true,
+    "errorWorkflow": "3LE3BnPfHSuIZCVR",
+    "timezone": "Asia/Shanghai",
+    "saveManualExecutions": true,
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all",
+    "executionTimeout": 300
+  },
+  "staticData": {
+    "node:Poll ChatGPT Internal Commands": {
+      "recurrenceRules": [
+        null
+      ],
+      "recurrenceRuleSignatures": [
+        null
+      ]
+    }
+  },
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [
+    {
+      "id": "xpWm4veSI3VnYxs0",
+      "name": "notification",
+      "createdAt": "2026-10-26T07:57:41.702Z",
+      "updatedAt": "2026-10-26T07:57:41.702Z"
+    },
+    {
+      "id": "twNsKNALbdWLw0Ox",
+      "name": "automation",
+      "createdAt": "2026-10-22T08:25:54.546Z",
+      "updatedAt": "2026-10-22T08:25:54.546Z"
+    },
+    {
+      "id": "Yf0sE6r3CHF6WaAZ",
+      "name": "state-machine",
+      "createdAt": "2026-10-22T15:35:47.857Z",
+      "updatedAt": "2026-10-22T15:35:47.857Z"
+    }
+  ],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "OHJmwUsGO9c1imI4",
+      "projectId": "cNMj0K6AdJmi0OAZ",
+      "createdAt": "2026-11-03T12:02:28.085Z",
+      "updatedAt": "2026-11-03T12:02:28.085Z"
+    }
+  ],
+  "activeVersion": {
+    "versionId": "b12d8d60-b11f-43fc-ab2a-64c011443cfc",
+    "workflowId": "OHJmwUsGO9c1imI4",
+    "nodes": [
+      {
+        "id": "72524e26-95fe-46d0-8787-2b4d892dc4ec",
+        "name": "Poll ChatGPT Internal Commands",
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.3,
+        "position": [
+          0,
+          300
+        ],
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "minutes",
+                "minutesInterval": 5
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "cf0c7550-81da-4189-b7a8-d3149c77e52e",
+        "name": "Get Pending Commands",
+        "type": "n8n-nodes-base.dataTable",
+        "typeVersion": 1.1,
+        "position": [
+          240,
+          300
+        ],
+        "parameters": {
+          "resource": "row",
+          "operation": "get",
+          "dataTableId": {
+            "__rl": true,
+            "mode": "name",
+            "value": "chatgpt_internal_commands"
+          },
+          "matchType": "anyCondition",
+          "filters": {
+            "conditions": [
+              {
+                "keyName": "status",
+                "condition": "eq",
+                "keyValue": "pending"
+              },
+              {
+                "keyName": "status",
+                "condition": "eq",
+                "keyValue": "processing"
+              }
+            ]
+          },
+          "returnAll": false,
+          "limit": 20,
+          "orderBy": true,
+          "orderByColumn": "createdAt",
+          "orderByDirection": "ASC"
+        }
+      },
+      {
+        "id": "cbc7894f-4612-4ec9-a9c4-bac12e52e26f",
+        "name": "Select Eligible Command",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          480,
+          300
+        ],
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "language": "javaScript",
+          "jsCode": "const now=Date.now();const retryMs=15*60*1000;const rows=$input.all().map(i=>i.json);const eligible=rows.filter(r=>{if(r.status==='pending')return true;if(r.status!=='processing')return false;const claimed=r.claimedAt?Date.parse(r.claimedAt):0;return !claimed||(now-claimed)>=retryMs;}).sort((a,b)=>String(a.createdAt||'').localeCompare(String(b.createdAt||'')));if(!eligible.length)return [];const row=eligible[0];let payload={};let validationError='';try{payload=JSON.parse(String(row.payloadJson||'{}'));if(!payload||Array.isArray(payload)||typeof payload!=='object')throw new Error('payload must be a JSON object');}catch(e){validationError='invalid payloadJson: '+String(e.message||e);}return [{json:{...row,payload,validationError}}];"
+        }
+      },
+      {
+        "id": "cd49c9d1-e78d-4dbd-bea0-bce4c7f8526a",
+        "name": "Mark Command Processing",
+        "type": "n8n-nodes-base.dataTable",
+        "typeVersion": 1.1,
+        "position": [
+          720,
+          300
+        ],
+        "parameters": {
+          "resource": "row",
+          "operation": "update",
+          "dataTableId": {
+            "__rl": true,
+            "mode": "name",
+            "value": "chatgpt_internal_commands"
+          },
+          "matchType": "allConditions",
+          "filters": {
+            "conditions": [
+              {
+                "keyName": "commandId",
+                "condition": "eq",
+                "keyValue": "={{ $('Select Eligible Command').item.json.commandId }}"
+              },
+              {
+                "keyName": "status",
+                "condition": "eq",
+                "keyValue": "={{ $('Select Eligible Command').item.json.status }}"
+              }
+            ]
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "status": "processing",
+              "claimedAt": "={{ $now.toISO() }}",
+              "error": ""
+            },
+            "schema": [
+              {
+                "id": "status",
+                "displayName": "status",
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "claimedAt",
+                "displayName": "claimedAt",
+                "type": "dateTime",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "completedAt",
+                "displayName": "completedAt",
+                "type": "dateTime",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "resultJson",
+                "displayName": "resultJson",
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "error",
+                "displayName": "error",
+                "type": "string",
+                "canBeUsedToMatch": true
+              }
+            ]
+          },
+          "options": {}
+        }
+      },
+      {
+        "id": "86d91c8d-67b6-48da-a58d-df4e80aa4019",
+        "name": "Route Command",
+        "type": "n8n-nodes-base.switch",
+        "typeVersion": 3.2,
+        "position": [
+          960,
+          300
+        ],
+        "parameters": {
+          "mode": "expression",
+          "numberOutputs": 5,
+          "output": "={{ (()=>{const c=$('Select Eligible Command').item.json;if(c.validationError)return 4;return ({work_event:0,rss_complete:1,discord_markdown:2,rss_claim:3})[String(c.commandType)]??4;})() }}",
+          "looseTypeValidation": false
+        }
+      },
+      {
+        "id": "7e6fbdd3-6555-4f14-8387-1676c18b7c53",
+        "name": "Upsert Work Event",
+        "type": "n8n-nodes-base.dataTable",
+        "typeVersion": 1.1,
+        "position": [
+          1240,
+          40
+        ],
+        "parameters": {
+          "resource": "row",
+          "operation": "upsert",
+          "dataTableId": {
+            "__rl": true,
+            "mode": "name",
+            "value": "work_events"
+          },
+          "matchType": "allConditions",
+          "filters": {
+            "conditions": [
+              {
+                "keyName": "event_id",
+                "condition": "eq",
+                "keyValue": "={{ $('Select Eligible Command').item.json.payload.event_id }}"
+              }
+            ]
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "event_id": "={{ $('Select Eligible Command').item.json.payload.event_id }}",
+              "occurred_at": "={{ $('Select Eligible Command').item.json.payload.occurred_at }}",
+              "source": "={{ $('Select Eligible Command').item.json.payload.source }}",
+              "project": "={{ $('Select Eligible Command').item.json.payload.project||'' }}",
+              "category": "={{ $('Select Eligible Command').item.json.payload.category||'' }}",
+              "title": "={{ $('Select Eligible Command').item.json.payload.title }}",
+              "description": "={{ $('Select Eligible Command').item.json.payload.description||'' }}",
+              "status": "={{ $('Select Eligible Command').item.json.payload.status||'completed' }}",
+              "url": "={{ $('Select Eligible Command').item.json.payload.url||'' }}",
+              "metadata_object": "={{ (()=>{const p=$('Select Eligible Command').item.json.payload;return typeof p.metadata_object==='string'?p.metadata_object:(p.metadata_object??p.metadata??{}).toJsonString();})() }}",
+              "correlation_id": "={{ $('Select Eligible Command').item.json.payload.correlation_id||'' }}"
+            },
+            "schema": [
+              {
+                "id": "event_id",
+                "displayName": "event_id",
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "occurred_at",
+                "displayName": "occurred_at",
+                "type": "dateTime",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "source",
+                "displayName": "source",
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "project",
+                "displayName": "project",
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "category",
+                "displayName": "category",
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "title",
+                "displayName": "title",
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "description",
+                "displayName": "description",
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "status",
+                "displayName": "status",
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "url",
+                "displayName": "url",
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "metadata_object",
+                "displayName": "metadata_object",
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "correlation_id",
+                "displayName": "correlation_id",
+                "type": "string",
+                "canBeUsedToMatch": true
+              }
+            ]
+          },
+          "options": {}
+        }
+      },
+      {
+        "id": "ca33ae2a-8558-40ee-aa97-9c531e62cce3",
+        "name": "Prepare Work Event Result",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1500,
+          40
+        ],
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "language": "javaScript",
+          "jsCode": "const p=$('Select Eligible Command').first().json.payload;return [{json:{result:{ok:true,type:'work_event',event_id:p.event_id}}}];"
+        }
+      },
+      {
+        "id": "0477f54e-51ad-4625-a34a-7c60c5ad0ec7",
+        "name": "Mark Command Completed",
+        "type": "n8n-nodes-base.dataTable",
+        "typeVersion": 1.1,
+        "position": [
+          2040,
+          300
+        ],
+        "parameters": {
+          "resource": "row",
+          "operation": "update",
+          "dataTableId": {
+            "__rl": true,
+            "mode": "name",
+            "value": "chatgpt_internal_commands"
+          },
+          "matchType": "allConditions",
+          "filters": {
+            "conditions": [
+              {
+                "keyName": "commandId",
+                "condition": "eq",
+                "keyValue": "={{ $('Select Eligible Command').item.json.commandId }}"
+              }
+            ]
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "status": "completed",
+              "completedAt": "={{ $now.toISO() }}",
+              "resultJson": "={{ $json.result.toJsonString() }}",
+              "error": ""
+            },
+            "schema": [
+              {
+                "id": "status",
+                "displayName": "status",
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "claimedAt",
+                "displayName": "claimedAt",
+                "type": "dateTime",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "completedAt",
+                "displayName": "completedAt",
+                "type": "dateTime",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "resultJson",
+                "displayName": "resultJson",
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "error",
+                "displayName": "error",
+                "type": "string",
+                "canBeUsedToMatch": true
+              }
+            ]
+          },
+          "options": {}
+        }
+      },
+      {
+        "id": "e4af2fdc-5328-448d-90a4-cee0036fc8fd",
+        "name": "Mark RSS Items Processed",
+        "type": "n8n-nodes-base.dataTable",
+        "typeVersion": 1.1,
+        "position": [
+          1240,
+          200
+        ],
+        "parameters": {
+          "resource": "row",
+          "operation": "update",
+          "dataTableId": {
+            "__rl": true,
+            "mode": "name",
+            "value": "rss_intelligence_items"
+          },
+          "matchType": "allConditions",
+          "filters": {
+            "conditions": [
+              {
+                "keyName": "status",
+                "condition": "eq",
+                "keyValue": "processing"
+              },
+              {
+                "keyName": "digest_id",
+                "condition": "eq",
+                "keyValue": "={{ $('Select Eligible Command').item.json.payload.digest_id }}"
+              }
+            ]
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "status": "processed",
+              "digest_id": "={{ $('Select Eligible Command').item.json.payload.digest_id }}",
+              "processed_at": "={{ $now.toISO() }}"
+            },
+            "schema": [
+              {
+                "id": "status",
+                "displayName": "status",
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "digest_id",
+                "displayName": "digest_id",
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "processed_at",
+                "displayName": "processed_at",
+                "type": "dateTime",
+                "canBeUsedToMatch": true
+              }
+            ]
+          },
+          "options": {}
+        },
+        "alwaysOutputData": true
+      },
+      {
+        "id": "694cc8ec-009b-4c45-8f59-75c19e76a2aa",
+        "name": "Record RSS Digest Event",
+        "type": "n8n-nodes-base.dataTable",
+        "typeVersion": 1.1,
+        "position": [
+          1500,
+          200
+        ],
+        "parameters": {
+          "resource": "row",
+          "operation": "upsert",
+          "dataTableId": {
+            "__rl": true,
+            "mode": "name",
+            "value": "work_events"
+          },
+          "matchType": "allConditions",
+          "filters": {
+            "conditions": [
+              {
+                "keyName": "event_id",
+                "condition": "eq",
+                "keyValue": "={{ 'rss.digest.completed:'+$('Select Eligible Command').item.json.payload.digest_id }}"
+              }
+            ]
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "event_id": "={{ 'rss.digest.completed:'+$('Select Eligible Command').item.json.payload.digest_id }}",
+              "occurred_at": "={{ $now.toISO() }}",
+              "source": "chatgpt:rss-intelligence",
+              "project": "tech-intelligence",
+              "category": "rss.digest.completed",
+              "title": "={{ $('Select Eligible Command').item.json.payload.title||('RSS Intelligence — '+$('Select Eligible Command').item.json.payload.digest_id) }}",
+              "description": "={{ $('Select Eligible Command').item.json.payload.summary||'Daily RSS intelligence digest completed.' }}",
+              "status": "completed",
+              "url": "={{ $('Select Eligible Command').item.json.payload.report_ref||'' }}",
+              "metadata_object": "={{ (()=>{const b=$('Select Eligible Command').item.json.payload;const ids=Array.isArray(b.canonical_candidate_event_ids)?b.canonical_candidate_event_ids.map(String):[];return ({architecture_version:3,digest_id:b.digest_id,item_count:Number(b.item_count||0),ingestion_table:'rss_intelligence_items',canonical_candidate_event_ids:ids,canonical_candidate_count:Number(b.canonical_candidate_count??ids.length),candidate_carrier:'work_events:intelligence.candidate.canonicalized'}).toJsonString();})() }}",
+              "correlation_id": "={{ $('Select Eligible Command').item.json.payload.digest_id }}"
+            },
+            "schema": [
+              {
+                "id": "event_id",
+                "displayName": "event_id",
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "occurred_at",
+                "displayName": "occurred_at",
+                "type": "dateTime",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "source",
+                "displayName": "source",
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "project",
+                "displayName": "project",
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "category",
+                "displayName": "category",
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "title",
+                "displayName": "title",
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "description",
+                "displayName": "description",
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "status",
+                "displayName": "status",
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "url",
+                "displayName": "url",
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "metadata_object",
+                "displayName": "metadata_object",
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "correlation_id",
+                "displayName": "correlation_id",
+                "type": "string",
+                "canBeUsedToMatch": true
+              }
+            ]
+          },
+          "options": {}
+        },
+        "executeOnce": true
+      },
+      {
+        "id": "868b34cc-ca16-4e34-8746-ddecb2781010",
+        "name": "Prepare RSS Complete Result",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1760,
+          200
+        ],
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "language": "javaScript",
+          "jsCode": "const p=$('Select Eligible Command').first().json.payload;return [{json:{result:{ok:true,type:'rss_complete',digest_id:p.digest_id}}}];"
+        }
+      },
+      {
+        "id": "1932ab41-18ee-4127-b9e9-d9ffd5435a91",
+        "name": "Send Discord Markdown",
+        "type": "n8n-nodes-base.executeWorkflow",
+        "typeVersion": 1.4,
+        "position": [
+          1240,
+          360
+        ],
+        "parameters": {
+          "source": "database",
+          "workflowId": {
+            "__rl": true,
+            "mode": "id",
+            "value": "Gu9lvE61vyyJf2xm"
+          },
+          "workflowInputs": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "channel": "={{ $('Select Eligible Command').item.json.payload.channel }}",
+              "markdown": "={{ $('Select Eligible Command').item.json.payload.markdown }}"
+            },
+            "schema": [
+              {
+                "id": "channel",
+                "displayName": "channel",
+                "type": "string"
+              },
+              {
+                "id": "markdown",
+                "displayName": "markdown",
+                "type": "string"
+              }
+            ]
+          },
+          "mode": "each",
+          "options": {
+            "waitForSubWorkflow": true
+          }
+        }
+      },
+      {
+        "id": "5253853d-d2bb-453e-8ba0-50c8c1f3e1cc",
+        "name": "Prepare Discord Result",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1500,
+          360
+        ],
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "language": "javaScript",
+          "jsCode": "const messages=$input.all().map(i=>({id:i.json.id,channel_id:i.json.channel_id,embeds:i.json.embeds??[],components:i.json.components??[]}));return [{json:{result:{ok:true,type:'discord_markdown',messages}}}];"
+        }
+      },
+      {
+        "id": "1cb4ccaf-c58d-45f3-bf1e-8987ae23ef06",
+        "name": "Claim New RSS Items",
+        "type": "n8n-nodes-base.dataTable",
+        "typeVersion": 1.1,
+        "position": [
+          1240,
+          520
+        ],
+        "parameters": {
+          "resource": "row",
+          "operation": "update",
+          "dataTableId": {
+            "__rl": true,
+            "mode": "name",
+            "value": "rss_intelligence_items"
+          },
+          "matchType": "allConditions",
+          "filters": {
+            "conditions": [
+              {
+                "keyName": "status",
+                "condition": "eq",
+                "keyValue": "new"
+              }
+            ]
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "status": "processing",
+              "digest_id": "={{ $('Select Eligible Command').item.json.payload.digest_id }}",
+              "processed_at": null
+            },
+            "schema": [
+              {
+                "id": "status",
+                "displayName": "status",
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "digest_id",
+                "displayName": "digest_id",
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "processed_at",
+                "displayName": "processed_at",
+                "type": "dateTime",
+                "canBeUsedToMatch": true
+              }
+            ]
+          },
+          "options": {}
+        },
+        "alwaysOutputData": true
+      },
+      {
+        "id": "03db168d-6953-4edc-9822-9f15810eb3e6",
+        "name": "Recover Stale RSS Items",
+        "type": "n8n-nodes-base.dataTable",
+        "typeVersion": 1.1,
+        "position": [
+          1500,
+          520
+        ],
+        "parameters": {
+          "resource": "row",
+          "operation": "update",
+          "dataTableId": {
+            "__rl": true,
+            "mode": "name",
+            "value": "rss_intelligence_items"
+          },
+          "matchType": "allConditions",
+          "filters": {
+            "conditions": [
+              {
+                "keyName": "status",
+                "condition": "eq",
+                "keyValue": "processing"
+              },
+              {
+                "keyName": "updatedAt",
+                "condition": "lte",
+                "keyValue": "={{ $('Select Eligible Command').item.json.payload.stale_before }}"
+              }
+            ]
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "status": "processing",
+              "digest_id": "={{ $('Select Eligible Command').item.json.payload.digest_id }}",
+              "processed_at": null
+            },
+            "schema": [
+              {
+                "id": "status",
+                "displayName": "status",
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "digest_id",
+                "displayName": "digest_id",
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "processed_at",
+                "displayName": "processed_at",
+                "type": "dateTime",
+                "canBeUsedToMatch": true
+              }
+            ]
+          },
+          "options": {}
+        },
+        "executeOnce": true,
+        "alwaysOutputData": true
+      },
+      {
+        "id": "cf13bf9c-2c4f-474e-a008-58c65ed87a8f",
+        "name": "Prepare RSS Claim Result",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1760,
+          520
+        ],
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "language": "javaScript",
+          "jsCode": "const p=$('Select Eligible Command').first().json.payload;return [{json:{result:{ok:true,type:'rss_claim',digest_id:p.digest_id}}}];"
+        }
+      },
+      {
+        "id": "80e57011-bfa8-4162-bdad-7adede7e24d2",
+        "name": "Mark Unsupported Command Failed",
+        "type": "n8n-nodes-base.dataTable",
+        "typeVersion": 1.1,
+        "position": [
+          1240,
+          680
+        ],
+        "parameters": {
+          "resource": "row",
+          "operation": "update",
+          "dataTableId": {
+            "__rl": true,
+            "mode": "name",
+            "value": "chatgpt_internal_commands"
+          },
+          "matchType": "allConditions",
+          "filters": {
+            "conditions": [
+              {
+                "keyName": "commandId",
+                "condition": "eq",
+                "keyValue": "={{ $('Select Eligible Command').item.json.commandId }}"
+              }
+            ]
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "status": "failed",
+              "completedAt": "={{ $now.toISO() }}",
+              "resultJson": "",
+              "error": "={{ $('Select Eligible Command').item.json.validationError||('unsupported commandType: '+$('Select Eligible Command').item.json.commandType) }}"
+            },
+            "schema": [
+              {
+                "id": "status",
+                "displayName": "status",
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "claimedAt",
+                "displayName": "claimedAt",
+                "type": "dateTime",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "completedAt",
+                "displayName": "completedAt",
+                "type": "dateTime",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "resultJson",
+                "displayName": "resultJson",
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "error",
+                "displayName": "error",
+                "type": "string",
+                "canBeUsedToMatch": true
+              }
+            ]
+          },
+          "options": {}
+        }
+      }
+    ],
+    "connections": {
+      "Poll ChatGPT Internal Commands": {
+        "main": [
+          [
+            {
+              "node": "Get Pending Commands",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get Pending Commands": {
+        "main": [
+          [
+            {
+              "node": "Select Eligible Command",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Select Eligible Command": {
+        "main": [
+          [
+            {
+              "node": "Mark Command Processing",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Mark Command Processing": {
+        "main": [
+          [
+            {
+              "node": "Route Command",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Route Command": {
+        "main": [
+          [
+            {
+              "node": "Upsert Work Event",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Mark RSS Items Processed",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Send Discord Markdown",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Claim New RSS Items",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Mark Unsupported Command Failed",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Upsert Work Event": {
+        "main": [
+          [
+            {
+              "node": "Prepare Work Event Result",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prepare Work Event Result": {
+        "main": [
+          [
+            {
+              "node": "Mark Command Completed",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Mark RSS Items Processed": {
+        "main": [
+          [
+            {
+              "node": "Record RSS Digest Event",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Record RSS Digest Event": {
+        "main": [
+          [
+            {
+              "node": "Prepare RSS Complete Result",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prepare RSS Complete Result": {
+        "main": [
+          [
+            {
+              "node": "Mark Command Completed",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Send Discord Markdown": {
+        "main": [
+          [
+            {
+              "node": "Prepare Discord Result",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prepare Discord Result": {
+        "main": [
+          [
+            {
+              "node": "Mark Command Completed",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Claim New RSS Items": {
+        "main": [
+          [
+            {
+              "node": "Recover Stale RSS Items",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Recover Stale RSS Items": {
+        "main": [
+          [
+            {
+              "node": "Prepare RSS Claim Result",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prepare RSS Claim Result": {
+        "main": [
+          [
+            {
+              "node": "Mark Command Completed",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "nodeGroups": [
+      {
+        "id": "ec875ed3-96c3-4c4c-833e-028289fd74d4",
+        "name": "Command intake and claim",
+        "nodeIds": [
+          "cf0c7550-81da-4189-b7a8-d3149c77e52e",
+          "cbc7894f-4612-4ec9-a9c4-bac12e52e26f",
+          "cd49c9d1-e78d-4dbd-bea0-bce4c7f8526a",
+          "86d91c8d-67b6-48da-a58d-df4e80aa4019"
+        ],
+        "description": "Read pending/stale commands, select one, claim it, and route by deterministic command type."
+      },
+      {
+        "id": "e20cc0ea-c201-4f6c-aef8-1ae2d97715c8",
+        "name": "Work event persistence",
+        "nodeIds": [
+          "7e6fbdd3-6555-4f14-8387-1676c18b7c53",
+          "ca33ae2a-8558-40ee-aa97-9c531e62cce3"
+        ],
+        "description": "Idempotently persist structured work events."
+      },
+      {
+        "id": "c4dd3ccf-7148-4058-bd93-f3e16470f6e2",
+        "name": "Discord delivery",
+        "nodeIds": [
+          "1932ab41-18ee-4127-b9e9-d9ffd5435a91",
+          "5253853d-d2bb-453e-8ba0-50c8c1f3e1cc"
+        ],
+        "description": "Invoke the existing Discord Markdown Notification Hub internally and capture message results."
+      }
+    ],
+    "authors": "Administrator NTLx (via MCP)",
+    "name": "Configure command dispatcher governance",
+    "description": "Adds Asia/Shanghai timezone, shared Error Notification workflow, saved execution diagnostics, standard tags, and canvas groups. Functional command routing is unchanged.",
+    "autosaved": false,
+    "createdAt": "2026-11-03T12:02:40.843Z",
+    "updatedAt": "2026-11-03T12:02:40.843Z"
+  }
+}
