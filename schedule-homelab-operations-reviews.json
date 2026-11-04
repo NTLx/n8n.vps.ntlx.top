@@ -1246,22 +1246,10 @@
   },
   "tags": [
     {
-      "id": "fKoxhQDd26tREjYf",
-      "name": "infrastructure",
-      "createdAt": "2026-10-22T16:21:02.698Z",
-      "updatedAt": "2026-10-22T16:21:02.698Z"
-    },
-    {
       "id": "Kmfi1DI0MjIRkwfZ",
       "name": "deadman-heartbeat",
       "createdAt": "2026-10-22T16:25:50.145Z",
       "updatedAt": "2026-10-22T16:25:50.145Z"
-    },
-    {
-      "id": "BlGRvaSWqnmTk53i",
-      "name": "event-producer",
-      "createdAt": "2026-10-22T09:14:35.370Z",
-      "updatedAt": "2026-10-22T09:14:35.370Z"
     },
     {
       "id": "twNsKNALbdWLw0Ox",
@@ -1270,16 +1258,28 @@
       "updatedAt": "2026-10-22T08:25:54.546Z"
     },
     {
+      "id": "YwjTMUhE83IXTCRg",
+      "name": "monitoring",
+      "createdAt": "2026-10-22T08:38:34.124Z",
+      "updatedAt": "2026-10-22T08:38:34.124Z"
+    },
+    {
+      "id": "fKoxhQDd26tREjYf",
+      "name": "infrastructure",
+      "createdAt": "2026-10-22T16:21:02.698Z",
+      "updatedAt": "2026-10-22T16:21:02.698Z"
+    },
+    {
       "id": "9jw9Bhya2Ylf8E4D",
       "name": "ai-work-producer",
       "createdAt": "2026-10-22T09:14:35.367Z",
       "updatedAt": "2026-10-22T09:14:35.367Z"
     },
     {
-      "id": "YwjTMUhE83IXTCRg",
-      "name": "monitoring",
-      "createdAt": "2026-10-22T08:38:34.124Z",
-      "updatedAt": "2026-10-22T08:38:34.124Z"
+      "id": "BlGRvaSWqnmTk53i",
+      "name": "event-producer",
+      "createdAt": "2026-10-22T09:14:35.370Z",
+      "updatedAt": "2026-10-22T09:14:35.370Z"
     }
   ],
   "shared": [
