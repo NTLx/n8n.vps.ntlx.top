@@ -1,13 +1,13 @@
 {
   "id": "jtnPp8Zj1CaasiRk",
   "name": "Collect GitHub Trending snapshot",
-  "active": false,
-  "activeVersionId": null,
+  "active": true,
+  "activeVersionId": "5b718758-83bf-432d-a009-c69cdbf22d9b",
   "createdAt": "2026-11-01T11:08:19.379Z",
-  "updatedAt": "2026-11-01T11:08:56.525Z",
+  "updatedAt": "2026-11-03T11:39:05.231Z",
   "isArchived": false,
-  "versionId": "b4063354-42f9-4caf-b6e9-715468d12b25",
-  "triggerCount": 0,
+  "versionId": "5b718758-83bf-432d-a009-c69cdbf22d9b",
+  "triggerCount": 1,
   "nodes": [
     {
       "id": "11c4f129-e94f-42d5-a3f5-f868cd3ce98a",
@@ -123,16 +123,17 @@
           "options": {
             "caseSensitive": true,
             "leftValue": "",
-            "typeValidation": "strict"
+            "typeValidation": "strict",
+            "version": 2
           },
           "conditions": [
             {
-              "leftValue": "={{ Array.isArray($json.articles) && $json.articles.length >= 3 }}",
+              "leftValue": "={{ Array.isArray($json.articles) && $json.articles.length >= 5 && $json.articles.length <= 100 ? 'usable' : 'unusable' }}",
               "operator": {
-                "type": "boolean",
-                "operation": "isTrue"
+                "type": "string",
+                "operation": "equals"
               },
-              "rightValue": true
+              "rightValue": "usable"
             }
           ],
           "combinator": "and"
@@ -216,139 +217,13 @@
       }
     },
     {
-      "id": "2c4c4994-a149-414f-be4e-d7c1bdaafd2e",
-      "name": "Normalize official snapshot",
-      "type": "n8n-nodes-base.set",
-      "typeVersion": 3.5,
-      "position": [
-        1616,
-        128
-      ],
-      "parameters": {
-        "mode": "manual",
-        "assignments": {
-          "assignments": [
-            {
-              "id": "snapshotKey",
-              "name": "snapshotKey",
-              "value": "={{ 'daily:all:' + $now.setZone('Asia/Shanghai').toFormat('yyyy-MM-dd') + ':' + ($json.repoPath || '').replace(/^\\//, '').trim() }}",
-              "type": "string"
-            },
-            {
-              "id": "snapshotDate",
-              "name": "snapshotDate",
-              "value": "={{ $now.setZone('Asia/Shanghai').toFormat('yyyy-MM-dd') }}",
-              "type": "string"
-            },
-            {
-              "id": "period",
-              "name": "period",
-              "value": "daily",
-              "type": "string"
-            },
-            {
-              "id": "languageScope",
-              "name": "languageScope",
-              "value": "all",
-              "type": "string"
-            },
-            {
-              "id": "rank",
-              "name": "rank",
-              "value": "={{ $itemIndex + 1 }}",
-              "type": "number"
-            },
-            {
-              "id": "repoFullName",
-              "name": "repoFullName",
-              "value": "={{ ($json.repoPath || '').replace(/^\\//, '').trim() }}",
-              "type": "string"
-            },
-            {
-              "id": "repoUrl",
-              "name": "repoUrl",
-              "value": "={{ 'https://github.com' + ($json.repoPath || '') }}",
-              "type": "string"
-            },
-            {
-              "id": "description",
-              "name": "description",
-              "value": "={{ $json.description || '' }}",
-              "type": "string"
-            },
-            {
-              "id": "language",
-              "name": "language",
-              "value": "={{ $json.language || '' }}",
-              "type": "string"
-            },
-            {
-              "id": "stars",
-              "name": "stars",
-              "value": "={{ Number(($json.starsText || '0').replace(/[^0-9]/g, '')) || 0 }}",
-              "type": "number"
-            },
-            {
-              "id": "forks",
-              "name": "forks",
-              "value": "={{ Number(($json.forksText || '0').replace(/[^0-9]/g, '')) || 0 }}",
-              "type": "number"
-            },
-            {
-              "id": "addedStars",
-              "name": "addedStars",
-              "value": "={{ Number(($json.addedStarsLabel || '0').replace(/[^0-9]/g, '')) || 0 }}",
-              "type": "number"
-            },
-            {
-              "id": "source",
-              "name": "source",
-              "value": "github_trending_html",
-              "type": "string"
-            },
-            {
-              "id": "sourceAuthority",
-              "name": "sourceAuthority",
-              "value": "direct_official",
-              "type": "string"
-            },
-            {
-              "id": "sourceUrl",
-              "name": "sourceUrl",
-              "value": "https://github.com/trending?since=daily",
-              "type": "string"
-            },
-            {
-              "id": "sourcePublishedAt",
-              "name": "sourcePublishedAt",
-              "value": "={{ $now.toISO() }}",
-              "type": "string"
-            },
-            {
-              "id": "collectedAt",
-              "name": "collectedAt",
-              "value": "={{ $now.toISO() }}",
-              "type": "string"
-            },
-            {
-              "id": "freshnessStatus",
-              "name": "freshnessStatus",
-              "value": "fresh",
-              "type": "string"
-            }
-          ]
-        },
-        "includeOtherFields": false
-      }
-    },
-    {
       "id": "07c8759b-9a0f-46e6-a265-6a0c26ae0cbb",
       "name": "Upsert snapshot rows",
       "type": "n8n-nodes-base.dataTable",
       "typeVersion": 1.1,
       "position": [
-        1840,
-        224
+        3184,
+        128
       ],
       "parameters": {
         "resource": "row",
@@ -416,7 +291,8 @@
       },
       "retryOnFail": true,
       "maxTries": 4,
-      "waitBetweenTries": 2000
+      "waitBetweenTries": 2000,
+      "onError": "continueErrorOutput"
     },
     {
       "id": "25ee73a6-ebb6-4c5c-b296-15f7c5a05d10",
@@ -432,16 +308,17 @@
           "options": {
             "caseSensitive": true,
             "leftValue": "",
-            "typeValidation": "strict"
+            "typeValidation": "strict",
+            "version": 2
           },
           "conditions": [
             {
-              "leftValue": "={{ !!$json.pubDate && Array.isArray($json.items) && $json.items.length >= 3 && (Date.now() - new Date($json.pubDate).getTime()) <= 86400000 }}",
+              "leftValue": "={{ $json.usable === true ? 'usable' : 'unusable' }}",
               "operator": {
-                "type": "boolean",
-                "operation": "isTrue"
+                "type": "string",
+                "operation": "equals"
               },
-              "rightValue": true
+              "rightValue": "usable"
             }
           ],
           "combinator": "and"
@@ -449,152 +326,8 @@
       }
     },
     {
-      "id": "5e55d79c-26c3-4174-8ccf-862f9dbccb4a",
-      "name": "Split mirror items",
-      "type": "n8n-nodes-base.splitOut",
-      "typeVersion": 1.1,
-      "position": [
-        1392,
-        320
-      ],
-      "parameters": {
-        "fieldToSplitOut": "items",
-        "include": "selectedOtherFields",
-        "fieldsToInclude": "pubDate",
-        "options": {
-          "destinationFieldName": "item"
-        }
-      }
-    },
-    {
-      "id": "6d16e2d3-2af4-41cc-ae5d-b3041c7bfa9b",
-      "name": "Normalize mirror snapshot",
-      "type": "n8n-nodes-base.set",
-      "typeVersion": 3.5,
-      "position": [
-        1616,
-        320
-      ],
-      "parameters": {
-        "mode": "manual",
-        "assignments": {
-          "assignments": [
-            {
-              "id": "snapshotKey",
-              "name": "snapshotKey",
-              "value": "={{ 'daily:all:' + new Date($json.pubDate).toLocaleDateString('en-CA', { timeZone: 'Asia/Shanghai' }) + ':' + ($json.item.url || '').replace('https://github.com/', '').replace(/\\/$/, '') }}",
-              "type": "string"
-            },
-            {
-              "id": "snapshotDate",
-              "name": "snapshotDate",
-              "value": "={{ new Date($json.pubDate).toLocaleDateString('en-CA', { timeZone: 'Asia/Shanghai' }) }}",
-              "type": "string"
-            },
-            {
-              "id": "period",
-              "name": "period",
-              "value": "daily",
-              "type": "string"
-            },
-            {
-              "id": "languageScope",
-              "name": "languageScope",
-              "value": "all",
-              "type": "string"
-            },
-            {
-              "id": "rank",
-              "name": "rank",
-              "value": "={{ $itemIndex + 1 }}",
-              "type": "number"
-            },
-            {
-              "id": "repoFullName",
-              "name": "repoFullName",
-              "value": "={{ ($json.item.url || '').replace('https://github.com/', '').replace(/\\/$/, '') }}",
-              "type": "string"
-            },
-            {
-              "id": "repoUrl",
-              "name": "repoUrl",
-              "value": "={{ $json.item.url || '' }}",
-              "type": "string"
-            },
-            {
-              "id": "description",
-              "name": "description",
-              "value": "={{ $json.item.description || '' }}",
-              "type": "string"
-            },
-            {
-              "id": "language",
-              "name": "language",
-              "value": "={{ $json.item.language || '' }}",
-              "type": "string"
-            },
-            {
-              "id": "stars",
-              "name": "stars",
-              "value": "={{ Number($json.item.stars || 0) || 0 }}",
-              "type": "number"
-            },
-            {
-              "id": "forks",
-              "name": "forks",
-              "value": "={{ Number($json.item.forks || 0) || 0 }}",
-              "type": "number"
-            },
-            {
-              "id": "addedStars",
-              "name": "addedStars",
-              "value": "={{ Number(String($json.item.added_stars || '0').replace(/[^0-9]/g, '')) || 0 }}",
-              "type": "number"
-            },
-            {
-              "id": "source",
-              "name": "source",
-              "value": "hanishrao_trending_collection",
-              "type": "string"
-            },
-            {
-              "id": "sourceAuthority",
-              "name": "sourceAuthority",
-              "value": "mirror_of_official",
-              "type": "string"
-            },
-            {
-              "id": "sourceUrl",
-              "name": "sourceUrl",
-              "value": "https://github.com/hanishrao/trending-collection/blob/main/api/daily/all.json",
-              "type": "string"
-            },
-            {
-              "id": "sourcePublishedAt",
-              "name": "sourcePublishedAt",
-              "value": "={{ new Date($json.pubDate).toISOString() }}",
-              "type": "string"
-            },
-            {
-              "id": "collectedAt",
-              "name": "collectedAt",
-              "value": "={{ $now.toISO() }}",
-              "type": "string"
-            },
-            {
-              "id": "freshnessStatus",
-              "name": "freshnessStatus",
-              "value": "={{ (Date.now() - new Date($json.pubDate).getTime()) <= 21600000 ? 'fresh' : 'stale' }}",
-              "type": "string"
-            }
-          ]
-        },
-        "includeOtherFields": false
-      }
-    },
-    {
       "id": "6c51b401-2f5e-4124-a991-9d4e59f9c1fc",
-      "name": "Reject stale mirror",
+      "name": "Reject unavailable snapshot",
       "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,
       "position": [
@@ -603,7 +336,338 @@
       ],
       "parameters": {
         "errorType": "errorMessage",
-        "errorMessage": "GitHub Trending mirror is stale, malformed, or missing pubDate/items; no trustworthy official snapshot is available."
+        "errorMessage": "GitHub Trending collector unavailable: official candidate invalid/unreachable, mirror candidate invalid/stale/unreachable, and no complete LKG snapshot within 48 hours."
+      }
+    },
+    {
+      "id": "7b8c779f-a1e9-4846-b138-f31f0aad745c",
+      "name": "Validate official candidate",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1616,
+        128
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const items = $input.all().map(i => i.json || {});\nconst minItems = 5;\nconst maxItems = 100;\nconst normalizeMetric = (value) => {\n  const n = Number(String(value ?? '0').replace(/[^0-9]/g, ''));\n  return Number.isFinite(n) ? n : 0;\n};\nconst repoPattern = /^[^\\s/]+\\/[^\\s/]+$/;\nconst normalized = [];\nconst seen = new Set();\nlet reason = '';\nfor (let i = 0; i < items.length; i++) {\n  const rawPath = String(items[i].repoPath || '').trim().replace(/^\\/+|\\/+$/g, '');\n  if (!repoPattern.test(rawPath)) { reason = `invalid_repo_at_rank_${i + 1}`; break; }\n  if (seen.has(rawPath)) { reason = `duplicate_repo_${rawPath}`; break; }\n  seen.add(rawPath);\n  normalized.push({\n    rank: i + 1,\n    repoFullName: rawPath,\n    repoUrl: `https://github.com/${rawPath}`,\n    description: String(items[i].description || '').trim(),\n    language: String(items[i].language || '').trim(),\n    stars: normalizeMetric(items[i].starsText),\n    forks: normalizeMetric(items[i].forksText),\n    addedStars: normalizeMetric(items[i].addedStarsLabel),\n  });\n}\nif (!reason && (normalized.length < minItems || normalized.length > maxItems)) reason = `item_count_${normalized.length}_outside_${minItems}_${maxItems}`;\nconst usable = !reason;\nif (!usable) return [{ json: { usable: false, reason, itemCount: normalized.length, rows: [] } }];\nconst hashInput = JSON.stringify(normalized);\nlet h = 0x811c9dc5;\nfor (let i = 0; i < hashInput.length; i++) { h ^= hashInput.charCodeAt(i); h = Math.imul(h, 0x01000193); }\nconst contentHash = (h >>> 0).toString(16).padStart(8, '0');\nconst collectedAt = new Date().toISOString();\nconst snapshotDate = $now.setZone('Asia/Shanghai').toFormat('yyyy-MM-dd');\nconst snapshotId = `daily:all:${snapshotDate}:official:${contentHash}`;\nconst itemCount = normalized.length;\nconst rows = normalized.map(r => ({\n  snapshotKey: `${snapshotId}:${r.rank}`,\n  snapshotId,\n  contentHash,\n  snapshotDate,\n  period: 'daily',\n  languageScope: 'all',\n  ...r,\n  source: 'github_trending_html',\n  sourceAuthority: 'direct_official',\n  sourceUrl: 'https://github.com/trending?since=daily',\n  sourcePublishedAt: null,\n  collectedAt,\n  freshnessStatus: 'fresh',\n  schemaVersion: 2,\n  itemCount,\n  collectorStatus: 'healthy',\n}));\nreturn [{ json: { usable: true, reason: '', snapshotId, contentHash, snapshotDate, itemCount, source: 'github_trending_html', sourceAuthority: 'direct_official', sourceUrl: 'https://github.com/trending?since=daily', sourcePublishedAt: null, collectedAt, freshnessStatus: 'fresh', schemaVersion: 2, collectorStatus: 'healthy', rows } }];"
+      }
+    },
+    {
+      "id": "48212e0c-4e94-4b98-b0b5-3551d28c7e63",
+      "name": "Official candidate usable?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.4,
+      "position": [
+        1840,
+        128
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.usable === true ? 'usable' : 'unusable' }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              },
+              "rightValue": "usable"
+            }
+          ],
+          "combinator": "and"
+        }
+      }
+    },
+    {
+      "id": "4776bfe4-58ab-42e0-92f8-61e5582d7af7",
+      "name": "Validate mirror candidate",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1392,
+        320
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const payload = $input.first()?.json || {};\nconst minItems = 5;\nconst maxItems = 100;\nconst pubMs = Date.parse(payload.pubDate || '');\nconst ageMs = Date.now() - pubMs;\nlet reason = '';\nif (!Number.isFinite(pubMs)) reason = 'invalid_or_missing_pubDate';\nif (!reason && (ageMs < -3600000 || ageMs > 86400000)) reason = `mirror_age_ms_${ageMs}_outside_window`;\nif (!reason && !Array.isArray(payload.items)) reason = 'items_not_array';\nconst rawItems = Array.isArray(payload.items) ? payload.items : [];\nif (!reason && (rawItems.length < minItems || rawItems.length > maxItems)) reason = `item_count_${rawItems.length}_outside_${minItems}_${maxItems}`;\nconst normalized = [];\nconst seen = new Set();\nconst urlPattern = /^https:\\/\\/github\\.com\\/([^\\s/]+)\\/([^\\s/#?]+)\\/?$/i;\nconst metric = (value) => {\n  const n = Number(String(value ?? '0').replace(/[^0-9]/g, ''));\n  return Number.isFinite(n) ? n : 0;\n};\nif (!reason) {\n  for (let i = 0; i < rawItems.length; i++) {\n    const url = String(rawItems[i]?.url || '').trim();\n    const m = url.match(urlPattern);\n    if (!m) { reason = `invalid_repo_url_at_rank_${i + 1}`; break; }\n    const repoFullName = `${m[1]}/${m[2]}`;\n    if (seen.has(repoFullName)) { reason = `duplicate_repo_${repoFullName}`; break; }\n    seen.add(repoFullName);\n    normalized.push({ rank: i + 1, repoFullName, repoUrl: `https://github.com/${repoFullName}`, description: String(rawItems[i]?.description || '').trim(), language: String(rawItems[i]?.language || '').trim(), stars: metric(rawItems[i]?.stars), forks: metric(rawItems[i]?.forks), addedStars: metric(rawItems[i]?.added_stars) });\n  }\n}\nif (reason) return [{ json: { usable: false, reason, itemCount: normalized.length, rows: [] } }];\nconst hashInput = JSON.stringify(normalized);\nlet h = 0x811c9dc5;\nfor (let i = 0; i < hashInput.length; i++) { h ^= hashInput.charCodeAt(i); h = Math.imul(h, 0x01000193); }\nconst contentHash = (h >>> 0).toString(16).padStart(8, '0');\nconst sourcePublishedAt = new Date(pubMs).toISOString();\nconst snapshotDate = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Shanghai', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date(pubMs));\nconst collectedAt = new Date().toISOString();\nconst snapshotId = `daily:all:${snapshotDate}:mirror:${contentHash}`;\nconst itemCount = normalized.length;\nconst rows = normalized.map(r => ({ snapshotKey: `${snapshotId}:${r.rank}`, snapshotId, contentHash, snapshotDate, period: 'daily', languageScope: 'all', ...r, source: 'hanishrao_trending_collection', sourceAuthority: 'mirror_of_official', sourceUrl: 'https://github.com/hanishrao/trending-collection/blob/main/api/daily/all.json', sourcePublishedAt, collectedAt, freshnessStatus: 'fresh', schemaVersion: 2, itemCount, collectorStatus: 'degraded-primary' }));\nreturn [{ json: { usable: true, reason: '', snapshotId, contentHash, snapshotDate, itemCount, source: 'hanishrao_trending_collection', sourceAuthority: 'mirror_of_official', sourceUrl: 'https://github.com/hanishrao/trending-collection/blob/main/api/daily/all.json', sourcePublishedAt, collectedAt, freshnessStatus: 'fresh', schemaVersion: 2, collectorStatus: 'degraded-primary', rows } }];"
+      }
+    },
+    {
+      "id": "42b2c771-d771-43c8-b977-8258c718663a",
+      "name": "Stage validated candidate",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2064,
+        224
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "return $input.all();"
+      }
+    },
+    {
+      "id": "92ce1bf5-0a14-41cb-a452-ba0570c09c89",
+      "name": "Read current snapshot state",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        2288,
+        224
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "3nHJwS6SBKt2su2S",
+          "cachedResultName": "github_trending_snapshot_state"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "stateKey",
+              "condition": "eq",
+              "keyValue": "daily:all:current"
+            }
+          ]
+        },
+        "returnAll": false,
+        "limit": 1
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "id": "18571377-4acd-4371-a75c-9c346117ac78",
+      "name": "Decide candidate commit",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2512,
+        224
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const candidate = $('Stage validated candidate').first().json;\nconst current = $input.first()?.json || {};\nconst same = current.stateKey === 'daily:all:current' && current.snapshotId === candidate.snapshotId && current.contentHash === candidate.contentHash && Number(current.itemCount) === Number(candidate.itemCount) && Number(current.schemaVersion) === 2;\nreturn [{ json: { ...candidate, commitNeeded: !same, previousSnapshotId: current.snapshotId || null } }];"
+      }
+    },
+    {
+      "id": "1796b240-942b-4be0-a34f-9982095144ab",
+      "name": "Commit needed?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.4,
+      "position": [
+        2736,
+        224
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.commitNeeded === true ? 'commit' : 'reuse' }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              },
+              "rightValue": "commit"
+            }
+          ],
+          "combinator": "and"
+        }
+      }
+    },
+    {
+      "id": "c46ab2d2-eb35-4987-b16e-95b5eec6cf4f",
+      "name": "Emit candidate rows",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2960,
+        128
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const candidate = $input.first()?.json || {};\nif (!candidate.commitNeeded || !Array.isArray(candidate.rows)) return [];\nreturn candidate.rows.map(row => ({ json: row }));"
+      }
+    },
+    {
+      "id": "773579a8-f773-4476-a981-cb4f1cd60040",
+      "name": "Build state pointer",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3408,
+        128
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const c = $('Stage validated candidate').first().json;\nreturn [{ json: { stateKey: 'daily:all:current', snapshotId: c.snapshotId, snapshotDate: c.snapshotDate, contentHash: c.contentHash, source: c.source, sourceAuthority: c.sourceAuthority, sourceUrl: c.sourceUrl, sourcePublishedAt: c.sourcePublishedAt || null, collectedAt: c.collectedAt, itemCount: c.itemCount, schemaVersion: c.schemaVersion, collectorStatus: c.collectorStatus, freshnessStatus: c.freshnessStatus } }];"
+      }
+    },
+    {
+      "id": "50df440e-b5fe-4a55-977d-af4de8a1ec55",
+      "name": "Commit current snapshot state",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        3632,
+        128
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "upsert",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "3nHJwS6SBKt2su2S",
+          "cachedResultName": "github_trending_snapshot_state"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "stateKey",
+              "condition": "eq",
+              "keyValue": "={{ $json.stateKey }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": null
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "baec524c-b127-4e9e-be37-e2e103934c8a",
+      "name": "Read current snapshot state for LKG",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        1616,
+        512
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "3nHJwS6SBKt2su2S",
+          "cachedResultName": "github_trending_snapshot_state"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "stateKey",
+              "condition": "eq",
+              "keyValue": "daily:all:current"
+            }
+          ]
+        },
+        "returnAll": false,
+        "limit": 1
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "id": "277adfae-8f7f-4587-9c8b-1d43cf8207b6",
+      "name": "Read LKG snapshot rows",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        1840,
+        512
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "AwcdYhHYyBN2tlR9",
+          "cachedResultName": "github_trending_snapshots"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "snapshotId",
+              "condition": "eq",
+              "keyValue": "={{ $json.snapshotId || '__none__' }}"
+            }
+          ]
+        },
+        "returnAll": true
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "id": "e597fdfc-ab45-4cc1-9b90-1763b50febf0",
+      "name": "Validate LKG snapshot",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2064,
+        512
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const state = $('Read current snapshot state for LKG').first()?.json || {};\nconst rows = $input.all().map(i => i.json || {}).filter(r => r.snapshotId);\nlet reason = '';\nif (state.stateKey !== 'daily:all:current' || !state.snapshotId) reason = 'missing_current_state';\nconst expected = Number(state.itemCount || 0);\nif (!reason && (Number(state.schemaVersion) !== 2 || expected < 5 || expected > 100)) reason = 'invalid_state_contract';\nconst freshnessBase = Date.parse(state.sourcePublishedAt || state.collectedAt || '');\nconst ageMs = Date.now() - freshnessBase;\nif (!reason && (!Number.isFinite(freshnessBase) || ageMs < -3600000 || ageMs > 172800000)) reason = 'lkg_stale_or_invalid_time';\nif (!reason && rows.length !== expected) reason = `row_count_${rows.length}_expected_${expected}`;\nif (!reason) {\n  const ranks = new Set();\n  const repos = new Set();\n  for (const r of rows) {\n    if (r.snapshotId !== state.snapshotId || r.contentHash !== state.contentHash || Number(r.schemaVersion) !== 2 || Number(r.itemCount) !== expected) { reason = 'row_metadata_mismatch'; break; }\n    const rank = Number(r.rank);\n    if (!Number.isInteger(rank) || rank < 1 || rank > expected || ranks.has(rank)) { reason = 'invalid_or_duplicate_rank'; break; }\n    ranks.add(rank);\n    const repo = String(r.repoFullName || '');\n    if (!/^[^\\s/]+\\/[^\\s/]+$/.test(repo) || repos.has(repo)) { reason = 'invalid_or_duplicate_repo'; break; }\n    repos.add(repo);\n  }\n  if (!reason && ranks.size !== expected) reason = 'rank_set_incomplete';\n}\nif (reason) return [{ json: { usable: false, collectorStatus: 'unavailable', reason, snapshotId: state.snapshotId || null } }];\nreturn [{ json: { usable: true, collectorStatus: 'degraded-lkg', reason: '', snapshotId: state.snapshotId, snapshotDate: state.snapshotDate, source: state.source, sourceAuthority: state.sourceAuthority, sourceUrl: state.sourceUrl, sourcePublishedAt: state.sourcePublishedAt || null, collectedAt: state.collectedAt, itemCount: expected, schemaVersion: 2, freshnessStatus: 'lkg', ageMs } }];"
+      }
+    },
+    {
+      "id": "6b0c86fa-0090-4851-8655-78b60d4b60db",
+      "name": "LKG usable?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.4,
+      "position": [
+        2288,
+        512
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.usable === true ? 'usable' : 'unusable' }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              },
+              "rightValue": "usable"
+            }
+          ],
+          "combinator": "and"
+        }
       }
     }
   ],
@@ -681,18 +745,36 @@
       "main": [
         [
           {
-            "node": "Normalize official snapshot",
+            "node": "Validate official candidate",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Normalize official snapshot": {
+    "Validate official candidate": {
       "main": [
         [
           {
-            "node": "Upsert snapshot rows",
+            "node": "Official candidate usable?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Official candidate usable?": {
+      "main": [
+        [
+          {
+            "node": "Stage validated candidate",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Fetch mirror snapshot",
             "type": "main",
             "index": 0
           }
@@ -700,6 +782,24 @@
       ]
     },
     "Fetch mirror snapshot": {
+      "main": [
+        [
+          {
+            "node": "Validate mirror candidate",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Read current snapshot state for LKG",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate mirror candidate": {
       "main": [
         [
           {
@@ -714,36 +814,136 @@
       "main": [
         [
           {
-            "node": "Split mirror items",
+            "node": "Stage validated candidate",
             "type": "main",
             "index": 0
           }
         ],
         [
           {
-            "node": "Reject stale mirror",
+            "node": "Read current snapshot state for LKG",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Split mirror items": {
+    "Stage validated candidate": {
       "main": [
         [
           {
-            "node": "Normalize mirror snapshot",
+            "node": "Read current snapshot state",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Normalize mirror snapshot": {
+    "Read current snapshot state": {
+      "main": [
+        [
+          {
+            "node": "Decide candidate commit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Decide candidate commit": {
+      "main": [
+        [
+          {
+            "node": "Commit needed?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Commit needed?": {
+      "main": [
+        [
+          {
+            "node": "Emit candidate rows",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Emit candidate rows": {
       "main": [
         [
           {
             "node": "Upsert snapshot rows",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upsert snapshot rows": {
+      "main": [
+        [
+          {
+            "node": "Build state pointer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build state pointer": {
+      "main": [
+        [
+          {
+            "node": "Commit current snapshot state",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read current snapshot state for LKG": {
+      "main": [
+        [
+          {
+            "node": "Read LKG snapshot rows",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read LKG snapshot rows": {
+      "main": [
+        [
+          {
+            "node": "Validate LKG snapshot",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate LKG snapshot": {
+      "main": [
+        [
+          {
+            "node": "LKG usable?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LKG usable?": {
+      "main": [
+        null,
+        [
+          {
+            "node": "Reject unavailable snapshot",
             "type": "main",
             "index": 0
           }
@@ -754,22 +954,33 @@
   "nodeGroups": [
     {
       "id": "c3ff6c13-5e78-4ac9-be6a-84cdeadacfad",
-      "name": "Acquire and persist Trending snapshot",
+      "name": "Acquire validate commit Trending snapshot",
       "nodeIds": [
         "f7cf3cc1-51e2-49d2-b2b7-77d3b4dae281",
         "f67cc42d-13eb-4339-abbf-d65f0e442456",
         "77acf36b-4425-458a-92e8-0b48d16bcf95",
         "458b7e2e-3e39-4a39-b1db-0862424148bd",
         "712d78cc-7a15-4f69-91f7-dc10535e52c5",
-        "2c4c4994-a149-414f-be4e-d7c1bdaafd2e",
+        "7b8c779f-a1e9-4846-b138-f31f0aad745c",
+        "48212e0c-4e94-4b98-b0b5-3551d28c7e63",
         "cc423f69-0430-4990-b4b0-5be05f762992",
+        "4776bfe4-58ab-42e0-92f8-61e5582d7af7",
         "25ee73a6-ebb6-4c5c-b296-15f7c5a05d10",
-        "5e55d79c-26c3-4174-8ccf-862f9dbccb4a",
-        "6d16e2d3-2af4-41cc-ae5d-b3041c7bfa9b",
-        "6c51b401-2f5e-4124-a991-9d4e59f9c1fc",
-        "07c8759b-9a0f-46e6-a265-6a0c26ae0cbb"
+        "42b2c771-d771-43c8-b977-8258c718663a",
+        "92ce1bf5-0a14-41cb-a452-ba0570c09c89",
+        "18571377-4acd-4371-a75c-9c346117ac78",
+        "1796b240-942b-4be0-a34f-9982095144ab",
+        "c46ab2d2-eb35-4987-b16e-95b5eec6cf4f",
+        "07c8759b-9a0f-46e6-a265-6a0c26ae0cbb",
+        "773579a8-f773-4476-a981-cb4f1cd60040",
+        "50df440e-b5fe-4a55-977d-af4de8a1ec55",
+        "baec524c-b127-4e9e-be37-e2e103934c8a",
+        "277adfae-8f7f-4587-9c8b-1d43cf8207b6",
+        "e597fdfc-ab45-4cc1-9b90-1763b50febf0",
+        "6b0c86fa-0090-4851-8655-78b60d4b60db",
+        "6c51b401-2f5e-4124-a991-9d4e59f9c1fc"
       ],
-      "description": "Direct GitHub Trending first; fresh mirror only as fallback; normalized rows are idempotently persisted for Daily."
+      "description": "Official-first acquisition with validated mirror fallback, atomic current-state commit, idempotency, and 48h LKG safety."
     }
   ],
   "settings": {
@@ -783,13 +994,28 @@
     "saveDataSuccessExecution": "all",
     "callerPolicy": "workflowsFromSameOwner"
   },
-  "staticData": null,
+  "staticData": {
+    "node:Daily 08:30 Asia/Shanghai": {
+      "recurrenceRules": [
+        null
+      ],
+      "recurrenceRuleSignatures": [
+        null
+      ]
+    }
+  },
   "pinData": null,
   "meta": {
     "aiBuilderAssisted": true,
     "builderVariant": "mcp"
   },
   "tags": [
+    {
+      "id": "twNsKNALbdWLw0Ox",
+      "name": "automation",
+      "createdAt": "2026-10-22T08:25:54.546Z",
+      "updatedAt": "2026-10-22T08:25:54.546Z"
+    },
     {
       "id": "ZB1OFuryVXrNRjEy",
       "name": "github",
@@ -801,12 +1027,6 @@
       "name": "monitoring",
       "createdAt": "2026-10-22T08:38:34.124Z",
       "updatedAt": "2026-10-22T08:38:34.124Z"
-    },
-    {
-      "id": "twNsKNALbdWLw0Ox",
-      "name": "automation",
-      "createdAt": "2026-10-22T08:25:54.546Z",
-      "updatedAt": "2026-10-22T08:25:54.546Z"
     }
   ],
   "shared": [
@@ -818,5 +1038,989 @@
       "updatedAt": "2026-11-01T11:08:19.379Z"
     }
   ],
-  "activeVersion": null
+  "activeVersion": {
+    "versionId": "5b718758-83bf-432d-a009-c69cdbf22d9b",
+    "workflowId": "jtnPp8Zj1CaasiRk",
+    "nodes": [
+      {
+        "id": "11c4f129-e94f-42d5-a3f5-f868cd3ce98a",
+        "name": "Daily 08:30 Asia/Shanghai",
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.4,
+        "position": [
+          0,
+          0
+        ],
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "days",
+                "daysInterval": 1,
+                "triggerAtHour": 8,
+                "triggerAtMinute": 30
+              }
+            ]
+          },
+          "misfirePolicy": "coalesce",
+          "misfireGraceSeconds": 7200
+        }
+      },
+      {
+        "id": "f7cf3cc1-51e2-49d2-b2b7-77d3b4dae281",
+        "name": "Fetch official GitHub Trending",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.5,
+        "position": [
+          272,
+          320
+        ],
+        "parameters": {
+          "method": "GET",
+          "url": "https://github.com/trending?since=daily",
+          "authentication": "none",
+          "sendHeaders": true,
+          "specifyHeaders": "keypair",
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "User-Agent",
+                "value": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0 Safari/537.36"
+              },
+              {
+                "name": "Accept",
+                "value": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+              },
+              {
+                "name": "Accept-Language",
+                "value": "en-US,en;q=0.9"
+              }
+            ]
+          },
+          "options": {
+            "response": {
+              "response": {
+                "fullResponse": false,
+                "neverError": false,
+                "responseFormat": "text",
+                "outputPropertyName": "data"
+              }
+            },
+            "timeout": 30000
+          }
+        },
+        "retryOnFail": true,
+        "maxTries": 4,
+        "waitBetweenTries": 2000,
+        "onError": "continueErrorOutput"
+      },
+      {
+        "id": "f67cc42d-13eb-4339-abbf-d65f0e442456",
+        "name": "Extract trending articles",
+        "type": "n8n-nodes-base.html",
+        "typeVersion": 1.2,
+        "position": [
+          496,
+          176
+        ],
+        "parameters": {
+          "operation": "extractHtmlContent",
+          "sourceData": "json",
+          "extractionValues": {
+            "values": [
+              {
+                "key": "articles",
+                "cssSelector": "article.Box-row",
+                "returnValue": "html",
+                "returnArray": true
+              }
+            ]
+          },
+          "options": {
+            "trimValues": true,
+            "cleanUpText": false
+          }
+        }
+      },
+      {
+        "id": "77acf36b-4425-458a-92e8-0b48d16bcf95",
+        "name": "Official snapshot usable?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.4,
+        "position": [
+          720,
+          176
+        ],
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 2
+            },
+            "conditions": [
+              {
+                "leftValue": "={{ Array.isArray($json.articles) && $json.articles.length >= 5 && $json.articles.length <= 100 ? 'usable' : 'unusable' }}",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals"
+                },
+                "rightValue": "usable"
+              }
+            ],
+            "combinator": "and"
+          }
+        }
+      },
+      {
+        "id": "458b7e2e-3e39-4a39-b1db-0862424148bd",
+        "name": "Split official articles",
+        "type": "n8n-nodes-base.splitOut",
+        "typeVersion": 1.1,
+        "position": [
+          1168,
+          128
+        ],
+        "parameters": {
+          "fieldToSplitOut": "articles",
+          "include": "noOtherFields",
+          "options": {
+            "destinationFieldName": "data"
+          }
+        }
+      },
+      {
+        "id": "712d78cc-7a15-4f69-91f7-dc10535e52c5",
+        "name": "Parse official article",
+        "type": "n8n-nodes-base.html",
+        "typeVersion": 1.2,
+        "position": [
+          1392,
+          128
+        ],
+        "parameters": {
+          "operation": "extractHtmlContent",
+          "sourceData": "json",
+          "extractionValues": {
+            "values": [
+              {
+                "key": "repoPath",
+                "cssSelector": "h2 a",
+                "returnValue": "attribute",
+                "attribute": "href",
+                "returnArray": false
+              },
+              {
+                "key": "description",
+                "cssSelector": "p.col-9",
+                "returnValue": "text",
+                "returnArray": false
+              },
+              {
+                "key": "language",
+                "cssSelector": "span[itemprop=\"programmingLanguage\"]",
+                "returnValue": "text",
+                "returnArray": false
+              },
+              {
+                "key": "starsText",
+                "cssSelector": "a[href$=\"/stargazers\"]",
+                "returnValue": "text",
+                "returnArray": false
+              },
+              {
+                "key": "forksText",
+                "cssSelector": "a[href$=\"/forks\"]",
+                "returnValue": "text",
+                "returnArray": false
+              },
+              {
+                "key": "addedStarsLabel",
+                "cssSelector": "span.float-sm-right",
+                "returnValue": "text",
+                "returnArray": false
+              }
+            ]
+          },
+          "options": {
+            "trimValues": true,
+            "cleanUpText": true
+          }
+        }
+      },
+      {
+        "id": "07c8759b-9a0f-46e6-a265-6a0c26ae0cbb",
+        "name": "Upsert snapshot rows",
+        "type": "n8n-nodes-base.dataTable",
+        "typeVersion": 1.1,
+        "position": [
+          3184,
+          128
+        ],
+        "parameters": {
+          "resource": "row",
+          "operation": "upsert",
+          "dataTableId": {
+            "__rl": true,
+            "mode": "id",
+            "value": "AwcdYhHYyBN2tlR9",
+            "cachedResultName": "github_trending_snapshots"
+          },
+          "matchType": "allConditions",
+          "filters": {
+            "conditions": [
+              {
+                "keyName": "snapshotKey",
+                "condition": "eq",
+                "keyValue": "={{ $json.snapshotKey }}"
+              }
+            ]
+          },
+          "columns": {
+            "mappingMode": "autoMapInputData",
+            "value": null
+          },
+          "options": {}
+        }
+      },
+      {
+        "id": "cc423f69-0430-4990-b4b0-5be05f762992",
+        "name": "Fetch mirror snapshot",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.5,
+        "position": [
+          944,
+          416
+        ],
+        "parameters": {
+          "method": "GET",
+          "url": "https://raw.githubusercontent.com/hanishrao/trending-collection/main/api/daily/all.json",
+          "authentication": "none",
+          "sendHeaders": true,
+          "specifyHeaders": "keypair",
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Accept",
+                "value": "application/json"
+              },
+              {
+                "name": "User-Agent",
+                "value": "n8n-github-trending-collector/1.0"
+              }
+            ]
+          },
+          "options": {
+            "response": {
+              "response": {
+                "fullResponse": false,
+                "neverError": false,
+                "responseFormat": "json"
+              }
+            },
+            "timeout": 30000
+          }
+        },
+        "retryOnFail": true,
+        "maxTries": 4,
+        "waitBetweenTries": 2000,
+        "onError": "continueErrorOutput"
+      },
+      {
+        "id": "25ee73a6-ebb6-4c5c-b296-15f7c5a05d10",
+        "name": "Mirror snapshot usable?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.4,
+        "position": [
+          1168,
+          416
+        ],
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 2
+            },
+            "conditions": [
+              {
+                "leftValue": "={{ $json.usable === true ? 'usable' : 'unusable' }}",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals"
+                },
+                "rightValue": "usable"
+              }
+            ],
+            "combinator": "and"
+          }
+        }
+      },
+      {
+        "id": "6c51b401-2f5e-4124-a991-9d4e59f9c1fc",
+        "name": "Reject unavailable snapshot",
+        "type": "n8n-nodes-base.stopAndError",
+        "typeVersion": 1,
+        "position": [
+          1392,
+          512
+        ],
+        "parameters": {
+          "errorType": "errorMessage",
+          "errorMessage": "GitHub Trending collector unavailable: official candidate invalid/unreachable, mirror candidate invalid/stale/unreachable, and no complete LKG snapshot within 48 hours."
+        }
+      },
+      {
+        "id": "7b8c779f-a1e9-4846-b138-f31f0aad745c",
+        "name": "Validate official candidate",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1616,
+          128
+        ],
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "language": "javaScript",
+          "jsCode": "const items = $input.all().map(i => i.json || {});\nconst minItems = 5;\nconst maxItems = 100;\nconst normalizeMetric = (value) => {\n  const n = Number(String(value ?? '0').replace(/[^0-9]/g, ''));\n  return Number.isFinite(n) ? n : 0;\n};\nconst repoPattern = /^[^\\s/]+\\/[^\\s/]+$/;\nconst normalized = [];\nconst seen = new Set();\nlet reason = '';\nfor (let i = 0; i < items.length; i++) {\n  const rawPath = String(items[i].repoPath || '').trim().replace(/^\\/+|\\/+$/g, '');\n  if (!repoPattern.test(rawPath)) { reason = `invalid_repo_at_rank_${i + 1}`; break; }\n  if (seen.has(rawPath)) { reason = `duplicate_repo_${rawPath}`; break; }\n  seen.add(rawPath);\n  normalized.push({\n    rank: i + 1,\n    repoFullName: rawPath,\n    repoUrl: `https://github.com/${rawPath}`,\n    description: String(items[i].description || '').trim(),\n    language: String(items[i].language || '').trim(),\n    stars: normalizeMetric(items[i].starsText),\n    forks: normalizeMetric(items[i].forksText),\n    addedStars: normalizeMetric(items[i].addedStarsLabel),\n  });\n}\nif (!reason && (normalized.length < minItems || normalized.length > maxItems)) reason = `item_count_${normalized.length}_outside_${minItems}_${maxItems}`;\nconst usable = !reason;\nif (!usable) return [{ json: { usable: false, reason, itemCount: normalized.length, rows: [] } }];\nconst hashInput = JSON.stringify(normalized);\nlet h = 0x811c9dc5;\nfor (let i = 0; i < hashInput.length; i++) { h ^= hashInput.charCodeAt(i); h = Math.imul(h, 0x01000193); }\nconst contentHash = (h >>> 0).toString(16).padStart(8, '0');\nconst collectedAt = new Date().toISOString();\nconst snapshotDate = $now.setZone('Asia/Shanghai').toFormat('yyyy-MM-dd');\nconst snapshotId = `daily:all:${snapshotDate}:official:${contentHash}`;\nconst itemCount = normalized.length;\nconst rows = normalized.map(r => ({\n  snapshotKey: `${snapshotId}:${r.rank}`,\n  snapshotId,\n  contentHash,\n  snapshotDate,\n  period: 'daily',\n  languageScope: 'all',\n  ...r,\n  source: 'github_trending_html',\n  sourceAuthority: 'direct_official',\n  sourceUrl: 'https://github.com/trending?since=daily',\n  sourcePublishedAt: null,\n  collectedAt,\n  freshnessStatus: 'fresh',\n  schemaVersion: 2,\n  itemCount,\n  collectorStatus: 'healthy',\n}));\nreturn [{ json: { usable: true, reason: '', snapshotId, contentHash, snapshotDate, itemCount, source: 'github_trending_html', sourceAuthority: 'direct_official', sourceUrl: 'https://github.com/trending?since=daily', sourcePublishedAt: null, collectedAt, freshnessStatus: 'fresh', schemaVersion: 2, collectorStatus: 'healthy', rows } }];"
+        }
+      },
+      {
+        "id": "48212e0c-4e94-4b98-b0b5-3551d28c7e63",
+        "name": "Official candidate usable?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.4,
+        "position": [
+          1840,
+          128
+        ],
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 2
+            },
+            "conditions": [
+              {
+                "leftValue": "={{ $json.usable === true ? 'usable' : 'unusable' }}",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals"
+                },
+                "rightValue": "usable"
+              }
+            ],
+            "combinator": "and"
+          }
+        }
+      },
+      {
+        "id": "4776bfe4-58ab-42e0-92f8-61e5582d7af7",
+        "name": "Validate mirror candidate",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1392,
+          320
+        ],
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "language": "javaScript",
+          "jsCode": "const payload = $input.first()?.json || {};\nconst minItems = 5;\nconst maxItems = 100;\nconst pubMs = Date.parse(payload.pubDate || '');\nconst ageMs = Date.now() - pubMs;\nlet reason = '';\nif (!Number.isFinite(pubMs)) reason = 'invalid_or_missing_pubDate';\nif (!reason && (ageMs < -3600000 || ageMs > 86400000)) reason = `mirror_age_ms_${ageMs}_outside_window`;\nif (!reason && !Array.isArray(payload.items)) reason = 'items_not_array';\nconst rawItems = Array.isArray(payload.items) ? payload.items : [];\nif (!reason && (rawItems.length < minItems || rawItems.length > maxItems)) reason = `item_count_${rawItems.length}_outside_${minItems}_${maxItems}`;\nconst normalized = [];\nconst seen = new Set();\nconst urlPattern = /^https:\\/\\/github\\.com\\/([^\\s/]+)\\/([^\\s/#?]+)\\/?$/i;\nconst metric = (value) => {\n  const n = Number(String(value ?? '0').replace(/[^0-9]/g, ''));\n  return Number.isFinite(n) ? n : 0;\n};\nif (!reason) {\n  for (let i = 0; i < rawItems.length; i++) {\n    const url = String(rawItems[i]?.url || '').trim();\n    const m = url.match(urlPattern);\n    if (!m) { reason = `invalid_repo_url_at_rank_${i + 1}`; break; }\n    const repoFullName = `${m[1]}/${m[2]}`;\n    if (seen.has(repoFullName)) { reason = `duplicate_repo_${repoFullName}`; break; }\n    seen.add(repoFullName);\n    normalized.push({ rank: i + 1, repoFullName, repoUrl: `https://github.com/${repoFullName}`, description: String(rawItems[i]?.description || '').trim(), language: String(rawItems[i]?.language || '').trim(), stars: metric(rawItems[i]?.stars), forks: metric(rawItems[i]?.forks), addedStars: metric(rawItems[i]?.added_stars) });\n  }\n}\nif (reason) return [{ json: { usable: false, reason, itemCount: normalized.length, rows: [] } }];\nconst hashInput = JSON.stringify(normalized);\nlet h = 0x811c9dc5;\nfor (let i = 0; i < hashInput.length; i++) { h ^= hashInput.charCodeAt(i); h = Math.imul(h, 0x01000193); }\nconst contentHash = (h >>> 0).toString(16).padStart(8, '0');\nconst sourcePublishedAt = new Date(pubMs).toISOString();\nconst snapshotDate = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Shanghai', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date(pubMs));\nconst collectedAt = new Date().toISOString();\nconst snapshotId = `daily:all:${snapshotDate}:mirror:${contentHash}`;\nconst itemCount = normalized.length;\nconst rows = normalized.map(r => ({ snapshotKey: `${snapshotId}:${r.rank}`, snapshotId, contentHash, snapshotDate, period: 'daily', languageScope: 'all', ...r, source: 'hanishrao_trending_collection', sourceAuthority: 'mirror_of_official', sourceUrl: 'https://github.com/hanishrao/trending-collection/blob/main/api/daily/all.json', sourcePublishedAt, collectedAt, freshnessStatus: 'fresh', schemaVersion: 2, itemCount, collectorStatus: 'degraded-primary' }));\nreturn [{ json: { usable: true, reason: '', snapshotId, contentHash, snapshotDate, itemCount, source: 'hanishrao_trending_collection', sourceAuthority: 'mirror_of_official', sourceUrl: 'https://github.com/hanishrao/trending-collection/blob/main/api/daily/all.json', sourcePublishedAt, collectedAt, freshnessStatus: 'fresh', schemaVersion: 2, collectorStatus: 'degraded-primary', rows } }];"
+        }
+      },
+      {
+        "id": "42b2c771-d771-43c8-b977-8258c718663a",
+        "name": "Stage validated candidate",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          2064,
+          224
+        ],
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "language": "javaScript",
+          "jsCode": "return $input.all();"
+        }
+      },
+      {
+        "id": "92ce1bf5-0a14-41cb-a452-ba0570c09c89",
+        "name": "Read current snapshot state",
+        "type": "n8n-nodes-base.dataTable",
+        "typeVersion": 1.1,
+        "position": [
+          2288,
+          224
+        ],
+        "parameters": {
+          "resource": "row",
+          "operation": "get",
+          "dataTableId": {
+            "__rl": true,
+            "mode": "id",
+            "value": "3nHJwS6SBKt2su2S",
+            "cachedResultName": "github_trending_snapshot_state"
+          },
+          "matchType": "allConditions",
+          "filters": {
+            "conditions": [
+              {
+                "keyName": "stateKey",
+                "condition": "eq",
+                "keyValue": "daily:all:current"
+              }
+            ]
+          },
+          "returnAll": false,
+          "limit": 1
+        },
+        "alwaysOutputData": true
+      },
+      {
+        "id": "18571377-4acd-4371-a75c-9c346117ac78",
+        "name": "Decide candidate commit",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          2512,
+          224
+        ],
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "language": "javaScript",
+          "jsCode": "const candidate = $('Stage validated candidate').first().json;\nconst current = $input.first()?.json || {};\nconst same = current.stateKey === 'daily:all:current' && current.snapshotId === candidate.snapshotId && current.contentHash === candidate.contentHash && Number(current.itemCount) === Number(candidate.itemCount) && Number(current.schemaVersion) === 2;\nreturn [{ json: { ...candidate, commitNeeded: !same, previousSnapshotId: current.snapshotId || null } }];"
+        }
+      },
+      {
+        "id": "1796b240-942b-4be0-a34f-9982095144ab",
+        "name": "Commit needed?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.4,
+        "position": [
+          2736,
+          224
+        ],
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 2
+            },
+            "conditions": [
+              {
+                "leftValue": "={{ $json.commitNeeded === true ? 'commit' : 'reuse' }}",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals"
+                },
+                "rightValue": "commit"
+              }
+            ],
+            "combinator": "and"
+          }
+        }
+      },
+      {
+        "id": "c46ab2d2-eb35-4987-b16e-95b5eec6cf4f",
+        "name": "Emit candidate rows",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          2960,
+          128
+        ],
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "language": "javaScript",
+          "jsCode": "const candidate = $input.first()?.json || {};\nif (!candidate.commitNeeded || !Array.isArray(candidate.rows)) return [];\nreturn candidate.rows.map(row => ({ json: row }));"
+        }
+      },
+      {
+        "id": "773579a8-f773-4476-a981-cb4f1cd60040",
+        "name": "Build state pointer",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          3408,
+          128
+        ],
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "language": "javaScript",
+          "jsCode": "const c = $('Stage validated candidate').first().json;\nreturn [{ json: { stateKey: 'daily:all:current', snapshotId: c.snapshotId, snapshotDate: c.snapshotDate, contentHash: c.contentHash, source: c.source, sourceAuthority: c.sourceAuthority, sourceUrl: c.sourceUrl, sourcePublishedAt: c.sourcePublishedAt || null, collectedAt: c.collectedAt, itemCount: c.itemCount, schemaVersion: c.schemaVersion, collectorStatus: c.collectorStatus, freshnessStatus: c.freshnessStatus } }];"
+        }
+      },
+      {
+        "id": "50df440e-b5fe-4a55-977d-af4de8a1ec55",
+        "name": "Commit current snapshot state",
+        "type": "n8n-nodes-base.dataTable",
+        "typeVersion": 1.1,
+        "position": [
+          3632,
+          128
+        ],
+        "parameters": {
+          "resource": "row",
+          "operation": "upsert",
+          "dataTableId": {
+            "__rl": true,
+            "mode": "id",
+            "value": "3nHJwS6SBKt2su2S",
+            "cachedResultName": "github_trending_snapshot_state"
+          },
+          "matchType": "allConditions",
+          "filters": {
+            "conditions": [
+              {
+                "keyName": "stateKey",
+                "condition": "eq",
+                "keyValue": "={{ $json.stateKey }}"
+              }
+            ]
+          },
+          "columns": {
+            "mappingMode": "autoMapInputData",
+            "value": null
+          },
+          "options": {}
+        }
+      },
+      {
+        "id": "baec524c-b127-4e9e-be37-e2e103934c8a",
+        "name": "Read current snapshot state for LKG",
+        "type": "n8n-nodes-base.dataTable",
+        "typeVersion": 1.1,
+        "position": [
+          1616,
+          512
+        ],
+        "parameters": {
+          "resource": "row",
+          "operation": "get",
+          "dataTableId": {
+            "__rl": true,
+            "mode": "id",
+            "value": "3nHJwS6SBKt2su2S",
+            "cachedResultName": "github_trending_snapshot_state"
+          },
+          "matchType": "allConditions",
+          "filters": {
+            "conditions": [
+              {
+                "keyName": "stateKey",
+                "condition": "eq",
+                "keyValue": "daily:all:current"
+              }
+            ]
+          },
+          "returnAll": false,
+          "limit": 1
+        },
+        "alwaysOutputData": true
+      },
+      {
+        "id": "277adfae-8f7f-4587-9c8b-1d43cf8207b6",
+        "name": "Read LKG snapshot rows",
+        "type": "n8n-nodes-base.dataTable",
+        "typeVersion": 1.1,
+        "position": [
+          1840,
+          512
+        ],
+        "parameters": {
+          "resource": "row",
+          "operation": "get",
+          "dataTableId": {
+            "__rl": true,
+            "mode": "id",
+            "value": "AwcdYhHYyBN2tlR9",
+            "cachedResultName": "github_trending_snapshots"
+          },
+          "matchType": "allConditions",
+          "filters": {
+            "conditions": [
+              {
+                "keyName": "snapshotId",
+                "condition": "eq",
+                "keyValue": "={{ $json.snapshotId || '__none__' }}"
+              }
+            ]
+          },
+          "returnAll": true
+        },
+        "alwaysOutputData": true
+      },
+      {
+        "id": "e597fdfc-ab45-4cc1-9b90-1763b50febf0",
+        "name": "Validate LKG snapshot",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          2064,
+          512
+        ],
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "language": "javaScript",
+          "jsCode": "const state = $('Read current snapshot state for LKG').first()?.json || {};\nconst rows = $input.all().map(i => i.json || {}).filter(r => r.snapshotId);\nlet reason = '';\nif (state.stateKey !== 'daily:all:current' || !state.snapshotId) reason = 'missing_current_state';\nconst expected = Number(state.itemCount || 0);\nif (!reason && (Number(state.schemaVersion) !== 2 || expected < 5 || expected > 100)) reason = 'invalid_state_contract';\nconst freshnessBase = Date.parse(state.sourcePublishedAt || state.collectedAt || '');\nconst ageMs = Date.now() - freshnessBase;\nif (!reason && (!Number.isFinite(freshnessBase) || ageMs < -3600000 || ageMs > 172800000)) reason = 'lkg_stale_or_invalid_time';\nif (!reason && rows.length !== expected) reason = `row_count_${rows.length}_expected_${expected}`;\nif (!reason) {\n  const ranks = new Set();\n  const repos = new Set();\n  for (const r of rows) {\n    if (r.snapshotId !== state.snapshotId || r.contentHash !== state.contentHash || Number(r.schemaVersion) !== 2 || Number(r.itemCount) !== expected) { reason = 'row_metadata_mismatch'; break; }\n    const rank = Number(r.rank);\n    if (!Number.isInteger(rank) || rank < 1 || rank > expected || ranks.has(rank)) { reason = 'invalid_or_duplicate_rank'; break; }\n    ranks.add(rank);\n    const repo = String(r.repoFullName || '');\n    if (!/^[^\\s/]+\\/[^\\s/]+$/.test(repo) || repos.has(repo)) { reason = 'invalid_or_duplicate_repo'; break; }\n    repos.add(repo);\n  }\n  if (!reason && ranks.size !== expected) reason = 'rank_set_incomplete';\n}\nif (reason) return [{ json: { usable: false, collectorStatus: 'unavailable', reason, snapshotId: state.snapshotId || null } }];\nreturn [{ json: { usable: true, collectorStatus: 'degraded-lkg', reason: '', snapshotId: state.snapshotId, snapshotDate: state.snapshotDate, source: state.source, sourceAuthority: state.sourceAuthority, sourceUrl: state.sourceUrl, sourcePublishedAt: state.sourcePublishedAt || null, collectedAt: state.collectedAt, itemCount: expected, schemaVersion: 2, freshnessStatus: 'lkg', ageMs } }];"
+        }
+      },
+      {
+        "id": "6b0c86fa-0090-4851-8655-78b60d4b60db",
+        "name": "LKG usable?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.4,
+        "position": [
+          2288,
+          512
+        ],
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 2
+            },
+            "conditions": [
+              {
+                "leftValue": "={{ $json.usable === true ? 'usable' : 'unusable' }}",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals"
+                },
+                "rightValue": "usable"
+              }
+            ],
+            "combinator": "and"
+          }
+        }
+      }
+    ],
+    "connections": {
+      "Daily 08:30 Asia/Shanghai": {
+        "main": [
+          [
+            {
+              "node": "Fetch official GitHub Trending",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Fetch official GitHub Trending": {
+        "main": [
+          [
+            {
+              "node": "Extract trending articles",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Fetch mirror snapshot",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Extract trending articles": {
+        "main": [
+          [
+            {
+              "node": "Official snapshot usable?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Official snapshot usable?": {
+        "main": [
+          [
+            {
+              "node": "Split official articles",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Fetch mirror snapshot",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Split official articles": {
+        "main": [
+          [
+            {
+              "node": "Parse official article",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Parse official article": {
+        "main": [
+          [
+            {
+              "node": "Validate official candidate",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Validate official candidate": {
+        "main": [
+          [
+            {
+              "node": "Official candidate usable?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Official candidate usable?": {
+        "main": [
+          [
+            {
+              "node": "Stage validated candidate",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Fetch mirror snapshot",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Fetch mirror snapshot": {
+        "main": [
+          [
+            {
+              "node": "Validate mirror candidate",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Read current snapshot state for LKG",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Validate mirror candidate": {
+        "main": [
+          [
+            {
+              "node": "Mirror snapshot usable?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Mirror snapshot usable?": {
+        "main": [
+          [
+            {
+              "node": "Stage validated candidate",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Read current snapshot state for LKG",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Stage validated candidate": {
+        "main": [
+          [
+            {
+              "node": "Read current snapshot state",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Read current snapshot state": {
+        "main": [
+          [
+            {
+              "node": "Decide candidate commit",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Decide candidate commit": {
+        "main": [
+          [
+            {
+              "node": "Commit needed?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Commit needed?": {
+        "main": [
+          [
+            {
+              "node": "Emit candidate rows",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Emit candidate rows": {
+        "main": [
+          [
+            {
+              "node": "Upsert snapshot rows",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Upsert snapshot rows": {
+        "main": [
+          [
+            {
+              "node": "Build state pointer",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Build state pointer": {
+        "main": [
+          [
+            {
+              "node": "Commit current snapshot state",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Read current snapshot state for LKG": {
+        "main": [
+          [
+            {
+              "node": "Read LKG snapshot rows",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Read LKG snapshot rows": {
+        "main": [
+          [
+            {
+              "node": "Validate LKG snapshot",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Validate LKG snapshot": {
+        "main": [
+          [
+            {
+              "node": "LKG usable?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "LKG usable?": {
+        "main": [
+          null,
+          [
+            {
+              "node": "Reject unavailable snapshot",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "nodeGroups": [
+      {
+        "id": "c3ff6c13-5e78-4ac9-be6a-84cdeadacfad",
+        "name": "Acquire validate commit Trending snapshot",
+        "nodeIds": [
+          "f7cf3cc1-51e2-49d2-b2b7-77d3b4dae281",
+          "f67cc42d-13eb-4339-abbf-d65f0e442456",
+          "77acf36b-4425-458a-92e8-0b48d16bcf95",
+          "458b7e2e-3e39-4a39-b1db-0862424148bd",
+          "712d78cc-7a15-4f69-91f7-dc10535e52c5",
+          "7b8c779f-a1e9-4846-b138-f31f0aad745c",
+          "48212e0c-4e94-4b98-b0b5-3551d28c7e63",
+          "cc423f69-0430-4990-b4b0-5be05f762992",
+          "4776bfe4-58ab-42e0-92f8-61e5582d7af7",
+          "25ee73a6-ebb6-4c5c-b296-15f7c5a05d10",
+          "42b2c771-d771-43c8-b977-8258c718663a",
+          "92ce1bf5-0a14-41cb-a452-ba0570c09c89",
+          "18571377-4acd-4371-a75c-9c346117ac78",
+          "1796b240-942b-4be0-a34f-9982095144ab",
+          "c46ab2d2-eb35-4987-b16e-95b5eec6cf4f",
+          "07c8759b-9a0f-46e6-a265-6a0c26ae0cbb",
+          "773579a8-f773-4476-a981-cb4f1cd60040",
+          "50df440e-b5fe-4a55-977d-af4de8a1ec55",
+          "baec524c-b127-4e9e-be37-e2e103934c8a",
+          "277adfae-8f7f-4587-9c8b-1d43cf8207b6",
+          "e597fdfc-ab45-4cc1-9b90-1763b50febf0",
+          "6b0c86fa-0090-4851-8655-78b60d4b60db",
+          "6c51b401-2f5e-4124-a991-9d4e59f9c1fc"
+        ],
+        "description": "Official-first acquisition with validated mirror fallback, atomic current-state commit, idempotency, and 48h LKG safety."
+      }
+    ],
+    "authors": "Administrator NTLx (via MCP)",
+    "name": "Production-ready GitHub Trending collector",
+    "description": "Restore both production acquisition URLs and retry policies after fault-injection tests. Final draft retains validated official-first acquisition, fresh mirror fallback, immutable snapshot rows, atomic current pointer, idempotent reuse, and 48h LKG degradation.",
+    "autosaved": false,
+    "createdAt": "2026-11-03T11:39:05.235Z",
+    "updatedAt": "2026-11-03T11:39:05.235Z"
+  }
 }
