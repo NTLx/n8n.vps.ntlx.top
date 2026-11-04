@@ -438,12 +438,6 @@
   },
   "tags": [
     {
-      "id": "twNsKNALbdWLw0Ox",
-      "name": "automation",
-      "createdAt": "2026-10-22T08:25:54.546Z",
-      "updatedAt": "2026-10-22T08:25:54.546Z"
-    },
-    {
       "id": "jkffVXRb1S4v5PNj",
       "name": "subworkflow",
       "createdAt": "2026-10-22T15:59:43.410Z",
@@ -454,6 +448,12 @@
       "name": "tool",
       "createdAt": "2026-10-27T06:57:35.939Z",
       "updatedAt": "2026-10-27T06:57:35.939Z"
+    },
+    {
+      "id": "twNsKNALbdWLw0Ox",
+      "name": "automation",
+      "createdAt": "2026-10-22T08:25:54.546Z",
+      "updatedAt": "2026-10-22T08:25:54.546Z"
     },
     {
       "id": "ZB1OFuryVXrNRjEy",
