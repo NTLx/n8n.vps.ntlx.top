@@ -2,11 +2,11 @@
   "id": "YDRL5WVBbuB998TS",
   "name": "Monitor n8n changelog",
   "active": true,
-  "activeVersionId": "c5d6232f-e5aa-45c7-a395-1fa894853ee1",
+  "activeVersionId": "0a924c32-1c7f-4b96-aaa2-df2ffed92456",
   "createdAt": "2026-10-23T15:19:36.939Z",
-  "updatedAt": "2026-10-23T15:20:33.707Z",
+  "updatedAt": "2026-11-03T12:10:52.355Z",
   "isArchived": false,
-  "versionId": "c5d6232f-e5aa-45c7-a395-1fa894853ee1",
+  "versionId": "0a924c32-1c7f-4b96-aaa2-df2ffed92456",
   "triggerCount": 1,
   "nodes": [
     {
@@ -40,13 +40,14 @@
       ],
       "parameters": {
         "method": "GET",
-        "url": "https://docs.n8n.io/changelog/readme.md",
+        "url": "https://api.github.com/repos/n8n-io/n8n/releases?per_page=20",
         "authentication": "none",
+        "sendHeaders": false,
         "options": {
           "response": {
             "response": {
               "responseFormat": "text",
-              "outputPropertyName": "markdown"
+              "outputPropertyName": "releases_json"
             }
           }
         }
@@ -66,7 +67,7 @@
       ],
       "parameters": {
         "mode": "raw",
-        "jsonOutput": "={{ (() => { const md = $(\"Fetch n8n changelog\").item.json.markdown || \"\"; const versions = md.match(/Current `stable`:\\s*([^\\s]+)\\s+Current `beta`:\\s*([^\\s]+)/) || []; const headings = [...md.matchAll(/^##\\s+(.+)$/gm)]; if (!headings.length) throw new Error(\"No changelog entry heading found\"); const first = headings[0]; const second = headings[1]; const entry = md.slice(first.index, second ? second.index : md.length).trim(); const releasedMatch = entry.match(/\\*\\*Released:\\*\\*\\s*([^\\n]+)/) || []; const title = first[1].replace(/\\[([^\\]]+)\\]\\([^)]+\\)/g, \"$1\").trim(); const stable = versions[1] || \"\"; const beta = versions[2] || \"\"; const normalizedEntry = entry.replace(/\\s+/g, \" \").trim(); return { source_url: \"https://docs.n8n.io/changelog/\", markdown_url: \"https://docs.n8n.io/changelog/readme.md\", stable_version: stable, beta_version: beta, title, released: (releasedMatch[1] || \"\").trim(), entry_markdown: entry, snapshot_text: `stable=${stable}\\nbeta=${beta}\\n${normalizedEntry}` }; })() }}",
+        "jsonOutput": "={{ (() => { const raw = $(\"Fetch n8n changelog\").item.json.releases_json || \"[]\"; const releases = JSON.parse(raw); if (!Array.isArray(releases)) throw new Error(\"GitHub releases response is not an array\"); const valid = releases.filter(r => r && !r.draft); if (!valid.length) throw new Error(\"No published n8n releases found\"); const stable = valid.find(r => r.prerelease === false) || null; const prerelease = valid.find(r => r.prerelease === true) || null; const latest = valid[0]; const norm = v => String(v || \"\").replace(/^n8n@/, \"\"); const stableVersion = stable ? norm(stable.tag_name) : \"\"; const prereleaseVersion = prerelease ? norm(prerelease.tag_name) : \"\"; const title = String(latest.name || latest.tag_name || \"n8n release\"); const released = String(latest.published_at || latest.created_at || \"\"); const entry = String(latest.body || \"\").trim(); const normalizedEntry = entry.replace(/\\s+/g, \" \").trim(); return { source_url: \"https://github.com/n8n-io/n8n/releases\", api_url: \"https://api.github.com/repos/n8n-io/n8n/releases?per_page=20\", stable_version: stableVersion, beta_version: prereleaseVersion, title, released, release_tag: String(latest.tag_name || \"\"), release_prerelease: Boolean(latest.prerelease), entry_markdown: entry, snapshot_text: `stable=${stableVersion}\\nprerelease=${prereleaseVersion}\\nlatest=${String(latest.tag_name || \"\")}\\npublished=${released}\\n${normalizedEntry}` }; })() }}",
         "includeOtherFields": false
       }
     },
@@ -114,19 +115,19 @@
             "source_event_id": "={{ \"n8n-changelog:\" + $(\"Hash changelog snapshot\").item.json.snapshot_hash }}",
             "correlation_id": "={{ \"n8n-changelog:\" + $(\"Hash changelog snapshot\").item.json.snapshot_hash }}",
             "project": "n8n",
-            "input_ref": "https://docs.n8n.io/changelog/",
-            "summary": "={{ \"n8n Changelog update: \" + $(\"Parse latest changelog snapshot\").item.json.title + \" | stable \" + $(\"Parse latest changelog snapshot\").item.json.stable_version + \", beta \" + $(\"Parse latest changelog snapshot\").item.json.beta_version + \" | \" + $(\"Parse latest changelog snapshot\").item.json.released }}",
+            "input_ref": "https://github.com/n8n-io/n8n/releases",
+            "summary": "={{ \"n8n release update: \" + $(\"Parse latest changelog snapshot\").item.json.title + \" | stable \" + $(\"Parse latest changelog snapshot\").item.json.stable_version + \", prerelease \" + $(\"Parse latest changelog snapshot\").item.json.beta_version + \" | \" + $(\"Parse latest changelog snapshot\").item.json.released }}",
             "not_before": "={{ $now.toISO() }}",
             "deadline": "",
             "event_id": "={{ \"n8n-changelog:\" + $(\"Hash changelog snapshot\").item.json.snapshot_hash }}",
             "event_occurred_at": "={{ $now.toISO() }}",
-            "event_source": "n8n_changelog",
+            "event_source": "n8n_github_releases",
             "event_category": "n8n.changelog.updated",
             "event_title": "={{ $(\"Parse latest changelog snapshot\").item.json.title }}",
             "event_description": "={{ $(\"Parse latest changelog snapshot\").item.json.entry_markdown }}",
             "event_status": "new",
-            "event_url": "https://docs.n8n.io/changelog/",
-            "event_metadata_object": "={{ JSON.stringify({ snapshot_hash: $(\"Hash changelog snapshot\").item.json.snapshot_hash, stable_version: $(\"Parse latest changelog snapshot\").item.json.stable_version, beta_version: $(\"Parse latest changelog snapshot\").item.json.beta_version, title: $(\"Parse latest changelog snapshot\").item.json.title, released: $(\"Parse latest changelog snapshot\").item.json.released, entry_markdown: $(\"Parse latest changelog snapshot\").item.json.entry_markdown, detected_at: $now.toISO(), source_url: $(\"Parse latest changelog snapshot\").item.json.source_url, markdown_url: $(\"Parse latest changelog snapshot\").item.json.markdown_url }) }}"
+            "event_url": "https://github.com/n8n-io/n8n/releases",
+            "event_metadata_object": "={{ JSON.stringify({ snapshot_hash: $(\"Hash changelog snapshot\").item.json.snapshot_hash, stable_version: $(\"Parse latest changelog snapshot\").item.json.stable_version, prerelease_version: $(\"Parse latest changelog snapshot\").item.json.beta_version, latest_tag: $(\"Parse latest changelog snapshot\").item.json.release_tag, latest_is_prerelease: $(\"Parse latest changelog snapshot\").item.json.release_prerelease, title: $(\"Parse latest changelog snapshot\").item.json.title, released: $(\"Parse latest changelog snapshot\").item.json.released, entry_markdown: $(\"Parse latest changelog snapshot\").item.json.entry_markdown, detected_at: $now.toISO(), source_url: $(\"Parse latest changelog snapshot\").item.json.source_url, api_url: $(\"Parse latest changelog snapshot\").item.json.api_url }) }}"
           },
           "schema": [
             {
@@ -375,7 +376,7 @@
     "errorWorkflow": "3LE3BnPfHSuIZCVR",
     "timezone": "Asia/Shanghai",
     "saveExecutionProgress": false,
-    "saveManualExecutions": false,
+    "saveManualExecutions": true,
     "saveDataErrorExecution": "all",
     "saveDataSuccessExecution": "none",
     "executionTimeout": 120,
@@ -404,16 +405,16 @@
       "updatedAt": "2026-10-22T08:38:34.124Z"
     },
     {
-      "id": "twNsKNALbdWLw0Ox",
-      "name": "automation",
-      "createdAt": "2026-10-22T08:25:54.546Z",
-      "updatedAt": "2026-10-22T08:25:54.546Z"
-    },
-    {
       "id": "9jw9Bhya2Ylf8E4D",
       "name": "ai-work-producer",
       "createdAt": "2026-10-22T09:14:35.367Z",
       "updatedAt": "2026-10-22T09:14:35.367Z"
+    },
+    {
+      "id": "twNsKNALbdWLw0Ox",
+      "name": "automation",
+      "createdAt": "2026-10-22T08:25:54.546Z",
+      "updatedAt": "2026-10-22T08:25:54.546Z"
     },
     {
       "id": "BlGRvaSWqnmTk53i",
@@ -432,7 +433,7 @@
     }
   ],
   "activeVersion": {
-    "versionId": "c5d6232f-e5aa-45c7-a395-1fa894853ee1",
+    "versionId": "0a924c32-1c7f-4b96-aaa2-df2ffed92456",
     "workflowId": "YDRL5WVBbuB998TS",
     "nodes": [
       {
@@ -466,13 +467,14 @@
         ],
         "parameters": {
           "method": "GET",
-          "url": "https://docs.n8n.io/changelog/readme.md",
+          "url": "https://api.github.com/repos/n8n-io/n8n/releases?per_page=20",
           "authentication": "none",
+          "sendHeaders": false,
           "options": {
             "response": {
               "response": {
                 "responseFormat": "text",
-                "outputPropertyName": "markdown"
+                "outputPropertyName": "releases_json"
               }
             }
           }
@@ -492,7 +494,7 @@
         ],
         "parameters": {
           "mode": "raw",
-          "jsonOutput": "={{ (() => { const md = $(\"Fetch n8n changelog\").item.json.markdown || \"\"; const versions = md.match(/Current `stable`:\\s*([^\\s]+)\\s+Current `beta`:\\s*([^\\s]+)/) || []; const headings = [...md.matchAll(/^##\\s+(.+)$/gm)]; if (!headings.length) throw new Error(\"No changelog entry heading found\"); const first = headings[0]; const second = headings[1]; const entry = md.slice(first.index, second ? second.index : md.length).trim(); const releasedMatch = entry.match(/\\*\\*Released:\\*\\*\\s*([^\\n]+)/) || []; const title = first[1].replace(/\\[([^\\]]+)\\]\\([^)]+\\)/g, \"$1\").trim(); const stable = versions[1] || \"\"; const beta = versions[2] || \"\"; const normalizedEntry = entry.replace(/\\s+/g, \" \").trim(); return { source_url: \"https://docs.n8n.io/changelog/\", markdown_url: \"https://docs.n8n.io/changelog/readme.md\", stable_version: stable, beta_version: beta, title, released: (releasedMatch[1] || \"\").trim(), entry_markdown: entry, snapshot_text: `stable=${stable}\\nbeta=${beta}\\n${normalizedEntry}` }; })() }}",
+          "jsonOutput": "={{ (() => { const raw = $(\"Fetch n8n changelog\").item.json.releases_json || \"[]\"; const releases = JSON.parse(raw); if (!Array.isArray(releases)) throw new Error(\"GitHub releases response is not an array\"); const valid = releases.filter(r => r && !r.draft); if (!valid.length) throw new Error(\"No published n8n releases found\"); const stable = valid.find(r => r.prerelease === false) || null; const prerelease = valid.find(r => r.prerelease === true) || null; const latest = valid[0]; const norm = v => String(v || \"\").replace(/^n8n@/, \"\"); const stableVersion = stable ? norm(stable.tag_name) : \"\"; const prereleaseVersion = prerelease ? norm(prerelease.tag_name) : \"\"; const title = String(latest.name || latest.tag_name || \"n8n release\"); const released = String(latest.published_at || latest.created_at || \"\"); const entry = String(latest.body || \"\").trim(); const normalizedEntry = entry.replace(/\\s+/g, \" \").trim(); return { source_url: \"https://github.com/n8n-io/n8n/releases\", api_url: \"https://api.github.com/repos/n8n-io/n8n/releases?per_page=20\", stable_version: stableVersion, beta_version: prereleaseVersion, title, released, release_tag: String(latest.tag_name || \"\"), release_prerelease: Boolean(latest.prerelease), entry_markdown: entry, snapshot_text: `stable=${stableVersion}\\nprerelease=${prereleaseVersion}\\nlatest=${String(latest.tag_name || \"\")}\\npublished=${released}\\n${normalizedEntry}` }; })() }}",
           "includeOtherFields": false
         }
       },
@@ -540,19 +542,19 @@
               "source_event_id": "={{ \"n8n-changelog:\" + $(\"Hash changelog snapshot\").item.json.snapshot_hash }}",
               "correlation_id": "={{ \"n8n-changelog:\" + $(\"Hash changelog snapshot\").item.json.snapshot_hash }}",
               "project": "n8n",
-              "input_ref": "https://docs.n8n.io/changelog/",
-              "summary": "={{ \"n8n Changelog update: \" + $(\"Parse latest changelog snapshot\").item.json.title + \" | stable \" + $(\"Parse latest changelog snapshot\").item.json.stable_version + \", beta \" + $(\"Parse latest changelog snapshot\").item.json.beta_version + \" | \" + $(\"Parse latest changelog snapshot\").item.json.released }}",
+              "input_ref": "https://github.com/n8n-io/n8n/releases",
+              "summary": "={{ \"n8n release update: \" + $(\"Parse latest changelog snapshot\").item.json.title + \" | stable \" + $(\"Parse latest changelog snapshot\").item.json.stable_version + \", prerelease \" + $(\"Parse latest changelog snapshot\").item.json.beta_version + \" | \" + $(\"Parse latest changelog snapshot\").item.json.released }}",
               "not_before": "={{ $now.toISO() }}",
               "deadline": "",
               "event_id": "={{ \"n8n-changelog:\" + $(\"Hash changelog snapshot\").item.json.snapshot_hash }}",
               "event_occurred_at": "={{ $now.toISO() }}",
-              "event_source": "n8n_changelog",
+              "event_source": "n8n_github_releases",
               "event_category": "n8n.changelog.updated",
               "event_title": "={{ $(\"Parse latest changelog snapshot\").item.json.title }}",
               "event_description": "={{ $(\"Parse latest changelog snapshot\").item.json.entry_markdown }}",
               "event_status": "new",
-              "event_url": "https://docs.n8n.io/changelog/",
-              "event_metadata_object": "={{ JSON.stringify({ snapshot_hash: $(\"Hash changelog snapshot\").item.json.snapshot_hash, stable_version: $(\"Parse latest changelog snapshot\").item.json.stable_version, beta_version: $(\"Parse latest changelog snapshot\").item.json.beta_version, title: $(\"Parse latest changelog snapshot\").item.json.title, released: $(\"Parse latest changelog snapshot\").item.json.released, entry_markdown: $(\"Parse latest changelog snapshot\").item.json.entry_markdown, detected_at: $now.toISO(), source_url: $(\"Parse latest changelog snapshot\").item.json.source_url, markdown_url: $(\"Parse latest changelog snapshot\").item.json.markdown_url }) }}"
+              "event_url": "https://github.com/n8n-io/n8n/releases",
+              "event_metadata_object": "={{ JSON.stringify({ snapshot_hash: $(\"Hash changelog snapshot\").item.json.snapshot_hash, stable_version: $(\"Parse latest changelog snapshot\").item.json.stable_version, prerelease_version: $(\"Parse latest changelog snapshot\").item.json.beta_version, latest_tag: $(\"Parse latest changelog snapshot\").item.json.release_tag, latest_is_prerelease: $(\"Parse latest changelog snapshot\").item.json.release_prerelease, title: $(\"Parse latest changelog snapshot\").item.json.title, released: $(\"Parse latest changelog snapshot\").item.json.released, entry_markdown: $(\"Parse latest changelog snapshot\").item.json.entry_markdown, detected_at: $now.toISO(), source_url: $(\"Parse latest changelog snapshot\").item.json.source_url, api_url: $(\"Parse latest changelog snapshot\").item.json.api_url }) }}"
             },
             "schema": [
               {
@@ -796,10 +798,10 @@
       }
     ],
     "authors": "Administrator NTLx (via MCP)",
-    "name": "Enable queue handoff",
-    "description": "Re-enables the validated Enqueue AI work handoff after the side-effect-free parsing/hash test passed.",
+    "name": "Normalize GitHub Releases HTTP node",
+    "description": "Removes hidden stale header parameters and leaves a minimal validated public GET request: no authentication, no custom headers, text response in releases_json for deterministic parsing.",
     "autosaved": false,
-    "createdAt": "2026-10-23T15:20:33.713Z",
-    "updatedAt": "2026-10-23T15:20:33.713Z"
+    "createdAt": "2026-11-03T12:10:52.359Z",
+    "updatedAt": "2026-11-03T12:10:52.359Z"
   }
 }
