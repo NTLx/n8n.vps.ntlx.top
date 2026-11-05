@@ -2,11 +2,11 @@
   "id": "3LE3BnPfHSuIZCVR",
   "name": "Error Notification",
   "active": true,
-  "activeVersionId": "12a8e042-3739-44ae-88fe-29db0d9fc71f",
+  "activeVersionId": "d2167c25-6f5d-4964-b8f5-1970ab8e9a5e",
   "createdAt": "2026-02-12T08:00:08.087Z",
-  "updatedAt": "2026-10-27T09:32:08.935Z",
+  "updatedAt": "2026-11-04T07:59:36.730Z",
   "isArchived": false,
-  "versionId": "12a8e042-3739-44ae-88fe-29db0d9fc71f",
+  "versionId": "d2167c25-6f5d-4964-b8f5-1970ab8e9a5e",
   "triggerCount": 0,
   "nodes": [
     {
@@ -99,7 +99,7 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.5,
       "position": [
-        928,
+        1600,
         560
       ],
       "parameters": {
@@ -110,7 +110,13 @@
               "id": "work-id",
               "name": "work_id",
               "type": "string",
-              "value": "={{ 'n8n_failure:' + ($json.workflow_id || 'unknown') + ':' + ($json.error_node || 'unknown') + ':' + ($json.error_name || 'Error') + ':' + ($json.http_code || '-') + ':' + $now.setZone('Asia/Shanghai').toFormat('yyyyLLddHH') }}"
+              "value": "={{ $json.incident_work_id }}"
+            },
+            {
+              "id": "worker",
+              "name": "worker",
+              "type": "string",
+              "value": "hourly"
             },
             {
               "id": "kind",
@@ -128,13 +134,13 @@
               "id": "source-event-id",
               "name": "source_event_id",
               "type": "string",
-              "value": "={{ 'n8n.workflow.failed:' + ($json.workflow_id || 'unknown') + ':' + ($json.error_node || 'unknown') + ':' + ($json.error_name || 'Error') + ':' + ($json.http_code || '-') + ':' + $now.setZone('Asia/Shanghai').toFormat('yyyyLLddHH') }}"
+              "value": "={{ $json.occurrence_event_id }}"
             },
             {
               "id": "correlation-id",
               "name": "correlation_id",
               "type": "string",
-              "value": "={{ 'n8n-failure:' + ($json.workflow_id || 'unknown') + ':' + ($json.error_node || 'unknown') + ':' + $now.setZone('Asia/Shanghai').toFormat('yyyyLLddHH') }}"
+              "value": "={{ $json.incident_correlation_id }}"
             },
             {
               "id": "project",
@@ -170,7 +176,7 @@
               "id": "event-id",
               "name": "event_id",
               "type": "string",
-              "value": "={{ 'n8n.workflow.failed:' + ($json.workflow_id || 'unknown') + ':' + ($json.error_node || 'unknown') + ':' + ($json.error_name || 'Error') + ':' + ($json.http_code || '-') + ':' + $now.setZone('Asia/Shanghai').toFormat('yyyyLLddHH') }}"
+              "value": "={{ $json.occurrence_event_id }}"
             },
             {
               "id": "event-time",
@@ -218,7 +224,7 @@
               "id": "event-metadata",
               "name": "event_metadata_object",
               "type": "string",
-              "value": "={{ ({ workflow_id: $json.workflow_id, workflow_name: $json.workflow_name, execution_id: $json.execution_id, node: $json.error_node, error_name: $json.error_name, http_code: $json.http_code, execution_mode: $json.execution_mode }).toJsonString() }}"
+              "value": "={{ ({workflow_id:$json.workflow_id,workflow_name:$json.workflow_name,execution_id:$json.execution_id,node:$json.error_node,error_name:$json.error_name,http_code:$json.http_code,execution_mode:$json.execution_mode,incident_fingerprint:$json.incident_fingerprint,incident_day:$json.incident_day,incident_signature:$json.incident_signature,incident_work_id:$json.incident_work_id,incident_recovery_of:$json.incident_recovery_of,incident_episode_state:$json.incident_episode_state,occurrence_event_id:$json.occurrence_event_id,aggregation_policy:'one_live_ticket_per_fingerprint_per_day; terminal_episode_reopens_with_recovery_of; each_execution_persists_own_event'}).toJsonString() }}"
             }
           ]
         },
@@ -232,7 +238,7 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.4,
       "position": [
-        1184,
+        2048,
         560
       ],
       "parameters": {
@@ -245,30 +251,36 @@
         "workflowInputs": {
           "mappingMode": "defineBelow",
           "value": {
-            "work_id": "={{ $json.work_id }}",
-            "kind": "={{ $json.kind }}",
-            "priority": "={{ $json.priority }}",
-            "source_event_id": "={{ $json.source_event_id }}",
-            "correlation_id": "={{ $json.correlation_id }}",
-            "project": "={{ $json.project }}",
-            "input_ref": "={{ $json.input_ref }}",
-            "summary": "={{ $json.summary }}",
-            "not_before": "={{ $json.not_before }}",
-            "deadline": "={{ $json.deadline }}",
-            "event_id": "={{ $json.event_id }}",
-            "event_occurred_at": "={{ $json.event_occurred_at }}",
-            "event_source": "={{ $json.event_source }}",
-            "event_category": "={{ $json.event_category }}",
-            "event_title": "={{ $json.event_title }}",
-            "event_description": "={{ $json.event_description }}",
-            "event_status": "={{ $json.event_status }}",
-            "event_url": "={{ $json.event_url }}",
-            "event_metadata_object": "={{ $json.event_metadata_object }}"
+            "work_id": "={{ $('Prepare Failure AI Work').first().json.work_id }}",
+            "kind": "={{ $('Prepare Failure AI Work').first().json.kind }}",
+            "priority": "={{ $('Prepare Failure AI Work').first().json.priority }}",
+            "source_event_id": "={{ $('Prepare Failure AI Work').first().json.source_event_id }}",
+            "correlation_id": "={{ $('Prepare Failure AI Work').first().json.correlation_id }}",
+            "project": "={{ $('Prepare Failure AI Work').first().json.project }}",
+            "input_ref": "={{ $('Prepare Failure AI Work').first().json.input_ref }}",
+            "summary": "={{ $('Prepare Failure AI Work').first().json.summary }}",
+            "not_before": "={{ $('Prepare Failure AI Work').first().json.not_before }}",
+            "deadline": "={{ $('Prepare Failure AI Work').first().json.deadline }}",
+            "event_id": "={{ $('Prepare Failure AI Work').first().json.event_id }}",
+            "event_occurred_at": "={{ $('Prepare Failure AI Work').first().json.event_occurred_at }}",
+            "event_source": "={{ $('Prepare Failure AI Work').first().json.event_source }}",
+            "event_category": "={{ $('Prepare Failure AI Work').first().json.event_category }}",
+            "event_title": "={{ $('Prepare Failure AI Work').first().json.event_title }}",
+            "event_description": "={{ $('Prepare Failure AI Work').first().json.event_description }}",
+            "event_status": "={{ $('Prepare Failure AI Work').first().json.event_status }}",
+            "event_url": "={{ $('Prepare Failure AI Work').first().json.event_url }}",
+            "event_metadata_object": "={{ $('Prepare Failure AI Work').first().json.event_metadata_object }}",
+            "worker": "={{ $('Prepare Failure AI Work').first().json.worker }}"
           },
           "schema": [
             {
               "id": "work_id",
               "displayName": "work_id",
+              "type": "string"
+            },
+            {
+              "id": "worker",
+              "displayName": "worker",
               "type": "string"
             },
             {
@@ -368,7 +380,7 @@
           "waitForSubWorkflow": true
         }
       },
-      "onError": "continueRegularOutput"
+      "onError": "stopWorkflow"
     },
     {
       "id": "4d95bab5-21dc-4270-b4cb-9bd596240453",
@@ -443,7 +455,146 @@
           "waitForSubWorkflow": true
         }
       },
-      "onError": "continueRegularOutput"
+      "onError": "stopWorkflow"
+    },
+    {
+      "id": "fce11400-2393-4450-917f-2b84929c3d73",
+      "name": "Compute Incident Fingerprint",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        928,
+        560
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const e=$input.first().json;const sig=[e.workflow_id||'unknown',e.error_node||'unknown',e.error_name||'Error',e.http_code||'-',String(e.error_message||'').replace(/\\s+/g,' ').trim()].join('\\u001f');let h=2166136261;for(let i=0;i<sig.length;i++)h=Math.imul(h^sig.charCodeAt(i),16777619)>>>0;const fingerprint='fnv32-'+(h>>>0).toString(16).padStart(8,'0');const day=$now.setZone('Asia/Shanghai').toFormat('yyyyLLdd');const eid=String(e.execution_id||'').trim();const occurrence_id='n8n.workflow.failed:'+String(e.workflow_id||'unknown')+':'+(eid||('no-execution:'+fingerprint+':'+$now.toMillis()));return [{json:{...e,incident_fingerprint:fingerprint,incident_signature:sig,incident_day:day,incident_work_id:'n8n_failure:v2:'+String(e.workflow_id||'unknown')+':'+fingerprint+':'+day,incident_correlation_id:'n8n-incident:v2:'+String(e.workflow_id||'unknown')+':'+fingerprint+':'+day,occurrence_event_id:occurrence_id}}];"
+      }
+    },
+    {
+      "id": "7eaa2330-46a0-4f35-a061-59ddd84ae9c6",
+      "name": "Record Failure Occurrence",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        1824,
+        560
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "upsert",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "work_events"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "event_id",
+              "condition": "eq",
+              "keyValue": "={{ $('Prepare Failure AI Work').first().json.event_id }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "event_id": "={{ $('Prepare Failure AI Work').first().json.event_id }}",
+            "occurred_at": "={{ $('Prepare Failure AI Work').first().json.event_occurred_at }}",
+            "source": "={{ $('Prepare Failure AI Work').first().json.event_source }}",
+            "project": "={{ $('Prepare Failure AI Work').first().json.project }}",
+            "category": "={{ $('Prepare Failure AI Work').first().json.event_category }}",
+            "title": "={{ $('Prepare Failure AI Work').first().json.event_title }}",
+            "description": "={{ $('Prepare Failure AI Work').first().json.event_description }}",
+            "status": "={{ $('Prepare Failure AI Work').first().json.event_status }}",
+            "url": "={{ $('Prepare Failure AI Work').first().json.event_url }}",
+            "metadata_object": "={{ $('Prepare Failure AI Work').first().json.event_metadata_object }}",
+            "correlation_id": "={{ $('Prepare Failure AI Work').first().json.correlation_id }}"
+          }
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "83ad3131-e1ec-4c9e-873e-1b613aa29047",
+      "name": "Deduplicate Failure Execution",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        928,
+        560
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "rowNotExists",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "work_events"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "event_id",
+              "keyValue": "={{ $('Compute Incident Fingerprint').first().json.occurrence_event_id }}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "bd53fc89-59b7-4c21-9253-5759458b359e",
+      "name": "Get Current Incident Episodes",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        1152,
+        560
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "ai_work_queue"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "work_id",
+              "condition": "like",
+              "keyValue": "={{ $('Compute Incident Fingerprint').first().json.incident_work_id + '%' }}"
+            }
+          ]
+        },
+        "returnAll": false,
+        "limit": 1,
+        "orderBy": true,
+        "orderByColumn": "createdAt",
+        "orderByDirection": "DESC"
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "id": "d8ec6130-1263-4e35-b374-ad4b74641271",
+      "name": "Select Incident Episode",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1376,
+        560
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const e=$('Compute Incident Fingerprint').first().json;const last=$input.first()?.json||{};const matched=typeof last.work_id==='string'&&last.work_id.startsWith(e.incident_work_id);const terminal=matched&&['completed','failed','blocked'].includes(String(last.status||''));const work_id=matched?(terminal?e.incident_work_id+':r'+String(last.id):last.work_id):e.incident_work_id;return [{json:{...e,incident_work_id:work_id,incident_recovery_of:terminal?last.work_id:'',incident_episode_state:terminal?'reopened':matched?'open':'initial'}}];"
+      }
     }
   ],
   "connections": {
@@ -474,7 +625,29 @@
         ]
       ]
     },
+    "Skip Recursive Queue Failures": {
+      "main": [
+        [
+          {
+            "node": "Compute Incident Fingerprint",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
     "Prepare Failure AI Work": {
+      "main": [
+        [
+          {
+            "node": "Record Failure Occurrence",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Record Failure Occurrence": {
       "main": [
         [
           {
@@ -485,7 +658,40 @@
         ]
       ]
     },
-    "Skip Recursive Queue Failures": {
+    "Compute Incident Fingerprint": {
+      "main": [
+        [
+          {
+            "node": "Deduplicate Failure Execution",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Deduplicate Failure Execution": {
+      "main": [
+        [
+          {
+            "node": "Get Current Incident Episodes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Current Incident Episodes": {
+      "main": [
+        [
+          {
+            "node": "Select Incident Episode",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Select Incident Episode": {
       "main": [
         [
           {
@@ -499,14 +705,19 @@
   },
   "nodeGroups": [
     {
-      "id": "ccfe61ff-7677-497a-b6cf-af2a0ad2604a",
+      "id": "0391aeba-2152-493a-83b6-51430c40177e",
       "name": "AI failure producer",
       "nodeIds": [
         "4d95bab5-21dc-4270-b4cb-9bd596240453",
+        "fce11400-2393-4450-917f-2b84929c3d73",
+        "83ad3131-e1ec-4c9e-873e-1b613aa29047",
+        "bd53fc89-59b7-4c21-9253-5759458b359e",
+        "d8ec6130-1263-4e35-b374-ad4b74641271",
         "6dbc5fd4-4efe-4856-bb46-68a5577df687",
+        "7eaa2330-46a0-4f35-a061-59ddd84ae9c6",
         "9490c757-05ad-474c-b421-29a34ef1a695"
       ],
-      "description": "Skip self-referential queue failures; enqueue other production failures for ChatGPT triage without blocking immediate alerts."
+      "description": "Non-recursive failure → fingerprint → occurrence ledger → idempotent Hourly queue handoff"
     }
   ],
   "settings": {
@@ -576,7 +787,7 @@
     }
   ],
   "activeVersion": {
-    "versionId": "12a8e042-3739-44ae-88fe-29db0d9fc71f",
+    "versionId": "d2167c25-6f5d-4964-b8f5-1970ab8e9a5e",
     "workflowId": "3LE3BnPfHSuIZCVR",
     "nodes": [
       {
@@ -669,7 +880,7 @@
         "type": "n8n-nodes-base.set",
         "typeVersion": 3.5,
         "position": [
-          928,
+          1600,
           560
         ],
         "parameters": {
@@ -680,7 +891,13 @@
                 "id": "work-id",
                 "name": "work_id",
                 "type": "string",
-                "value": "={{ 'n8n_failure:' + ($json.workflow_id || 'unknown') + ':' + ($json.error_node || 'unknown') + ':' + ($json.error_name || 'Error') + ':' + ($json.http_code || '-') + ':' + $now.setZone('Asia/Shanghai').toFormat('yyyyLLddHH') }}"
+                "value": "={{ $json.incident_work_id }}"
+              },
+              {
+                "id": "worker",
+                "name": "worker",
+                "type": "string",
+                "value": "hourly"
               },
               {
                 "id": "kind",
@@ -698,13 +915,13 @@
                 "id": "source-event-id",
                 "name": "source_event_id",
                 "type": "string",
-                "value": "={{ 'n8n.workflow.failed:' + ($json.workflow_id || 'unknown') + ':' + ($json.error_node || 'unknown') + ':' + ($json.error_name || 'Error') + ':' + ($json.http_code || '-') + ':' + $now.setZone('Asia/Shanghai').toFormat('yyyyLLddHH') }}"
+                "value": "={{ $json.occurrence_event_id }}"
               },
               {
                 "id": "correlation-id",
                 "name": "correlation_id",
                 "type": "string",
-                "value": "={{ 'n8n-failure:' + ($json.workflow_id || 'unknown') + ':' + ($json.error_node || 'unknown') + ':' + $now.setZone('Asia/Shanghai').toFormat('yyyyLLddHH') }}"
+                "value": "={{ $json.incident_correlation_id }}"
               },
               {
                 "id": "project",
@@ -740,7 +957,7 @@
                 "id": "event-id",
                 "name": "event_id",
                 "type": "string",
-                "value": "={{ 'n8n.workflow.failed:' + ($json.workflow_id || 'unknown') + ':' + ($json.error_node || 'unknown') + ':' + ($json.error_name || 'Error') + ':' + ($json.http_code || '-') + ':' + $now.setZone('Asia/Shanghai').toFormat('yyyyLLddHH') }}"
+                "value": "={{ $json.occurrence_event_id }}"
               },
               {
                 "id": "event-time",
@@ -788,7 +1005,7 @@
                 "id": "event-metadata",
                 "name": "event_metadata_object",
                 "type": "string",
-                "value": "={{ ({ workflow_id: $json.workflow_id, workflow_name: $json.workflow_name, execution_id: $json.execution_id, node: $json.error_node, error_name: $json.error_name, http_code: $json.http_code, execution_mode: $json.execution_mode }).toJsonString() }}"
+                "value": "={{ ({workflow_id:$json.workflow_id,workflow_name:$json.workflow_name,execution_id:$json.execution_id,node:$json.error_node,error_name:$json.error_name,http_code:$json.http_code,execution_mode:$json.execution_mode,incident_fingerprint:$json.incident_fingerprint,incident_day:$json.incident_day,incident_signature:$json.incident_signature,incident_work_id:$json.incident_work_id,incident_recovery_of:$json.incident_recovery_of,incident_episode_state:$json.incident_episode_state,occurrence_event_id:$json.occurrence_event_id,aggregation_policy:'one_live_ticket_per_fingerprint_per_day; terminal_episode_reopens_with_recovery_of; each_execution_persists_own_event'}).toJsonString() }}"
               }
             ]
           },
@@ -802,7 +1019,7 @@
         "type": "n8n-nodes-base.executeWorkflow",
         "typeVersion": 1.4,
         "position": [
-          1184,
+          2048,
           560
         ],
         "parameters": {
@@ -815,30 +1032,36 @@
           "workflowInputs": {
             "mappingMode": "defineBelow",
             "value": {
-              "work_id": "={{ $json.work_id }}",
-              "kind": "={{ $json.kind }}",
-              "priority": "={{ $json.priority }}",
-              "source_event_id": "={{ $json.source_event_id }}",
-              "correlation_id": "={{ $json.correlation_id }}",
-              "project": "={{ $json.project }}",
-              "input_ref": "={{ $json.input_ref }}",
-              "summary": "={{ $json.summary }}",
-              "not_before": "={{ $json.not_before }}",
-              "deadline": "={{ $json.deadline }}",
-              "event_id": "={{ $json.event_id }}",
-              "event_occurred_at": "={{ $json.event_occurred_at }}",
-              "event_source": "={{ $json.event_source }}",
-              "event_category": "={{ $json.event_category }}",
-              "event_title": "={{ $json.event_title }}",
-              "event_description": "={{ $json.event_description }}",
-              "event_status": "={{ $json.event_status }}",
-              "event_url": "={{ $json.event_url }}",
-              "event_metadata_object": "={{ $json.event_metadata_object }}"
+              "work_id": "={{ $('Prepare Failure AI Work').first().json.work_id }}",
+              "kind": "={{ $('Prepare Failure AI Work').first().json.kind }}",
+              "priority": "={{ $('Prepare Failure AI Work').first().json.priority }}",
+              "source_event_id": "={{ $('Prepare Failure AI Work').first().json.source_event_id }}",
+              "correlation_id": "={{ $('Prepare Failure AI Work').first().json.correlation_id }}",
+              "project": "={{ $('Prepare Failure AI Work').first().json.project }}",
+              "input_ref": "={{ $('Prepare Failure AI Work').first().json.input_ref }}",
+              "summary": "={{ $('Prepare Failure AI Work').first().json.summary }}",
+              "not_before": "={{ $('Prepare Failure AI Work').first().json.not_before }}",
+              "deadline": "={{ $('Prepare Failure AI Work').first().json.deadline }}",
+              "event_id": "={{ $('Prepare Failure AI Work').first().json.event_id }}",
+              "event_occurred_at": "={{ $('Prepare Failure AI Work').first().json.event_occurred_at }}",
+              "event_source": "={{ $('Prepare Failure AI Work').first().json.event_source }}",
+              "event_category": "={{ $('Prepare Failure AI Work').first().json.event_category }}",
+              "event_title": "={{ $('Prepare Failure AI Work').first().json.event_title }}",
+              "event_description": "={{ $('Prepare Failure AI Work').first().json.event_description }}",
+              "event_status": "={{ $('Prepare Failure AI Work').first().json.event_status }}",
+              "event_url": "={{ $('Prepare Failure AI Work').first().json.event_url }}",
+              "event_metadata_object": "={{ $('Prepare Failure AI Work').first().json.event_metadata_object }}",
+              "worker": "={{ $('Prepare Failure AI Work').first().json.worker }}"
             },
             "schema": [
               {
                 "id": "work_id",
                 "displayName": "work_id",
+                "type": "string"
+              },
+              {
+                "id": "worker",
+                "displayName": "worker",
                 "type": "string"
               },
               {
@@ -938,7 +1161,7 @@
             "waitForSubWorkflow": true
           }
         },
-        "onError": "continueRegularOutput"
+        "onError": "stopWorkflow"
       },
       {
         "id": "4d95bab5-21dc-4270-b4cb-9bd596240453",
@@ -1013,7 +1236,146 @@
             "waitForSubWorkflow": true
           }
         },
-        "onError": "continueRegularOutput"
+        "onError": "stopWorkflow"
+      },
+      {
+        "id": "fce11400-2393-4450-917f-2b84929c3d73",
+        "name": "Compute Incident Fingerprint",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          928,
+          560
+        ],
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "language": "javaScript",
+          "jsCode": "const e=$input.first().json;const sig=[e.workflow_id||'unknown',e.error_node||'unknown',e.error_name||'Error',e.http_code||'-',String(e.error_message||'').replace(/\\s+/g,' ').trim()].join('\\u001f');let h=2166136261;for(let i=0;i<sig.length;i++)h=Math.imul(h^sig.charCodeAt(i),16777619)>>>0;const fingerprint='fnv32-'+(h>>>0).toString(16).padStart(8,'0');const day=$now.setZone('Asia/Shanghai').toFormat('yyyyLLdd');const eid=String(e.execution_id||'').trim();const occurrence_id='n8n.workflow.failed:'+String(e.workflow_id||'unknown')+':'+(eid||('no-execution:'+fingerprint+':'+$now.toMillis()));return [{json:{...e,incident_fingerprint:fingerprint,incident_signature:sig,incident_day:day,incident_work_id:'n8n_failure:v2:'+String(e.workflow_id||'unknown')+':'+fingerprint+':'+day,incident_correlation_id:'n8n-incident:v2:'+String(e.workflow_id||'unknown')+':'+fingerprint+':'+day,occurrence_event_id:occurrence_id}}];"
+        }
+      },
+      {
+        "id": "7eaa2330-46a0-4f35-a061-59ddd84ae9c6",
+        "name": "Record Failure Occurrence",
+        "type": "n8n-nodes-base.dataTable",
+        "typeVersion": 1.1,
+        "position": [
+          1824,
+          560
+        ],
+        "parameters": {
+          "resource": "row",
+          "operation": "upsert",
+          "dataTableId": {
+            "__rl": true,
+            "mode": "name",
+            "value": "work_events"
+          },
+          "matchType": "allConditions",
+          "filters": {
+            "conditions": [
+              {
+                "keyName": "event_id",
+                "condition": "eq",
+                "keyValue": "={{ $('Prepare Failure AI Work').first().json.event_id }}"
+              }
+            ]
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "event_id": "={{ $('Prepare Failure AI Work').first().json.event_id }}",
+              "occurred_at": "={{ $('Prepare Failure AI Work').first().json.event_occurred_at }}",
+              "source": "={{ $('Prepare Failure AI Work').first().json.event_source }}",
+              "project": "={{ $('Prepare Failure AI Work').first().json.project }}",
+              "category": "={{ $('Prepare Failure AI Work').first().json.event_category }}",
+              "title": "={{ $('Prepare Failure AI Work').first().json.event_title }}",
+              "description": "={{ $('Prepare Failure AI Work').first().json.event_description }}",
+              "status": "={{ $('Prepare Failure AI Work').first().json.event_status }}",
+              "url": "={{ $('Prepare Failure AI Work').first().json.event_url }}",
+              "metadata_object": "={{ $('Prepare Failure AI Work').first().json.event_metadata_object }}",
+              "correlation_id": "={{ $('Prepare Failure AI Work').first().json.correlation_id }}"
+            }
+          },
+          "options": {}
+        }
+      },
+      {
+        "id": "83ad3131-e1ec-4c9e-873e-1b613aa29047",
+        "name": "Deduplicate Failure Execution",
+        "type": "n8n-nodes-base.dataTable",
+        "typeVersion": 1.1,
+        "position": [
+          928,
+          560
+        ],
+        "parameters": {
+          "resource": "row",
+          "operation": "rowNotExists",
+          "dataTableId": {
+            "__rl": true,
+            "mode": "name",
+            "value": "work_events"
+          },
+          "matchType": "allConditions",
+          "filters": {
+            "conditions": [
+              {
+                "keyName": "event_id",
+                "keyValue": "={{ $('Compute Incident Fingerprint').first().json.occurrence_event_id }}"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "bd53fc89-59b7-4c21-9253-5759458b359e",
+        "name": "Get Current Incident Episodes",
+        "type": "n8n-nodes-base.dataTable",
+        "typeVersion": 1.1,
+        "position": [
+          1152,
+          560
+        ],
+        "parameters": {
+          "resource": "row",
+          "operation": "get",
+          "dataTableId": {
+            "__rl": true,
+            "mode": "name",
+            "value": "ai_work_queue"
+          },
+          "matchType": "allConditions",
+          "filters": {
+            "conditions": [
+              {
+                "keyName": "work_id",
+                "condition": "like",
+                "keyValue": "={{ $('Compute Incident Fingerprint').first().json.incident_work_id + '%' }}"
+              }
+            ]
+          },
+          "returnAll": false,
+          "limit": 1,
+          "orderBy": true,
+          "orderByColumn": "createdAt",
+          "orderByDirection": "DESC"
+        },
+        "alwaysOutputData": true
+      },
+      {
+        "id": "d8ec6130-1263-4e35-b374-ad4b74641271",
+        "name": "Select Incident Episode",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1376,
+          560
+        ],
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "language": "javaScript",
+          "jsCode": "const e=$('Compute Incident Fingerprint').first().json;const last=$input.first()?.json||{};const matched=typeof last.work_id==='string'&&last.work_id.startsWith(e.incident_work_id);const terminal=matched&&['completed','failed','blocked'].includes(String(last.status||''));const work_id=matched?(terminal?e.incident_work_id+':r'+String(last.id):last.work_id):e.incident_work_id;return [{json:{...e,incident_work_id:work_id,incident_recovery_of:terminal?last.work_id:'',incident_episode_state:terminal?'reopened':matched?'open':'initial'}}];"
+        }
       }
     ],
     "connections": {
@@ -1044,7 +1406,29 @@
           ]
         ]
       },
+      "Skip Recursive Queue Failures": {
+        "main": [
+          [
+            {
+              "node": "Compute Incident Fingerprint",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
       "Prepare Failure AI Work": {
+        "main": [
+          [
+            {
+              "node": "Record Failure Occurrence",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Record Failure Occurrence": {
         "main": [
           [
             {
@@ -1055,7 +1439,40 @@
           ]
         ]
       },
-      "Skip Recursive Queue Failures": {
+      "Compute Incident Fingerprint": {
+        "main": [
+          [
+            {
+              "node": "Deduplicate Failure Execution",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Deduplicate Failure Execution": {
+        "main": [
+          [
+            {
+              "node": "Get Current Incident Episodes",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get Current Incident Episodes": {
+        "main": [
+          [
+            {
+              "node": "Select Incident Episode",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Select Incident Episode": {
         "main": [
           [
             {
@@ -1069,21 +1486,26 @@
     },
     "nodeGroups": [
       {
-        "id": "ccfe61ff-7677-497a-b6cf-af2a0ad2604a",
+        "id": "0391aeba-2152-493a-83b6-51430c40177e",
         "name": "AI failure producer",
         "nodeIds": [
           "4d95bab5-21dc-4270-b4cb-9bd596240453",
+          "fce11400-2393-4450-917f-2b84929c3d73",
+          "83ad3131-e1ec-4c9e-873e-1b613aa29047",
+          "bd53fc89-59b7-4c21-9253-5759458b359e",
+          "d8ec6130-1263-4e35-b374-ad4b74641271",
           "6dbc5fd4-4efe-4856-bb46-68a5577df687",
+          "7eaa2330-46a0-4f35-a061-59ddd84ae9c6",
           "9490c757-05ad-474c-b421-29a34ef1a695"
         ],
-        "description": "Skip self-referential queue failures; enqueue other production failures for ChatGPT triage without blocking immediate alerts."
+        "description": "Non-recursive failure → fingerprint → occurrence ledger → idempotent Hourly queue handoff"
       }
     ],
     "authors": "Administrator NTLx (via MCP)",
-    "name": "Use final Markdown contract",
-    "description": "Removed legacy structured notification payload. Error Notification now sends only channel + final Markdown to the shared Discord Hub.",
+    "name": "Make error handler delivery failures observable",
+    "description": "Stop swallowing failures when the incident handler cannot enqueue via canonical workflow or notify Discord; leave failed execution evidence for diagnosis instead of reporting silent success.",
     "autosaved": false,
-    "createdAt": "2026-10-27T09:19:56.612Z",
-    "updatedAt": "2026-10-27T09:19:56.612Z"
+    "createdAt": "2026-11-04T07:59:36.736Z",
+    "updatedAt": "2026-11-04T07:59:36.736Z"
   }
 }
