@@ -2,11 +2,11 @@
   "id": "EUDm6svGAS234qZZ",
   "name": "Recover expired AI work leases",
   "active": true,
-  "activeVersionId": "ba45e193-3e78-44f0-bc18-6f8d988b48bf",
+  "activeVersionId": "b99b1be7-6360-4a35-ac0c-e5fb079f0ac3",
   "createdAt": "2026-10-22T09:24:30.765Z",
-  "updatedAt": "2026-10-22T16:25:50.163Z",
+  "updatedAt": "2026-11-04T06:30:02.316Z",
   "isArchived": false,
-  "versionId": "ba45e193-3e78-44f0-bc18-6f8d988b48bf",
+  "versionId": "b99b1be7-6360-4a35-ac0c-e5fb079f0ac3",
   "triggerCount": 1,
   "nodes": [
     {
@@ -98,6 +98,21 @@
               "keyName": "status",
               "condition": "eq",
               "keyValue": "processing"
+            },
+            {
+              "keyName": "lease_until",
+              "condition": "eq",
+              "keyValue": "={{ $('Get Expired AI Work').item.json.lease_until }}"
+            },
+            {
+              "keyName": "lease_until",
+              "condition": "lte",
+              "keyValue": "={{ $now.toISO() }}"
+            },
+            {
+              "keyName": "claimed_by",
+              "condition": "eq",
+              "keyValue": "={{ $('Get Expired AI Work').item.json.claimed_by }}"
             }
           ]
         },
@@ -481,7 +496,7 @@
     }
   ],
   "activeVersion": {
-    "versionId": "ba45e193-3e78-44f0-bc18-6f8d988b48bf",
+    "versionId": "b99b1be7-6360-4a35-ac0c-e5fb079f0ac3",
     "workflowId": "EUDm6svGAS234qZZ",
     "nodes": [
       {
@@ -573,6 +588,21 @@
                 "keyName": "status",
                 "condition": "eq",
                 "keyValue": "processing"
+              },
+              {
+                "keyName": "lease_until",
+                "condition": "eq",
+                "keyValue": "={{ $('Get Expired AI Work').item.json.lease_until }}"
+              },
+              {
+                "keyName": "lease_until",
+                "condition": "lte",
+                "keyValue": "={{ $now.toISO() }}"
+              },
+              {
+                "keyName": "claimed_by",
+                "condition": "eq",
+                "keyValue": "={{ $('Get Expired AI Work').item.json.claimed_by }}"
               }
             ]
           },
@@ -890,10 +920,10 @@
       }
     ],
     "authors": "Administrator NTLx (via MCP)",
-    "name": "Add deadman heartbeat",
-    "description": "Record a non-blocking heartbeat at each 30-minute schedule trigger, including the next expected trigger time and grace window, while leaving lease recovery behavior unchanged.",
+    "name": "CAS guard expired lease requeue",
+    "description": "Requeue only if original lease_until and claimed_by still match selection and lease remains expired. Prevents lease-recovery job from overriding a newer claim or owner.",
     "autosaved": false,
-    "createdAt": "2026-10-22T16:25:50.168Z",
-    "updatedAt": "2026-10-22T16:25:50.168Z"
+    "createdAt": "2026-11-04T06:30:02.320Z",
+    "updatedAt": "2026-11-04T06:30:02.320Z"
   }
 }
