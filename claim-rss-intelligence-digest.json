@@ -2,11 +2,11 @@
   "id": "hxqiKIiZT1szW0t0",
   "name": "Claim RSS intelligence digest",
   "active": true,
-  "activeVersionId": "b7582284-deb3-46dd-a6e9-36260356cab6",
+  "activeVersionId": "1fc6c5de-e940-49a1-b522-385ae6728758",
   "createdAt": "2026-10-22T16:46:10.383Z",
-  "updatedAt": "2026-10-22T16:46:18.464Z",
+  "updatedAt": "2026-11-04T08:01:00.236Z",
   "isArchived": false,
-  "versionId": "b7582284-deb3-46dd-a6e9-36260356cab6",
+  "versionId": "1fc6c5de-e940-49a1-b522-385ae6728758",
   "triggerCount": 1,
   "nodes": [
     {
@@ -51,7 +51,7 @@
           },
           "conditions": [
             {
-              "leftValue": "={{ $json.body?.digest_id ? 'valid' : 'invalid' }}",
+              "leftValue": "={{ (()=>{const b=$json.body||{};if(typeof b.digest_id!=='string')return 'invalid';const m=/^rss-digest:(\\d{4}-\\d{2}-\\d{2})$/.exec(b.digest_id);if(!m)return 'invalid';const dt=new Date(m[1]+'T00:00:00.000Z');if(!Number.isFinite(dt.getTime())||dt.toISOString().slice(0,10)!==m[1])return 'invalid';const n=Number(b.limit??100);if(!Number.isInteger(n)||n<1||n>100)return 'invalid';if(Object.hasOwn(b,'stale_before')||Object.hasOwn(b,'recover_from_digest')||b.recover_stale===true)return 'invalid';return 'valid';})() }}",
               "operator": {
                 "type": "string",
                 "operation": "equals"
@@ -72,8 +72,8 @@
       "type": "n8n-nodes-base.dataTable",
       "typeVersion": 1.1,
       "position": [
-        448,
-        0
+        896,
+        -96
       ],
       "parameters": {
         "resource": "row",
@@ -87,9 +87,18 @@
         "filters": {
           "conditions": [
             {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{ $json.id }}"
+            },
+            {
               "keyName": "status",
-              "condition": "neq",
-              "keyValue": "processed"
+              "condition": "eq",
+              "keyValue": "new"
+            },
+            {
+              "keyName": "digest_id",
+              "condition": "isEmpty"
             }
           ]
         },
@@ -97,34 +106,25 @@
           "mappingMode": "defineBelow",
           "value": {
             "status": "processing",
-            "digest_id": "={{ $('Claim RSS Digest').item.json.body.digest_id }}",
+            "digest_id": "={{ $('Claim RSS Digest').first().json.body.digest_id }}",
             "processed_at": null
           },
           "schema": [
             {
               "id": "status",
               "displayName": "status",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
               "type": "string",
               "canBeUsedToMatch": true
             },
             {
               "id": "digest_id",
               "displayName": "digest_id",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
               "type": "string",
               "canBeUsedToMatch": true
             },
             {
               "id": "processed_at",
               "displayName": "processed_at",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
               "type": "dateTime",
               "canBeUsedToMatch": true
             }
@@ -140,12 +140,12 @@
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.5,
       "position": [
-        672,
-        0
+        1568,
+        -96
       ],
       "parameters": {
         "respondWith": "json",
-        "responseBody": "={{ { ok: true, digest_id: $('Claim RSS Digest').item.json.body.digest_id } }}",
+        "responseBody": "={{ $json }}",
         "options": {
           "responseCode": 200
         }
@@ -158,16 +158,172 @@
       "typeVersion": 1.5,
       "position": [
         448,
-        192
+        240
       ],
       "parameters": {
         "respondWith": "json",
         "responseBody": {
           "error": "validation_error",
-          "message": "Required field: digest_id"
+          "message": "Require digest_id=rss-digest:YYYY-MM-DD (real date), limit integer 1..100; automatic stale or cross-digest recovery forbidden."
         },
         "options": {
           "responseCode": 400
+        }
+      }
+    },
+    {
+      "id": "ac586a3e-2626-4331-8b99-c641d53dc3a2",
+      "name": "Get Fresh RSS Items",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        448,
+        0
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "rss_intelligence_items"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "status",
+              "condition": "eq",
+              "keyValue": "new"
+            },
+            {
+              "keyName": "digest_id",
+              "condition": "isEmpty"
+            }
+          ]
+        },
+        "returnAll": false,
+        "limit": "={{ Number($('Claim RSS Digest').first().json.body.limit??100) }}",
+        "orderBy": true,
+        "orderByColumn": "createdAt",
+        "orderByDirection": "ASC"
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "id": "f3c5a75e-4ad9-4d5f-8ab2-e987c46ad6d2",
+      "name": "Fresh RSS Items Found?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.4,
+      "position": [
+        672,
+        0
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.id && $json.status==='new' && !$json.digest_id ? 'yes' : 'no' }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              },
+              "rightValue": "yes"
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {
+          "ignoreCase": false
+        }
+      }
+    },
+    {
+      "id": "70438b17-b4c8-4876-9a64-fe9641795ddb",
+      "name": "Summarize RSS Claim",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1120,
+        -96
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const b=$('Claim RSS Digest').first().json.body;const expected=$('Get Fresh RSS Items').all().map(x=>x.json).filter(r=>r.status==='new'&&Number.isInteger(Number(r.id))&&Number(r.id)>0);const returned=$input.all().map(x=>x.json).filter(r=>Number.isInteger(Number(r.id))&&r.status==='processing'&&r.digest_id===b.digest_id);const allowed=new Set(expected.map(x=>Number(x.id)));const matched=returned.filter(x=>allowed.has(Number(x.id)));const ok=expected.length===matched.length&&new Set(matched.map(x=>Number(x.id))).size===matched.length&&returned.length===matched.length;return [{json:{ok,type:'rss_claim',digest_id:b.digest_id,requested_limit:Number(b.limit??100),expected_count:expected.length,claimed_count:matched.length,recovered_count:0,claimed_item_keys:matched.map(x=>x.item_key).filter(Boolean),batch_recovery_policy:'new_only; never reassign processing from another digest',error:ok?'':'claim_count_mismatch'}}];"
+      }
+    },
+    {
+      "id": "a8ba6a25-8628-4394-b340-cd3069261dc7",
+      "name": "All Fresh Items Claimed?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.4,
+      "position": [
+        1344,
+        -96
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.ok===true ? 'yes' : 'no' }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              },
+              "rightValue": "yes"
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {
+          "ignoreCase": false
+        }
+      }
+    },
+    {
+      "id": "f4536510-316a-4d06-abe2-ec0351ed00d0",
+      "name": "Respond Empty RSS Claim",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        896,
+        128
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ {ok:true,type:'rss_claim',digest_id:$('Claim RSS Digest').first().json.body.digest_id,requested_limit:Number($('Claim RSS Digest').first().json.body.limit??100),expected_count:0,claimed_count:0,recovered_count:0,claimed_item_keys:[],batch_recovery_policy:'new_only; never reassign processing from another digest'} }}",
+        "options": {
+          "responseCode": 200
+        }
+      }
+    },
+    {
+      "id": "cc8c7d1c-02c2-4ad3-aea2-3e096f88210e",
+      "name": "Respond Claim Conflict",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1568,
+        128
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ {error:'claim_count_mismatch',message:'RSS claim modified fewer rows than selected; inspect current row state before retrying',digest_id:$json.digest_id,expected_count:$json.expected_count,claimed_count:$json.claimed_count} }}",
+        "options": {
+          "responseCode": 409
         }
       }
     }
@@ -188,7 +344,7 @@
       "main": [
         [
           {
-            "node": "Claim RSS Items",
+            "node": "Get Fresh RSS Items",
             "type": "main",
             "index": 0
           }
@@ -202,11 +358,69 @@
         ]
       ]
     },
+    "Get Fresh RSS Items": {
+      "main": [
+        [
+          {
+            "node": "Fresh RSS Items Found?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fresh RSS Items Found?": {
+      "main": [
+        [
+          {
+            "node": "Claim RSS Items",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Empty RSS Claim",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
     "Claim RSS Items": {
       "main": [
         [
           {
+            "node": "Summarize RSS Claim",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Summarize RSS Claim": {
+      "main": [
+        [
+          {
+            "node": "All Fresh Items Claimed?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "All Fresh Items Claimed?": {
+      "main": [
+        [
+          {
             "node": "Respond Success",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Claim Conflict",
             "type": "main",
             "index": 0
           }
@@ -268,7 +482,7 @@
     }
   ],
   "activeVersion": {
-    "versionId": "b7582284-deb3-46dd-a6e9-36260356cab6",
+    "versionId": "1fc6c5de-e940-49a1-b522-385ae6728758",
     "workflowId": "hxqiKIiZT1szW0t0",
     "nodes": [
       {
@@ -313,7 +527,7 @@
             },
             "conditions": [
               {
-                "leftValue": "={{ $json.body?.digest_id ? 'valid' : 'invalid' }}",
+                "leftValue": "={{ (()=>{const b=$json.body||{};if(typeof b.digest_id!=='string')return 'invalid';const m=/^rss-digest:(\\d{4}-\\d{2}-\\d{2})$/.exec(b.digest_id);if(!m)return 'invalid';const dt=new Date(m[1]+'T00:00:00.000Z');if(!Number.isFinite(dt.getTime())||dt.toISOString().slice(0,10)!==m[1])return 'invalid';const n=Number(b.limit??100);if(!Number.isInteger(n)||n<1||n>100)return 'invalid';if(Object.hasOwn(b,'stale_before')||Object.hasOwn(b,'recover_from_digest')||b.recover_stale===true)return 'invalid';return 'valid';})() }}",
                 "operator": {
                   "type": "string",
                   "operation": "equals"
@@ -334,8 +548,8 @@
         "type": "n8n-nodes-base.dataTable",
         "typeVersion": 1.1,
         "position": [
-          448,
-          0
+          896,
+          -96
         ],
         "parameters": {
           "resource": "row",
@@ -349,9 +563,18 @@
           "filters": {
             "conditions": [
               {
+                "keyName": "id",
+                "condition": "eq",
+                "keyValue": "={{ $json.id }}"
+              },
+              {
                 "keyName": "status",
-                "condition": "neq",
-                "keyValue": "processed"
+                "condition": "eq",
+                "keyValue": "new"
+              },
+              {
+                "keyName": "digest_id",
+                "condition": "isEmpty"
               }
             ]
           },
@@ -359,34 +582,25 @@
             "mappingMode": "defineBelow",
             "value": {
               "status": "processing",
-              "digest_id": "={{ $('Claim RSS Digest').item.json.body.digest_id }}",
+              "digest_id": "={{ $('Claim RSS Digest').first().json.body.digest_id }}",
               "processed_at": null
             },
             "schema": [
               {
                 "id": "status",
                 "displayName": "status",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
                 "type": "string",
                 "canBeUsedToMatch": true
               },
               {
                 "id": "digest_id",
                 "displayName": "digest_id",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
                 "type": "string",
                 "canBeUsedToMatch": true
               },
               {
                 "id": "processed_at",
                 "displayName": "processed_at",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
                 "type": "dateTime",
                 "canBeUsedToMatch": true
               }
@@ -402,12 +616,12 @@
         "type": "n8n-nodes-base.respondToWebhook",
         "typeVersion": 1.5,
         "position": [
-          672,
-          0
+          1568,
+          -96
         ],
         "parameters": {
           "respondWith": "json",
-          "responseBody": "={{ { ok: true, digest_id: $('Claim RSS Digest').item.json.body.digest_id } }}",
+          "responseBody": "={{ $json }}",
           "options": {
             "responseCode": 200
           }
@@ -420,16 +634,172 @@
         "typeVersion": 1.5,
         "position": [
           448,
-          192
+          240
         ],
         "parameters": {
           "respondWith": "json",
           "responseBody": {
             "error": "validation_error",
-            "message": "Required field: digest_id"
+            "message": "Require digest_id=rss-digest:YYYY-MM-DD (real date), limit integer 1..100; automatic stale or cross-digest recovery forbidden."
           },
           "options": {
             "responseCode": 400
+          }
+        }
+      },
+      {
+        "id": "ac586a3e-2626-4331-8b99-c641d53dc3a2",
+        "name": "Get Fresh RSS Items",
+        "type": "n8n-nodes-base.dataTable",
+        "typeVersion": 1.1,
+        "position": [
+          448,
+          0
+        ],
+        "parameters": {
+          "resource": "row",
+          "operation": "get",
+          "dataTableId": {
+            "__rl": true,
+            "mode": "name",
+            "value": "rss_intelligence_items"
+          },
+          "matchType": "allConditions",
+          "filters": {
+            "conditions": [
+              {
+                "keyName": "status",
+                "condition": "eq",
+                "keyValue": "new"
+              },
+              {
+                "keyName": "digest_id",
+                "condition": "isEmpty"
+              }
+            ]
+          },
+          "returnAll": false,
+          "limit": "={{ Number($('Claim RSS Digest').first().json.body.limit??100) }}",
+          "orderBy": true,
+          "orderByColumn": "createdAt",
+          "orderByDirection": "ASC"
+        },
+        "alwaysOutputData": true
+      },
+      {
+        "id": "f3c5a75e-4ad9-4d5f-8ab2-e987c46ad6d2",
+        "name": "Fresh RSS Items Found?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.4,
+        "position": [
+          672,
+          0
+        ],
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 2
+            },
+            "conditions": [
+              {
+                "leftValue": "={{ $json.id && $json.status==='new' && !$json.digest_id ? 'yes' : 'no' }}",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals"
+                },
+                "rightValue": "yes"
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {
+            "ignoreCase": false
+          }
+        }
+      },
+      {
+        "id": "70438b17-b4c8-4876-9a64-fe9641795ddb",
+        "name": "Summarize RSS Claim",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1120,
+          -96
+        ],
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "language": "javaScript",
+          "jsCode": "const b=$('Claim RSS Digest').first().json.body;const expected=$('Get Fresh RSS Items').all().map(x=>x.json).filter(r=>r.status==='new'&&Number.isInteger(Number(r.id))&&Number(r.id)>0);const returned=$input.all().map(x=>x.json).filter(r=>Number.isInteger(Number(r.id))&&r.status==='processing'&&r.digest_id===b.digest_id);const allowed=new Set(expected.map(x=>Number(x.id)));const matched=returned.filter(x=>allowed.has(Number(x.id)));const ok=expected.length===matched.length&&new Set(matched.map(x=>Number(x.id))).size===matched.length&&returned.length===matched.length;return [{json:{ok,type:'rss_claim',digest_id:b.digest_id,requested_limit:Number(b.limit??100),expected_count:expected.length,claimed_count:matched.length,recovered_count:0,claimed_item_keys:matched.map(x=>x.item_key).filter(Boolean),batch_recovery_policy:'new_only; never reassign processing from another digest',error:ok?'':'claim_count_mismatch'}}];"
+        }
+      },
+      {
+        "id": "a8ba6a25-8628-4394-b340-cd3069261dc7",
+        "name": "All Fresh Items Claimed?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.4,
+        "position": [
+          1344,
+          -96
+        ],
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 2
+            },
+            "conditions": [
+              {
+                "leftValue": "={{ $json.ok===true ? 'yes' : 'no' }}",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals"
+                },
+                "rightValue": "yes"
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {
+            "ignoreCase": false
+          }
+        }
+      },
+      {
+        "id": "f4536510-316a-4d06-abe2-ec0351ed00d0",
+        "name": "Respond Empty RSS Claim",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.5,
+        "position": [
+          896,
+          128
+        ],
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ {ok:true,type:'rss_claim',digest_id:$('Claim RSS Digest').first().json.body.digest_id,requested_limit:Number($('Claim RSS Digest').first().json.body.limit??100),expected_count:0,claimed_count:0,recovered_count:0,claimed_item_keys:[],batch_recovery_policy:'new_only; never reassign processing from another digest'} }}",
+          "options": {
+            "responseCode": 200
+          }
+        }
+      },
+      {
+        "id": "cc8c7d1c-02c2-4ad3-aea2-3e096f88210e",
+        "name": "Respond Claim Conflict",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.5,
+        "position": [
+          1568,
+          128
+        ],
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ {error:'claim_count_mismatch',message:'RSS claim modified fewer rows than selected; inspect current row state before retrying',digest_id:$json.digest_id,expected_count:$json.expected_count,claimed_count:$json.claimed_count} }}",
+          "options": {
+            "responseCode": 409
           }
         }
       }
@@ -450,7 +820,7 @@
         "main": [
           [
             {
-              "node": "Claim RSS Items",
+              "node": "Get Fresh RSS Items",
               "type": "main",
               "index": 0
             }
@@ -464,11 +834,69 @@
           ]
         ]
       },
+      "Get Fresh RSS Items": {
+        "main": [
+          [
+            {
+              "node": "Fresh RSS Items Found?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Fresh RSS Items Found?": {
+        "main": [
+          [
+            {
+              "node": "Claim RSS Items",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Respond Empty RSS Claim",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
       "Claim RSS Items": {
         "main": [
           [
             {
+              "node": "Summarize RSS Claim",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Summarize RSS Claim": {
+        "main": [
+          [
+            {
+              "node": "All Fresh Items Claimed?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "All Fresh Items Claimed?": {
+        "main": [
+          [
+            {
               "node": "Respond Success",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Respond Claim Conflict",
               "type": "main",
               "index": 0
             }
@@ -478,10 +906,10 @@
     },
     "nodeGroups": [],
     "authors": "Administrator NTLx (via MCP)",
-    "name": "Initial RSS digest claim contract",
-    "description": "Adds an authenticated claim step so the daily ChatGPT RSS worker freezes a stable batch before analysis. Any non-processed leftovers are reclaimed into the current digest for recovery.",
+    "name": "Bounded RSS claim with ownership CAS and factual counts",
+    "description": "Validate canonical digest/date and integer 1..100 limit; use oldest-first Data Table Get capped by limit, then per-row id+new+unowned conditional updates. Report matched counts and reject partial races (409), reject stale/cross-digest auto takeover. Preserve existing webhook auth and 400 contract.",
     "autosaved": false,
-    "createdAt": "2026-10-22T16:46:10.383Z",
-    "updatedAt": "2026-10-22T16:46:10.383Z"
+    "createdAt": "2026-11-04T06:53:33.743Z",
+    "updatedAt": "2026-11-04T06:53:33.743Z"
   }
 }
