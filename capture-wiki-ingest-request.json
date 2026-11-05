@@ -2,11 +2,11 @@
   "id": "HLq8BghNz9CTjkZi",
   "name": "Capture Wiki ingest request",
   "active": true,
-  "activeVersionId": "c05b409c-4b50-4417-9ac5-5538573052c7",
+  "activeVersionId": "1be2611e-47d8-491e-8a92-f7a4949ab25b",
   "createdAt": "2026-10-22T08:33:43.403Z",
-  "updatedAt": "2026-10-22T09:16:16.823Z",
+  "updatedAt": "2026-11-04T06:13:55.904Z",
   "isArchived": false,
-  "versionId": "c05b409c-4b50-4417-9ac5-5538573052c7",
+  "versionId": "1be2611e-47d8-491e-8a92-f7a4949ab25b",
   "triggerCount": 1,
   "nodes": [
     {
@@ -82,7 +82,7 @@
             {
               "id": "work-id",
               "name": "work_id",
-              "value": "={{ 'wiki_compile:' + $(\"Receive Wiki URL\").item.json.body.url.trim() }}",
+              "value": "={{ 'wiki_promotion:' + $('Receive Wiki URL').first().json.body.url.trim() }}",
               "type": "string"
             },
             {
@@ -94,7 +94,7 @@
             {
               "id": "correlation-id",
               "name": "correlation_id",
-              "value": "={{ 'wiki_compile:' + $(\"Receive Wiki URL\").item.json.body.url.trim() }}",
+              "value": "={{ 'wiki_promotion:' + $('Receive Wiki URL').first().json.body.url.trim() }}",
               "type": "string"
             },
             {
@@ -106,7 +106,7 @@
             {
               "id": "summary",
               "name": "summary",
-              "value": "={{ $(\"Receive Wiki URL\").item.json.body.notes ? 'Compile into LLM Wiki: ' + $(\"Receive Wiki URL\").item.json.body.notes : 'Compile URL into LLM Wiki' }}",
+              "value": "={{ 'Weekly evidence and Promotion review for submitted Wiki URL: ' + ($('Receive Wiki URL').first().json.body.notes||$('Receive Wiki URL').first().json.body.url.trim()) + '; must read source, check existing Wiki, and never compile without approved promotion manifest.' }}",
               "type": "string"
             },
             {
@@ -211,184 +211,6 @@
       }
     },
     {
-      "id": "01014ea7-b7f6-4cb5-93ed-c156539c77d4",
-      "name": "Insert Pending AI Work",
-      "type": "n8n-nodes-base.dataTable",
-      "typeVersion": 1.1,
-      "position": [
-        1120,
-        192
-      ],
-      "parameters": {
-        "resource": "row",
-        "operation": "insert",
-        "dataTableId": {
-          "__rl": true,
-          "mode": "name",
-          "value": "ai_work_queue"
-        },
-        "columns": {
-          "mappingMode": "defineBelow",
-          "value": {
-            "work_id": "={{ $(\"Normalize Wiki Work\").item.json.work_id }}",
-            "kind": "wiki_compile",
-            "status": "pending",
-            "priority": 2,
-            "source_event_id": "={{ $(\"Normalize Wiki Work\").item.json.event_id }}",
-            "correlation_id": "={{ $(\"Normalize Wiki Work\").item.json.correlation_id }}",
-            "project": "agentic-work-atlas",
-            "input_ref": "={{ $(\"Normalize Wiki Work\").item.json.input_ref }}",
-            "summary": "={{ $(\"Normalize Wiki Work\").item.json.summary }}",
-            "not_before": "={{ $(\"Normalize Wiki Work\").item.json.not_before }}",
-            "claimed_by": "",
-            "attempt_count": 0,
-            "result_ref": "",
-            "result_summary": "",
-            "last_error": ""
-          },
-          "schema": [
-            {
-              "id": "work_id",
-              "displayName": "work_id",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "kind",
-              "displayName": "kind",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "status",
-              "displayName": "status",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "priority",
-              "displayName": "priority",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "number",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "source_event_id",
-              "displayName": "source_event_id",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "correlation_id",
-              "displayName": "correlation_id",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "project",
-              "displayName": "project",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "input_ref",
-              "displayName": "input_ref",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "summary",
-              "displayName": "summary",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "not_before",
-              "displayName": "not_before",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "dateTime",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "claimed_by",
-              "displayName": "claimed_by",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "attempt_count",
-              "displayName": "attempt_count",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "number",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "result_ref",
-              "displayName": "result_ref",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "result_summary",
-              "displayName": "result_summary",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "last_error",
-              "displayName": "last_error",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            }
-          ]
-        },
-        "options": {}
-      },
-      "onError": "continueErrorOutput"
-    },
-    {
       "id": "41b5d6d8-56c5-4740-88d1-212ebceb6b40",
       "name": "Respond Queued",
       "type": "n8n-nodes-base.respondToWebhook",
@@ -399,7 +221,7 @@
       ],
       "parameters": {
         "respondWith": "json",
-        "responseBody": "={{ { queued: true, duplicate: false, work_id: $(\"Normalize Wiki Work\").item.json.work_id, kind: 'wiki_compile', url: $(\"Normalize Wiki Work\").item.json.input_ref, status: 'pending' } }}",
+        "responseBody": "={{ {queued:true,duplicate:false,work_id:$('Normalize Wiki Work').first().json.work_id,worker:'weekly',kind:'knowledge_promotion_review',url:$('Normalize Wiki Work').first().json.input_ref,status:'pending',promotion_gate:'weekly'} }}",
         "options": {
           "responseCode": 202
         }
@@ -446,153 +268,155 @@
       }
     },
     {
-      "id": "c5feaadf-edb5-4b48-8732-8d58237b99c2",
-      "name": "Record Wiki Intake Event",
-      "type": "n8n-nodes-base.dataTable",
-      "typeVersion": 1.1,
+      "id": "24b03a68-9234-4ac3-afb4-31e5c24bc6aa",
+      "name": "Enqueue Wiki Promotion Review",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.4,
       "position": [
-        1360,
-        128
+        1120,
+        340
       ],
       "parameters": {
-        "resource": "row",
-        "operation": "upsert",
-        "dataTableId": {
+        "source": "database",
+        "workflowId": {
           "__rl": true,
-          "mode": "name",
-          "value": "work_events"
+          "mode": "id",
+          "value": "oe8KZW4nLbYUUDzA"
         },
-        "matchType": "allConditions",
-        "filters": {
-          "conditions": [
-            {
-              "keyName": "event_id",
-              "condition": "eq",
-              "keyValue": "={{ $(\"Normalize Wiki Work\").item.json.event_id }}"
-            }
-          ]
-        },
-        "columns": {
+        "workflowInputs": {
           "mappingMode": "defineBelow",
           "value": {
-            "event_id": "={{ $(\"Normalize Wiki Work\").item.json.event_id }}",
-            "occurred_at": "={{ $now.toISO() }}",
-            "source": "n8n:wiki-ingest",
+            "work_id": "={{ $('Normalize Wiki Work').first().json.work_id }}",
+            "worker": "weekly",
+            "kind": "knowledge_promotion_review",
+            "priority": 20,
+            "source_event_id": "={{ $('Normalize Wiki Work').first().json.event_id }}",
+            "correlation_id": "={{ $('Normalize Wiki Work').first().json.correlation_id }}",
             "project": "agentic-work-atlas",
-            "category": "wiki.url.submitted",
-            "title": "Wiki URL submitted",
-            "description": "={{ $(\"Normalize Wiki Work\").item.json.summary }}",
-            "status": "pending",
-            "url": "={{ $(\"Normalize Wiki Work\").item.json.input_ref }}",
-            "metadata_object": "={{ ({ source: $(\"Normalize Wiki Work\").item.json.source }).toJsonString() }}",
-            "correlation_id": "={{ $(\"Normalize Wiki Work\").item.json.correlation_id }}"
+            "input_ref": "={{ $('Normalize Wiki Work').first().json.input_ref }}",
+            "summary": "={{ $('Normalize Wiki Work').first().json.summary }}",
+            "not_before": "={{ $('Normalize Wiki Work').first().json.not_before }}",
+            "deadline": "",
+            "event_id": "={{ $('Normalize Wiki Work').first().json.event_id }}",
+            "event_occurred_at": "={{ $now.toISO() }}",
+            "event_source": "n8n:wiki-ingest",
+            "event_category": "wiki.url.submitted",
+            "event_title": "Wiki source submitted for Weekly review",
+            "event_description": "={{ $('Normalize Wiki Work').first().json.summary }}",
+            "event_status": "scheduled",
+            "event_url": "={{ $('Normalize Wiki Work').first().json.input_ref }}",
+            "event_metadata_object": "={{ ({architecture_version:3,source:$('Normalize Wiki Work').first().json.source,source_url:$('Normalize Wiki Work').first().json.input_ref,execution_policy:'chatgpt_direct_only',promotion_gate:'weekly',direct_compile_forbidden:true}).toJsonString() }}"
           },
           "schema": [
             {
-              "id": "event_id",
-              "displayName": "event_id",
-              "required": false,
-              "defaultMatch": true,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
+              "id": "work_id",
+              "displayName": "work_id",
+              "type": "string"
             },
             {
-              "id": "occurred_at",
-              "displayName": "occurred_at",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "dateTime",
-              "canBeUsedToMatch": true
+              "id": "worker",
+              "displayName": "worker",
+              "type": "string"
             },
             {
-              "id": "source",
-              "displayName": "source",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
+              "id": "kind",
+              "displayName": "kind",
+              "type": "string"
             },
             {
-              "id": "project",
-              "displayName": "project",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
+              "id": "priority",
+              "displayName": "priority",
+              "type": "number"
             },
             {
-              "id": "category",
-              "displayName": "category",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "title",
-              "displayName": "title",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "description",
-              "displayName": "description",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "status",
-              "displayName": "status",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "url",
-              "displayName": "url",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "metadata_object",
-              "displayName": "metadata_object",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
+              "id": "source_event_id",
+              "displayName": "source_event_id",
+              "type": "string"
             },
             {
               "id": "correlation_id",
               "displayName": "correlation_id",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
+              "type": "string"
+            },
+            {
+              "id": "project",
+              "displayName": "project",
+              "type": "string"
+            },
+            {
+              "id": "input_ref",
+              "displayName": "input_ref",
+              "type": "string"
+            },
+            {
+              "id": "summary",
+              "displayName": "summary",
+              "type": "string"
+            },
+            {
+              "id": "not_before",
+              "displayName": "not_before",
+              "type": "string"
+            },
+            {
+              "id": "deadline",
+              "displayName": "deadline",
+              "type": "string"
+            },
+            {
+              "id": "event_id",
+              "displayName": "event_id",
+              "type": "string"
+            },
+            {
+              "id": "event_occurred_at",
+              "displayName": "event_occurred_at",
+              "type": "string"
+            },
+            {
+              "id": "event_source",
+              "displayName": "event_source",
+              "type": "string"
+            },
+            {
+              "id": "event_category",
+              "displayName": "event_category",
+              "type": "string"
+            },
+            {
+              "id": "event_title",
+              "displayName": "event_title",
+              "type": "string"
+            },
+            {
+              "id": "event_description",
+              "displayName": "event_description",
+              "type": "string"
+            },
+            {
+              "id": "event_status",
+              "displayName": "event_status",
+              "type": "string"
+            },
+            {
+              "id": "event_url",
+              "displayName": "event_url",
+              "type": "string"
+            },
+            {
+              "id": "event_metadata_object",
+              "displayName": "event_metadata_object",
+              "type": "string"
             }
           ]
         },
-        "options": {}
+        "mode": "each",
+        "options": {
+          "waitForSubWorkflow": true
+        }
       },
-      "disabled": false,
-      "onError": "continueErrorOutput"
+      "onError": "continueErrorOutput",
+      "alwaysOutputData": true
     }
   ],
   "connections": {
@@ -665,18 +489,18 @@
         ],
         [
           {
-            "node": "Insert Pending AI Work",
+            "node": "Enqueue Wiki Promotion Review",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Insert Pending AI Work": {
+    "Enqueue Wiki Promotion Review": {
       "main": [
         [
           {
-            "node": "Record Wiki Intake Event",
+            "node": "Respond Queued",
             "type": "main",
             "index": 0
           }
@@ -689,43 +513,9 @@
           }
         ]
       ]
-    },
-    "Record Wiki Intake Event": {
-      "main": [
-        [
-          {
-            "node": "Respond Queued",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Respond Queued",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
     }
   },
-  "nodeGroups": [
-    {
-      "id": "9f57bafa-98c3-42a7-bb2d-b5e6088e86c2",
-      "name": "Queue valid wiki work",
-      "nodeIds": [
-        "eb0a4e03-3876-4292-a8a7-3acd72380d2b",
-        "7509eb5d-4bfd-478a-bdb2-b1950d88527b",
-        "e3030efe-b4ec-4ef0-a378-5789f4a5acc4",
-        "10eb64ca-d56d-4997-98fb-7f63fb7c31c3",
-        "01014ea7-b7f6-4cb5-93ed-c156539c77d4",
-        "c5feaadf-edb5-4b48-8732-8d58237b99c2",
-        "41b5d6d8-56c5-4740-88d1-212ebceb6b40",
-        "9e9bdf4a-42f2-4716-9f9e-23f90df33f35"
-      ],
-      "description": "Normalize and deduplicate a valid URL, queue only new ChatGPT work, record the event, and return deterministic API responses."
-    }
-  ],
+  "nodeGroups": [],
   "settings": {
     "executionOrder": "v1",
     "availableInMCP": true,
@@ -786,7 +576,7 @@
     }
   ],
   "activeVersion": {
-    "versionId": "c05b409c-4b50-4417-9ac5-5538573052c7",
+    "versionId": "1be2611e-47d8-491e-8a92-f7a4949ab25b",
     "workflowId": "HLq8BghNz9CTjkZi",
     "nodes": [
       {
@@ -862,7 +652,7 @@
               {
                 "id": "work-id",
                 "name": "work_id",
-                "value": "={{ 'wiki_compile:' + $(\"Receive Wiki URL\").item.json.body.url.trim() }}",
+                "value": "={{ 'wiki_promotion:' + $('Receive Wiki URL').first().json.body.url.trim() }}",
                 "type": "string"
               },
               {
@@ -874,7 +664,7 @@
               {
                 "id": "correlation-id",
                 "name": "correlation_id",
-                "value": "={{ 'wiki_compile:' + $(\"Receive Wiki URL\").item.json.body.url.trim() }}",
+                "value": "={{ 'wiki_promotion:' + $('Receive Wiki URL').first().json.body.url.trim() }}",
                 "type": "string"
               },
               {
@@ -886,7 +676,7 @@
               {
                 "id": "summary",
                 "name": "summary",
-                "value": "={{ $(\"Receive Wiki URL\").item.json.body.notes ? 'Compile into LLM Wiki: ' + $(\"Receive Wiki URL\").item.json.body.notes : 'Compile URL into LLM Wiki' }}",
+                "value": "={{ 'Weekly evidence and Promotion review for submitted Wiki URL: ' + ($('Receive Wiki URL').first().json.body.notes||$('Receive Wiki URL').first().json.body.url.trim()) + '; must read source, check existing Wiki, and never compile without approved promotion manifest.' }}",
                 "type": "string"
               },
               {
@@ -991,184 +781,6 @@
         }
       },
       {
-        "id": "01014ea7-b7f6-4cb5-93ed-c156539c77d4",
-        "name": "Insert Pending AI Work",
-        "type": "n8n-nodes-base.dataTable",
-        "typeVersion": 1.1,
-        "position": [
-          1120,
-          192
-        ],
-        "parameters": {
-          "resource": "row",
-          "operation": "insert",
-          "dataTableId": {
-            "__rl": true,
-            "mode": "name",
-            "value": "ai_work_queue"
-          },
-          "columns": {
-            "mappingMode": "defineBelow",
-            "value": {
-              "work_id": "={{ $(\"Normalize Wiki Work\").item.json.work_id }}",
-              "kind": "wiki_compile",
-              "status": "pending",
-              "priority": 2,
-              "source_event_id": "={{ $(\"Normalize Wiki Work\").item.json.event_id }}",
-              "correlation_id": "={{ $(\"Normalize Wiki Work\").item.json.correlation_id }}",
-              "project": "agentic-work-atlas",
-              "input_ref": "={{ $(\"Normalize Wiki Work\").item.json.input_ref }}",
-              "summary": "={{ $(\"Normalize Wiki Work\").item.json.summary }}",
-              "not_before": "={{ $(\"Normalize Wiki Work\").item.json.not_before }}",
-              "claimed_by": "",
-              "attempt_count": 0,
-              "result_ref": "",
-              "result_summary": "",
-              "last_error": ""
-            },
-            "schema": [
-              {
-                "id": "work_id",
-                "displayName": "work_id",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true
-              },
-              {
-                "id": "kind",
-                "displayName": "kind",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true
-              },
-              {
-                "id": "status",
-                "displayName": "status",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true
-              },
-              {
-                "id": "priority",
-                "displayName": "priority",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "number",
-                "canBeUsedToMatch": true
-              },
-              {
-                "id": "source_event_id",
-                "displayName": "source_event_id",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true
-              },
-              {
-                "id": "correlation_id",
-                "displayName": "correlation_id",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true
-              },
-              {
-                "id": "project",
-                "displayName": "project",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true
-              },
-              {
-                "id": "input_ref",
-                "displayName": "input_ref",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true
-              },
-              {
-                "id": "summary",
-                "displayName": "summary",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true
-              },
-              {
-                "id": "not_before",
-                "displayName": "not_before",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "dateTime",
-                "canBeUsedToMatch": true
-              },
-              {
-                "id": "claimed_by",
-                "displayName": "claimed_by",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true
-              },
-              {
-                "id": "attempt_count",
-                "displayName": "attempt_count",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "number",
-                "canBeUsedToMatch": true
-              },
-              {
-                "id": "result_ref",
-                "displayName": "result_ref",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true
-              },
-              {
-                "id": "result_summary",
-                "displayName": "result_summary",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true
-              },
-              {
-                "id": "last_error",
-                "displayName": "last_error",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true
-              }
-            ]
-          },
-          "options": {}
-        },
-        "onError": "continueErrorOutput"
-      },
-      {
         "id": "41b5d6d8-56c5-4740-88d1-212ebceb6b40",
         "name": "Respond Queued",
         "type": "n8n-nodes-base.respondToWebhook",
@@ -1179,7 +791,7 @@
         ],
         "parameters": {
           "respondWith": "json",
-          "responseBody": "={{ { queued: true, duplicate: false, work_id: $(\"Normalize Wiki Work\").item.json.work_id, kind: 'wiki_compile', url: $(\"Normalize Wiki Work\").item.json.input_ref, status: 'pending' } }}",
+          "responseBody": "={{ {queued:true,duplicate:false,work_id:$('Normalize Wiki Work').first().json.work_id,worker:'weekly',kind:'knowledge_promotion_review',url:$('Normalize Wiki Work').first().json.input_ref,status:'pending',promotion_gate:'weekly'} }}",
           "options": {
             "responseCode": 202
           }
@@ -1226,153 +838,155 @@
         }
       },
       {
-        "id": "c5feaadf-edb5-4b48-8732-8d58237b99c2",
-        "name": "Record Wiki Intake Event",
-        "type": "n8n-nodes-base.dataTable",
-        "typeVersion": 1.1,
+        "id": "24b03a68-9234-4ac3-afb4-31e5c24bc6aa",
+        "name": "Enqueue Wiki Promotion Review",
+        "type": "n8n-nodes-base.executeWorkflow",
+        "typeVersion": 1.4,
         "position": [
-          1360,
-          128
+          1120,
+          340
         ],
         "parameters": {
-          "resource": "row",
-          "operation": "upsert",
-          "dataTableId": {
+          "source": "database",
+          "workflowId": {
             "__rl": true,
-            "mode": "name",
-            "value": "work_events"
+            "mode": "id",
+            "value": "oe8KZW4nLbYUUDzA"
           },
-          "matchType": "allConditions",
-          "filters": {
-            "conditions": [
-              {
-                "keyName": "event_id",
-                "condition": "eq",
-                "keyValue": "={{ $(\"Normalize Wiki Work\").item.json.event_id }}"
-              }
-            ]
-          },
-          "columns": {
+          "workflowInputs": {
             "mappingMode": "defineBelow",
             "value": {
-              "event_id": "={{ $(\"Normalize Wiki Work\").item.json.event_id }}",
-              "occurred_at": "={{ $now.toISO() }}",
-              "source": "n8n:wiki-ingest",
+              "work_id": "={{ $('Normalize Wiki Work').first().json.work_id }}",
+              "worker": "weekly",
+              "kind": "knowledge_promotion_review",
+              "priority": 20,
+              "source_event_id": "={{ $('Normalize Wiki Work').first().json.event_id }}",
+              "correlation_id": "={{ $('Normalize Wiki Work').first().json.correlation_id }}",
               "project": "agentic-work-atlas",
-              "category": "wiki.url.submitted",
-              "title": "Wiki URL submitted",
-              "description": "={{ $(\"Normalize Wiki Work\").item.json.summary }}",
-              "status": "pending",
-              "url": "={{ $(\"Normalize Wiki Work\").item.json.input_ref }}",
-              "metadata_object": "={{ ({ source: $(\"Normalize Wiki Work\").item.json.source }).toJsonString() }}",
-              "correlation_id": "={{ $(\"Normalize Wiki Work\").item.json.correlation_id }}"
+              "input_ref": "={{ $('Normalize Wiki Work').first().json.input_ref }}",
+              "summary": "={{ $('Normalize Wiki Work').first().json.summary }}",
+              "not_before": "={{ $('Normalize Wiki Work').first().json.not_before }}",
+              "deadline": "",
+              "event_id": "={{ $('Normalize Wiki Work').first().json.event_id }}",
+              "event_occurred_at": "={{ $now.toISO() }}",
+              "event_source": "n8n:wiki-ingest",
+              "event_category": "wiki.url.submitted",
+              "event_title": "Wiki source submitted for Weekly review",
+              "event_description": "={{ $('Normalize Wiki Work').first().json.summary }}",
+              "event_status": "scheduled",
+              "event_url": "={{ $('Normalize Wiki Work').first().json.input_ref }}",
+              "event_metadata_object": "={{ ({architecture_version:3,source:$('Normalize Wiki Work').first().json.source,source_url:$('Normalize Wiki Work').first().json.input_ref,execution_policy:'chatgpt_direct_only',promotion_gate:'weekly',direct_compile_forbidden:true}).toJsonString() }}"
             },
             "schema": [
               {
-                "id": "event_id",
-                "displayName": "event_id",
-                "required": false,
-                "defaultMatch": true,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true
+                "id": "work_id",
+                "displayName": "work_id",
+                "type": "string"
               },
               {
-                "id": "occurred_at",
-                "displayName": "occurred_at",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "dateTime",
-                "canBeUsedToMatch": true
+                "id": "worker",
+                "displayName": "worker",
+                "type": "string"
               },
               {
-                "id": "source",
-                "displayName": "source",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true
+                "id": "kind",
+                "displayName": "kind",
+                "type": "string"
               },
               {
-                "id": "project",
-                "displayName": "project",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true
+                "id": "priority",
+                "displayName": "priority",
+                "type": "number"
               },
               {
-                "id": "category",
-                "displayName": "category",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true
-              },
-              {
-                "id": "title",
-                "displayName": "title",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true
-              },
-              {
-                "id": "description",
-                "displayName": "description",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true
-              },
-              {
-                "id": "status",
-                "displayName": "status",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true
-              },
-              {
-                "id": "url",
-                "displayName": "url",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true
-              },
-              {
-                "id": "metadata_object",
-                "displayName": "metadata_object",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true
+                "id": "source_event_id",
+                "displayName": "source_event_id",
+                "type": "string"
               },
               {
                 "id": "correlation_id",
                 "displayName": "correlation_id",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true
+                "type": "string"
+              },
+              {
+                "id": "project",
+                "displayName": "project",
+                "type": "string"
+              },
+              {
+                "id": "input_ref",
+                "displayName": "input_ref",
+                "type": "string"
+              },
+              {
+                "id": "summary",
+                "displayName": "summary",
+                "type": "string"
+              },
+              {
+                "id": "not_before",
+                "displayName": "not_before",
+                "type": "string"
+              },
+              {
+                "id": "deadline",
+                "displayName": "deadline",
+                "type": "string"
+              },
+              {
+                "id": "event_id",
+                "displayName": "event_id",
+                "type": "string"
+              },
+              {
+                "id": "event_occurred_at",
+                "displayName": "event_occurred_at",
+                "type": "string"
+              },
+              {
+                "id": "event_source",
+                "displayName": "event_source",
+                "type": "string"
+              },
+              {
+                "id": "event_category",
+                "displayName": "event_category",
+                "type": "string"
+              },
+              {
+                "id": "event_title",
+                "displayName": "event_title",
+                "type": "string"
+              },
+              {
+                "id": "event_description",
+                "displayName": "event_description",
+                "type": "string"
+              },
+              {
+                "id": "event_status",
+                "displayName": "event_status",
+                "type": "string"
+              },
+              {
+                "id": "event_url",
+                "displayName": "event_url",
+                "type": "string"
+              },
+              {
+                "id": "event_metadata_object",
+                "displayName": "event_metadata_object",
+                "type": "string"
               }
             ]
           },
-          "options": {}
+          "mode": "each",
+          "options": {
+            "waitForSubWorkflow": true
+          }
         },
-        "disabled": false,
-        "onError": "continueErrorOutput"
+        "onError": "continueErrorOutput",
+        "alwaysOutputData": true
       }
     ],
     "connections": {
@@ -1445,18 +1059,18 @@
           ],
           [
             {
-              "node": "Insert Pending AI Work",
+              "node": "Enqueue Wiki Promotion Review",
               "type": "main",
               "index": 0
             }
           ]
         ]
       },
-      "Insert Pending AI Work": {
+      "Enqueue Wiki Promotion Review": {
         "main": [
           [
             {
-              "node": "Record Wiki Intake Event",
+              "node": "Respond Queued",
               "type": "main",
               "index": 0
             }
@@ -1469,48 +1083,14 @@
             }
           ]
         ]
-      },
-      "Record Wiki Intake Event": {
-        "main": [
-          [
-            {
-              "node": "Respond Queued",
-              "type": "main",
-              "index": 0
-            }
-          ],
-          [
-            {
-              "node": "Respond Queued",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
       }
     },
-    "nodeGroups": [
-      {
-        "id": "9f57bafa-98c3-42a7-bb2d-b5e6088e86c2",
-        "name": "Queue valid wiki work",
-        "nodeIds": [
-          "eb0a4e03-3876-4292-a8a7-3acd72380d2b",
-          "7509eb5d-4bfd-478a-bdb2-b1950d88527b",
-          "e3030efe-b4ec-4ef0-a378-5789f4a5acc4",
-          "10eb64ca-d56d-4997-98fb-7f63fb7c31c3",
-          "01014ea7-b7f6-4cb5-93ed-c156539c77d4",
-          "c5feaadf-edb5-4b48-8732-8d58237b99c2",
-          "41b5d6d8-56c5-4740-88d1-212ebceb6b40",
-          "9e9bdf4a-42f2-4716-9f9e-23f90df33f35"
-        ],
-        "description": "Normalize and deduplicate a valid URL, queue only new ChatGPT work, record the event, and return deterministic API responses."
-      }
-    ],
+    "nodeGroups": [],
     "authors": "Administrator NTLx (via MCP)",
-    "name": "Group Wiki queue stage",
-    "description": "Restores a single-entry processing group after the queue migration so the workflow remains readable without changing execution semantics.",
+    "name": "Fix Wiki intake source event lineage",
+    "description": "Correct source_event_id mapping to the actual normalized event_id so Weekly can resolve the exact wiki.url.submitted record.",
     "autosaved": false,
-    "createdAt": "2026-10-22T09:16:16.827Z",
-    "updatedAt": "2026-10-22T09:16:16.827Z"
+    "createdAt": "2026-11-04T06:13:55.908Z",
+    "updatedAt": "2026-11-04T06:13:55.908Z"
   }
 }
