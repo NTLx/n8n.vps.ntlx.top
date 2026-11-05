@@ -2,11 +2,11 @@
   "id": "GeHImtzcBiGYwfUQ",
   "name": "Schedule career intelligence watch",
   "active": true,
-  "activeVersionId": "36772236-bcb6-473c-a03b-6b9431090c29",
+  "activeVersionId": "17f5470b-9a3b-4664-920e-ee8702b933ea",
   "createdAt": "2026-10-22T16:34:48.501Z",
-  "updatedAt": "2026-10-22T16:34:54.198Z",
+  "updatedAt": "2026-11-04T07:58:45.334Z",
   "isArchived": false,
-  "versionId": "36772236-bcb6-473c-a03b-6b9431090c29",
+  "versionId": "17f5470b-9a3b-4664-920e-ee8702b933ea",
   "triggerCount": 1,
   "nodes": [
     {
@@ -109,7 +109,7 @@
               "id": "event-id",
               "name": "event_id",
               "type": "string",
-              "value": "={{ 'job_watch.requested:' + $now.setZone('Asia/Shanghai').toFormat('yyyyLLdd') }}"
+              "value": "={{ 'job_watch.tick:' + $now.setZone('Asia/Shanghai').toFormat('yyyyLLddHH') }}"
             },
             {
               "id": "event-time",
@@ -127,19 +127,19 @@
               "id": "event-category",
               "name": "event_category",
               "type": "string",
-              "value": "job_watch.requested"
+              "value": "job_watch.tick"
             },
             {
               "id": "event-title",
               "name": "event_title",
               "type": "string",
-              "value": "Career target watch scheduled"
+              "value": "Career target watch hourly tick"
             },
             {
               "id": "event-description",
               "name": "event_description",
               "type": "string",
-              "value": "Hourly deterministic trigger requested a ChatGPT review of the configured career targets. This event is daily-upserted to avoid Event Ledger noise."
+              "value": "Each Hourly job_watch work has one exact and durable source Event matching queue source_event_id; no daily upsert key."
             },
             {
               "id": "event-status",
@@ -200,9 +200,10 @@
             "event_category": "={{ $json.event_category }}",
             "event_title": "={{ $json.event_title }}",
             "event_description": "={{ $json.event_description }}",
-            "event_status": "={{ $json.event_status }}",
+            "event_status": "scheduled",
             "event_url": "={{ $json.event_url }}",
-            "event_metadata_object": "={{ $json.event_metadata_object }}"
+            "event_metadata_object": "={{ $json.event_metadata_object }}",
+            "worker": "hourly"
           },
           "schema": [
             {
@@ -299,6 +300,11 @@
               "id": "event_metadata_object",
               "displayName": "event_metadata_object",
               "type": "string"
+            },
+            {
+              "id": "worker",
+              "displayName": "worker",
+              "type": "string"
             }
           ]
         },
@@ -307,7 +313,7 @@
           "waitForSubWorkflow": true
         }
       },
-      "onError": "continueRegularOutput"
+      "onError": "stopWorkflow"
     }
   ],
   "connections": {
@@ -407,7 +413,7 @@
     }
   ],
   "activeVersion": {
-    "versionId": "36772236-bcb6-473c-a03b-6b9431090c29",
+    "versionId": "17f5470b-9a3b-4664-920e-ee8702b933ea",
     "workflowId": "GeHImtzcBiGYwfUQ",
     "nodes": [
       {
@@ -510,7 +516,7 @@
                 "id": "event-id",
                 "name": "event_id",
                 "type": "string",
-                "value": "={{ 'job_watch.requested:' + $now.setZone('Asia/Shanghai').toFormat('yyyyLLdd') }}"
+                "value": "={{ 'job_watch.tick:' + $now.setZone('Asia/Shanghai').toFormat('yyyyLLddHH') }}"
               },
               {
                 "id": "event-time",
@@ -528,19 +534,19 @@
                 "id": "event-category",
                 "name": "event_category",
                 "type": "string",
-                "value": "job_watch.requested"
+                "value": "job_watch.tick"
               },
               {
                 "id": "event-title",
                 "name": "event_title",
                 "type": "string",
-                "value": "Career target watch scheduled"
+                "value": "Career target watch hourly tick"
               },
               {
                 "id": "event-description",
                 "name": "event_description",
                 "type": "string",
-                "value": "Hourly deterministic trigger requested a ChatGPT review of the configured career targets. This event is daily-upserted to avoid Event Ledger noise."
+                "value": "Each Hourly job_watch work has one exact and durable source Event matching queue source_event_id; no daily upsert key."
               },
               {
                 "id": "event-status",
@@ -601,9 +607,10 @@
               "event_category": "={{ $json.event_category }}",
               "event_title": "={{ $json.event_title }}",
               "event_description": "={{ $json.event_description }}",
-              "event_status": "={{ $json.event_status }}",
+              "event_status": "scheduled",
               "event_url": "={{ $json.event_url }}",
-              "event_metadata_object": "={{ $json.event_metadata_object }}"
+              "event_metadata_object": "={{ $json.event_metadata_object }}",
+              "worker": "hourly"
             },
             "schema": [
               {
@@ -700,6 +707,11 @@
                 "id": "event_metadata_object",
                 "displayName": "event_metadata_object",
                 "type": "string"
+              },
+              {
+                "id": "worker",
+                "displayName": "worker",
+                "type": "string"
               }
             ]
           },
@@ -708,7 +720,7 @@
             "waitForSubWorkflow": true
           }
         },
-        "onError": "continueRegularOutput"
+        "onError": "stopWorkflow"
       }
     ],
     "connections": {
@@ -747,10 +759,10 @@
       }
     ],
     "authors": "Administrator NTLx (via MCP)",
-    "name": "Initial hourly career watch producer",
-    "description": "Runs hourly at :00, creates one idempotent job_watch work item, and daily-upserts the request event to avoid Event Ledger noise.",
+    "name": "Surface career watch enqueue failures",
+    "description": "Do not silently ignore canonical Enqueue subworkflow errors; escalate failed scheduled job-watch writes to configured Error Notification workflow.",
     "autosaved": false,
-    "createdAt": "2026-10-22T16:34:48.501Z",
-    "updatedAt": "2026-10-22T16:34:48.501Z"
+    "createdAt": "2026-11-04T07:58:45.353Z",
+    "updatedAt": "2026-11-04T07:58:45.353Z"
   }
 }
