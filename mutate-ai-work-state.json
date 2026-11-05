@@ -2,12 +2,12 @@
   "id": "WgqmfMMeWpddtv4l",
   "name": "Mutate AI work state",
   "active": true,
-  "activeVersionId": "5b3cfe4b-43a0-4e52-8e90-293bc2139a84",
+  "activeVersionId": "1e29ab2d-17af-4e63-8d81-30b0dff7a99b",
   "createdAt": "2026-10-22T15:35:37.439Z",
-  "updatedAt": "2026-10-28T01:53:06.132Z",
+  "updatedAt": "2026-11-04T07:57:45.903Z",
   "isArchived": false,
-  "versionId": "5b3cfe4b-43a0-4e52-8e90-293bc2139a84",
-  "triggerCount": 5,
+  "versionId": "1e29ab2d-17af-4e63-8d81-30b0dff7a99b",
+  "triggerCount": 6,
   "nodes": [
     {
       "id": "0174053f-2594-4919-bcbf-c5cb9413bf81",
@@ -22,7 +22,7 @@
         "httpMethod": "POST",
         "path": "internal/ai-work/claim",
         "authentication": "headerAuth",
-        "responseMode": "lastNode",
+        "responseMode": "responseNode",
         "options": {
           "responseCode": {
             "values": {
@@ -45,8 +45,8 @@
       "type": "n8n-nodes-base.dataTable",
       "typeVersion": 1.1,
       "position": [
-        224,
-        0
+        896,
+        -256
       ],
       "parameters": {
         "resource": "row",
@@ -73,6 +73,11 @@
               "keyName": "not_before",
               "condition": "lte",
               "keyValue": "={{ $now.toISO() }}"
+            },
+            {
+              "keyName": "attempt_count",
+              "condition": "eq",
+              "keyValue": "={{ $('Read Claim Candidate').first().json.attempt_count }}"
             }
           ]
         },
@@ -80,10 +85,10 @@
           "mappingMode": "defineBelow",
           "value": {
             "status": "processing",
-            "claimed_by": "={{ $('Claim AI Work').item.json.body.claimed_by || 'chatgpt-dispatcher' }}",
+            "claimed_by": "={{ (() => { const v=String($('Claim AI Work').first().json.body?.claimed_by||'').trim();if(!v)throw new Error('claimed_by required for Claim');return v; })() }}",
             "claimed_at": "={{ $now.toISO() }}",
             "lease_until": "={{ $now.plus({ minutes: 90 }).toISO() }}",
-            "attempt_count": "={{ Number($('Claim AI Work').item.json.body.attempt_count || 0) + 1 }}",
+            "attempt_count": "={{ Number($('Read Claim Candidate').first().json.attempt_count ?? 0) + 1 }}",
             "last_error": ""
           },
           "schema": [
@@ -144,7 +149,8 @@
           ]
         },
         "options": {}
-      }
+      },
+      "alwaysOutputData": true
     },
     {
       "id": "d13ae6a7-f534-4439-a58c-2c6620c2620a",
@@ -159,7 +165,7 @@
         "httpMethod": "POST",
         "path": "internal/ai-work/complete",
         "authentication": "headerAuth",
-        "responseMode": "lastNode",
+        "responseMode": "responseNode",
         "options": {
           "responseCode": {
             "values": {
@@ -205,6 +211,21 @@
               "keyName": "status",
               "condition": "eq",
               "keyValue": "processing"
+            },
+            {
+              "keyName": "claimed_by",
+              "condition": "eq",
+              "keyValue": "={{ String($('Complete AI Work').first().json.body?.claimed_by || '__missing_claimed_by__') }}"
+            },
+            {
+              "keyName": "attempt_count",
+              "condition": "eq",
+              "keyValue": "={{ Number($('Complete AI Work').first().json.body?.attempt_count??-1) }}"
+            },
+            {
+              "keyName": "lease_until",
+              "condition": "gt",
+              "keyValue": "={{ $now.toISO() }}"
             }
           ]
         },
@@ -296,7 +317,8 @@
           ]
         },
         "options": {}
-      }
+      },
+      "alwaysOutputData": true
     },
     {
       "id": "b767fe94-9591-4aa5-85a5-ce0953f313c6",
@@ -311,7 +333,7 @@
         "httpMethod": "POST",
         "path": "internal/ai-work/defer",
         "authentication": "headerAuth",
-        "responseMode": "lastNode",
+        "responseMode": "responseNode",
         "options": {
           "responseCode": {
             "values": {
@@ -357,6 +379,21 @@
               "keyName": "status",
               "condition": "eq",
               "keyValue": "processing"
+            },
+            {
+              "keyName": "claimed_by",
+              "condition": "eq",
+              "keyValue": "={{ String($('Defer AI Work').first().json.body?.claimed_by || '__missing_claimed_by__') }}"
+            },
+            {
+              "keyName": "attempt_count",
+              "condition": "eq",
+              "keyValue": "={{ Number($('Defer AI Work').first().json.body?.attempt_count??-1) }}"
+            },
+            {
+              "keyName": "lease_until",
+              "condition": "gt",
+              "keyValue": "={{ $now.toISO() }}"
             }
           ]
         },
@@ -364,7 +401,7 @@
           "mappingMode": "defineBelow",
           "value": {
             "status": "pending",
-            "not_before": "={{ $('Defer AI Work').item.json.body.not_before }}",
+            "not_before": "={{ (() => { const s=$('Defer AI Work').first().json.body?.not_before;const d=DateTime.fromISO(String(s||''));if(!d.isValid)throw new Error('not_before must be a valid ISO 8601 datetime');return d.toISO(); })() }}",
             "result_ref": "={{ $('Defer AI Work').item.json.body.result_ref || '' }}",
             "result_summary": "={{ $('Defer AI Work').item.json.body.reason || '' }}",
             "claimed_by": "",
@@ -438,7 +475,8 @@
           ]
         },
         "options": {}
-      }
+      },
+      "alwaysOutputData": true
     },
     {
       "id": "30a5fefa-f278-4a7d-937a-1c64611eea4a",
@@ -453,7 +491,7 @@
         "httpMethod": "POST",
         "path": "internal/ai-work/fail",
         "authentication": "headerAuth",
-        "responseMode": "lastNode",
+        "responseMode": "responseNode",
         "options": {
           "responseCode": {
             "values": {
@@ -499,6 +537,21 @@
               "keyName": "status",
               "condition": "eq",
               "keyValue": "processing"
+            },
+            {
+              "keyName": "claimed_by",
+              "condition": "eq",
+              "keyValue": "={{ String($('Fail AI Work').first().json.body?.claimed_by || '__missing_claimed_by__') }}"
+            },
+            {
+              "keyName": "attempt_count",
+              "condition": "eq",
+              "keyValue": "={{ Number($('Fail AI Work').first().json.body?.attempt_count??-1) }}"
+            },
+            {
+              "keyName": "lease_until",
+              "condition": "gt",
+              "keyValue": "={{ $now.toISO() }}"
             }
           ]
         },
@@ -570,7 +623,8 @@
           ]
         },
         "options": {}
-      }
+      },
+      "alwaysOutputData": true
     },
     {
       "id": "4f67320c-e7f4-4288-9aea-fc9b9209eb7c",
@@ -585,7 +639,7 @@
         "httpMethod": "POST",
         "path": "internal/ai-work/block",
         "authentication": "headerAuth",
-        "responseMode": "lastNode",
+        "responseMode": "responseNode",
         "options": {
           "responseCode": {
             "values": {
@@ -631,6 +685,21 @@
               "keyName": "status",
               "condition": "eq",
               "keyValue": "processing"
+            },
+            {
+              "keyName": "claimed_by",
+              "condition": "eq",
+              "keyValue": "={{ String($('Block AI Work').first().json.body?.claimed_by || '__missing_claimed_by__') }}"
+            },
+            {
+              "keyName": "attempt_count",
+              "condition": "eq",
+              "keyValue": "={{ Number($('Block AI Work').first().json.body?.attempt_count??-1) }}"
+            },
+            {
+              "keyName": "lease_until",
+              "condition": "gt",
+              "keyValue": "={{ $now.toISO() }}"
             }
           ]
         },
@@ -702,37 +771,769 @@
           ]
         },
         "options": {}
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "id": "0669bc7b-6288-4035-a9a1-284a7be23419",
+      "name": "Read Claim Candidate",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        448,
+        -256
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "ai_work_queue"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "work_id",
+              "condition": "eq",
+              "keyValue": "={{ $('Claim AI Work').first().json.body.work_id }}"
+            },
+            {
+              "keyName": "status",
+              "condition": "eq",
+              "keyValue": "pending"
+            },
+            {
+              "keyName": "not_before",
+              "condition": "lte",
+              "keyValue": "={{ $now.toISO() }}"
+            }
+          ]
+        },
+        "returnAll": false,
+        "limit": 1
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "id": "8a850092-a300-4b8e-8f64-1d9579a7e731",
+      "name": "Validate Claim Input",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.4,
+      "position": [
+        224,
+        -256
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ (()=>{const b=$json.body||{};return typeof b.work_id==='string'&&b.work_id.trim()&&typeof b.claimed_by==='string'&&b.claimed_by.trim()?'yes':'no';})() }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              },
+              "rightValue": "yes"
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {
+          "ignoreCase": false
+        }
+      }
+    },
+    {
+      "id": "7a654547-b48c-471b-92d7-18456b12433e",
+      "name": "Claim Candidate Eligible?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.4,
+      "position": [
+        672,
+        -256
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ (()=>{const r=$json||{};const b=$('Claim AI Work').first().json.body||{};const owners={'chatgpt-hourly':'hourly','chatgpt-weekly':'weekly','chatgpt-monthly':'monthly'};const wanted=owners[String(b.claimed_by||'')];const actual=String(r.worker||'hourly');const dead=r.kind==='job_watch'&&r.deadline&&new Date(r.deadline)<=new Date();return r.id&&r.status==='pending'&&wanted&&actual===wanted&&!dead?'yes':'no';})() }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              },
+              "rightValue": "yes"
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {
+          "ignoreCase": false
+        }
+      }
+    },
+    {
+      "id": "ed46ee1c-8429-4d27-ba3f-a6c7f7a6f71f",
+      "name": "Claim CAS Succeeded?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.4,
+      "position": [
+        1120,
+        -256
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.id && $json.status==='processing' && $json.claimed_by=== $('Claim AI Work').first().json.body.claimed_by ? 'yes' : 'no' }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              },
+              "rightValue": "yes"
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {
+          "ignoreCase": false
+        }
+      }
+    },
+    {
+      "id": "b91bbed3-382b-43a2-91ec-8d140883cba9",
+      "name": "Respond Claim Input Error",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        448,
+        0
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ {ok:false,error:'invalid_claim_input',message:'Claim requires non-empty work_id and claimed_by'} }}",
+        "options": {
+          "responseCode": 400
+        }
+      }
+    },
+    {
+      "id": "af5aa471-63cc-45ab-80df-4d6479ddc858",
+      "name": "Respond Claim Not Eligible",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        896,
+        0
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ {ok:false,error:'not_eligible',work_id:$('Claim AI Work').first().json.body.work_id,message:'Work is missing, not pending, or not_before is in the future'} }}",
+        "options": {
+          "responseCode": 409
+        }
+      }
+    },
+    {
+      "id": "1ff8887d-3da6-41a4-822b-24c5d9f2d6fa",
+      "name": "Respond Claim Success",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1344,
+        -256
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ {ok:true,type:'claim',work_id:$json.work_id,status:$json.status,claimed_by:$json.claimed_by,claimed_at:$json.claimed_at,attempt_count:$json.attempt_count,lease_until:$json.lease_until} }}",
+        "options": {
+          "responseCode": 200
+        }
+      }
+    },
+    {
+      "id": "ce3c1989-7e47-4006-86e3-5018dc247dbb",
+      "name": "Respond Claim CAS Conflict",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1344,
+        0
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ {ok:false,error:'claim_cas_conflict',work_id:$('Claim AI Work').first().json.body.work_id,message:'Candidate was eligible but compare-and-set did not update exactly one row; re-read persisted state'} }}",
+        "options": {
+          "responseCode": 409
+        }
+      }
+    },
+    {
+      "id": "ed7a18d7-fb30-4423-b221-09e5c19e6ecc",
+      "name": "Expire Obsolete Job Watch Every 30m",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -560,
+        770
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 30
+            }
+          ]
+        },
+        "misfirePolicy": "coalesce",
+        "misfireGraceSeconds": 3600
+      }
+    },
+    {
+      "id": "2c5d5083-6fc7-45ce-b6c0-821b5bc09935",
+      "name": "Get Expired Job Watch",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        -290,
+        770
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "ai_work_queue"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "kind",
+              "condition": "eq",
+              "keyValue": "job_watch"
+            },
+            {
+              "keyName": "worker",
+              "condition": "eq",
+              "keyValue": "hourly"
+            },
+            {
+              "keyName": "status",
+              "condition": "eq",
+              "keyValue": "pending"
+            },
+            {
+              "keyName": "deadline",
+              "condition": "lte",
+              "keyValue": "={{ $now.toISO() }}"
+            }
+          ]
+        },
+        "returnAll": true,
+        "orderBy": true,
+        "orderByColumn": "deadline",
+        "orderByDirection": "ASC"
+      }
+    },
+    {
+      "id": "71e0ae5b-71e1-427f-8178-bde4bb69af63",
+      "name": "Block Expired Job Watch",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        -20,
+        770
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "ai_work_queue"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "work_id",
+              "condition": "eq",
+              "keyValue": "={{ $('Get Expired Job Watch').item.json.work_id }}"
+            },
+            {
+              "keyName": "status",
+              "condition": "eq",
+              "keyValue": "pending"
+            },
+            {
+              "keyName": "kind",
+              "condition": "eq",
+              "keyValue": "job_watch"
+            },
+            {
+              "keyName": "worker",
+              "condition": "eq",
+              "keyValue": "hourly"
+            },
+            {
+              "keyName": "deadline",
+              "condition": "eq",
+              "keyValue": "={{ $('Get Expired Job Watch').item.json.deadline }}"
+            },
+            {
+              "keyName": "deadline",
+              "condition": "lte",
+              "keyValue": "={{ $now.toISO() }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "status": "blocked",
+            "last_error": "expired_job_watch_tick: deadline elapsed before verified execution; superseded, do not replay",
+            "result_summary": "Expired scheduled job-watch tick; not retroactively replayed",
+            "completed_at": "={{ $now.toISO() }}",
+            "claimed_by": "",
+            "claimed_at": null,
+            "lease_until": null
+          },
+          "schema": [
+            {
+              "id": "status",
+              "displayName": "status",
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "last_error",
+              "displayName": "last_error",
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "result_summary",
+              "displayName": "result_summary",
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "completed_at",
+              "displayName": "completed_at",
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "claimed_by",
+              "displayName": "claimed_by",
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "claimed_at",
+              "displayName": "claimed_at",
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "lease_until",
+              "displayName": "lease_until",
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "8f014565-74c1-4f90-9516-b3f3b131fe50",
+      "name": "Record Job Watch Expiration",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        260,
+        770
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "upsert",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "work_events"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "event_id",
+              "condition": "eq",
+              "keyValue": "={{ 'ai_work.expired:' + $('Get Expired Job Watch').item.json.work_id }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "event_id": "={{ 'ai_work.expired:' + $('Get Expired Job Watch').item.json.work_id }}",
+            "occurred_at": "={{ $now.toISO() }}",
+            "source": "n8n:ai-work-runtime",
+            "project": "career",
+            "category": "ai_work.expired",
+            "title": "Job watch tick expired without completion",
+            "description": "={{ 'Expired before verified execution: ' + $('Get Expired Job Watch').item.json.work_id }}",
+            "status": "blocked",
+            "url": "",
+            "metadata_object": "={{ ({work_id:$('Get Expired Job Watch').item.json.work_id,source_event_id:$('Get Expired Job Watch').item.json.source_event_id,deadline:$('Get Expired Job Watch').item.json.deadline,reason:'deadline_elapsed; superseded; not_replayed'}).toJsonString() }}",
+            "correlation_id": "={{ $('Get Expired Job Watch').item.json.correlation_id }}"
+          },
+          "schema": [
+            {
+              "id": "event_id",
+              "displayName": "event_id",
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "occurred_at",
+              "displayName": "occurred_at",
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "source",
+              "displayName": "source",
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "project",
+              "displayName": "project",
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "category",
+              "displayName": "category",
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "title",
+              "displayName": "title",
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "description",
+              "displayName": "description",
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "url",
+              "displayName": "url",
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "metadata_object",
+              "displayName": "metadata_object",
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "correlation_id",
+              "displayName": "correlation_id",
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "a28880f2-0b19-459a-8421-10f5b5ee0f25",
+      "name": "Read Defer Deadline",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        -320,
+        350
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "ai_work_queue"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "work_id",
+              "condition": "eq",
+              "keyValue": "={{ $('Defer AI Work').first().json.body.work_id }}"
+            },
+            {
+              "keyName": "status",
+              "condition": "eq",
+              "keyValue": "processing"
+            },
+            {
+              "keyName": "claimed_by",
+              "condition": "eq",
+              "keyValue": "={{ $('Defer AI Work').first().json.body.claimed_by }}"
+            }
+          ]
+        },
+        "returnAll": false,
+        "limit": 1
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "id": "cece28ca-f32a-424d-a892-94803999152e",
+      "name": "Defer Fits Deadline?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.4,
+      "position": [
+        -90,
+        350
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ (()=>{const r=$json||{};const b=$('Defer AI Work').first().json.body||{};const dt=DateTime.fromISO(String(b.not_before||''));if(!r.id||!dt.isValid)return 'no';if(r.deadline&&dt.toMillis()>DateTime.fromISO(String(r.deadline)).toMillis())return 'no';return 'yes';})() }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              },
+              "rightValue": "yes"
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {
+          "ignoreCase": false
+        }
+      }
+    },
+    {
+      "id": "ad45e8aa-855e-4f21-9144-c8e331505769",
+      "name": "Completed Transition Applied?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.4,
+      "position": [
+        450,
+        330
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.id && $json.status==='completed' ? 'yes' : 'no' }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              },
+              "rightValue": "yes"
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {
+          "ignoreCase": false
+        }
+      }
+    },
+    {
+      "id": "4e71796d-1040-47bb-b482-12c12de641c0",
+      "name": "Pending Transition Applied?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.4,
+      "position": [
+        450,
+        560
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.id && $json.status==='pending' ? 'yes' : 'no' }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              },
+              "rightValue": "yes"
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {
+          "ignoreCase": false
+        }
+      }
+    },
+    {
+      "id": "497c43e2-2420-40eb-9c8c-80e3d26a1ffe",
+      "name": "Failed Transition Applied?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.4,
+      "position": [
+        450,
+        790
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.id && $json.status==='failed' ? 'yes' : 'no' }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              },
+              "rightValue": "yes"
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {
+          "ignoreCase": false
+        }
+      }
+    },
+    {
+      "id": "d9073c1b-8836-43b5-bb1e-06c0f00339e2",
+      "name": "Blocked Transition Applied?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.4,
+      "position": [
+        450,
+        1020
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.id && $json.status==='blocked' ? 'yes' : 'no' }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              },
+              "rightValue": "yes"
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {
+          "ignoreCase": false
+        }
+      }
+    },
+    {
+      "id": "ff44f834-8ca4-46e9-9b84-9ff20f022a00",
+      "name": "Respond Transition Applied",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        760,
+        460
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ {ok:true,work_id:$json.work_id,status:$json.status,attempt_count:$json.attempt_count,completed_at:$json.completed_at,not_before:$json.not_before} }}",
+        "options": {
+          "responseCode": 200
+        }
+      }
+    },
+    {
+      "id": "e4bcc8ad-8699-4933-b42c-4049dfa9f2bd",
+      "name": "Respond Transition Rejected",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        760,
+        790
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ {ok:false,error:'transition_not_applied',message:'Wrong owner or generation; expired lease; invalid deadline; or work is no longer processing. Read ai_work_queue before retry.'} }}",
+        "options": {
+          "responseCode": 409
+        }
       }
     }
   ],
   "connections": {
-    "Claim AI Work": {
-      "main": [
-        [
-          {
-            "node": "Apply Claim",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Complete AI Work": {
       "main": [
         [
           {
             "node": "Apply Complete",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Defer AI Work": {
-      "main": [
-        [
-          {
-            "node": "Apply Defer",
             "type": "main",
             "index": 0
           }
@@ -760,6 +1561,282 @@
           }
         ]
       ]
+    },
+    "Claim AI Work": {
+      "main": [
+        [
+          {
+            "node": "Validate Claim Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Claim Input": {
+      "main": [
+        [
+          {
+            "node": "Read Claim Candidate",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Claim Input Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Claim Candidate": {
+      "main": [
+        [
+          {
+            "node": "Claim Candidate Eligible?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Claim Candidate Eligible?": {
+      "main": [
+        [
+          {
+            "node": "Apply Claim",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Claim Not Eligible",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Apply Claim": {
+      "main": [
+        [
+          {
+            "node": "Claim CAS Succeeded?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Claim CAS Succeeded?": {
+      "main": [
+        [
+          {
+            "node": "Respond Claim Success",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Claim CAS Conflict",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Expire Obsolete Job Watch Every 30m": {
+      "main": [
+        [
+          {
+            "node": "Get Expired Job Watch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Expired Job Watch": {
+      "main": [
+        [
+          {
+            "node": "Block Expired Job Watch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Block Expired Job Watch": {
+      "main": [
+        [
+          {
+            "node": "Record Job Watch Expiration",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Defer AI Work": {
+      "main": [
+        [
+          {
+            "node": "Read Defer Deadline",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Defer Deadline": {
+      "main": [
+        [
+          {
+            "node": "Defer Fits Deadline?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Defer Fits Deadline?": {
+      "main": [
+        [
+          {
+            "node": "Apply Defer",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Transition Rejected",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Apply Complete": {
+      "main": [
+        [
+          {
+            "node": "Completed Transition Applied?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Completed Transition Applied?": {
+      "main": [
+        [
+          {
+            "node": "Respond Transition Applied",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Transition Rejected",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Apply Defer": {
+      "main": [
+        [
+          {
+            "node": "Pending Transition Applied?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pending Transition Applied?": {
+      "main": [
+        [
+          {
+            "node": "Respond Transition Applied",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Transition Rejected",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Apply Fail": {
+      "main": [
+        [
+          {
+            "node": "Failed Transition Applied?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Failed Transition Applied?": {
+      "main": [
+        [
+          {
+            "node": "Respond Transition Applied",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Transition Rejected",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Apply Block": {
+      "main": [
+        [
+          {
+            "node": "Blocked Transition Applied?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Blocked Transition Applied?": {
+      "main": [
+        [
+          {
+            "node": "Respond Transition Applied",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Transition Rejected",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "nodeGroups": [],
@@ -773,7 +1850,16 @@
     "saveDataErrorExecution": "all",
     "saveDataSuccessExecution": "none"
   },
-  "staticData": null,
+  "staticData": {
+    "node:Expire Obsolete Job Watch Every 30m": {
+      "recurrenceRules": [
+        null
+      ],
+      "recurrenceRuleSignatures": [
+        null
+      ]
+    }
+  },
   "pinData": null,
   "meta": {
     "aiBuilderAssisted": true,
@@ -787,16 +1873,16 @@
       "updatedAt": "2026-10-22T08:25:54.546Z"
     },
     {
-      "id": "SvzA8xykOpMtvbwk",
-      "name": "ai-work",
-      "createdAt": "2026-10-22T09:12:58.488Z",
-      "updatedAt": "2026-10-22T09:12:58.488Z"
-    },
-    {
       "id": "Yf0sE6r3CHF6WaAZ",
       "name": "state-machine",
       "createdAt": "2026-10-22T15:35:47.857Z",
       "updatedAt": "2026-10-22T15:35:47.857Z"
+    },
+    {
+      "id": "SvzA8xykOpMtvbwk",
+      "name": "ai-work",
+      "createdAt": "2026-10-22T09:12:58.488Z",
+      "updatedAt": "2026-10-22T09:12:58.488Z"
     }
   ],
   "shared": [
@@ -809,7 +1895,7 @@
     }
   ],
   "activeVersion": {
-    "versionId": "5b3cfe4b-43a0-4e52-8e90-293bc2139a84",
+    "versionId": "1e29ab2d-17af-4e63-8d81-30b0dff7a99b",
     "workflowId": "WgqmfMMeWpddtv4l",
     "nodes": [
       {
@@ -825,7 +1911,7 @@
           "httpMethod": "POST",
           "path": "internal/ai-work/claim",
           "authentication": "headerAuth",
-          "responseMode": "lastNode",
+          "responseMode": "responseNode",
           "options": {
             "responseCode": {
               "values": {
@@ -848,8 +1934,8 @@
         "type": "n8n-nodes-base.dataTable",
         "typeVersion": 1.1,
         "position": [
-          224,
-          0
+          896,
+          -256
         ],
         "parameters": {
           "resource": "row",
@@ -876,6 +1962,11 @@
                 "keyName": "not_before",
                 "condition": "lte",
                 "keyValue": "={{ $now.toISO() }}"
+              },
+              {
+                "keyName": "attempt_count",
+                "condition": "eq",
+                "keyValue": "={{ $('Read Claim Candidate').first().json.attempt_count }}"
               }
             ]
           },
@@ -883,10 +1974,10 @@
             "mappingMode": "defineBelow",
             "value": {
               "status": "processing",
-              "claimed_by": "={{ $('Claim AI Work').item.json.body.claimed_by || 'chatgpt-dispatcher' }}",
+              "claimed_by": "={{ (() => { const v=String($('Claim AI Work').first().json.body?.claimed_by||'').trim();if(!v)throw new Error('claimed_by required for Claim');return v; })() }}",
               "claimed_at": "={{ $now.toISO() }}",
               "lease_until": "={{ $now.plus({ minutes: 90 }).toISO() }}",
-              "attempt_count": "={{ Number($('Claim AI Work').item.json.body.attempt_count || 0) + 1 }}",
+              "attempt_count": "={{ Number($('Read Claim Candidate').first().json.attempt_count ?? 0) + 1 }}",
               "last_error": ""
             },
             "schema": [
@@ -947,7 +2038,8 @@
             ]
           },
           "options": {}
-        }
+        },
+        "alwaysOutputData": true
       },
       {
         "id": "d13ae6a7-f534-4439-a58c-2c6620c2620a",
@@ -962,7 +2054,7 @@
           "httpMethod": "POST",
           "path": "internal/ai-work/complete",
           "authentication": "headerAuth",
-          "responseMode": "lastNode",
+          "responseMode": "responseNode",
           "options": {
             "responseCode": {
               "values": {
@@ -1008,6 +2100,21 @@
                 "keyName": "status",
                 "condition": "eq",
                 "keyValue": "processing"
+              },
+              {
+                "keyName": "claimed_by",
+                "condition": "eq",
+                "keyValue": "={{ String($('Complete AI Work').first().json.body?.claimed_by || '__missing_claimed_by__') }}"
+              },
+              {
+                "keyName": "attempt_count",
+                "condition": "eq",
+                "keyValue": "={{ Number($('Complete AI Work').first().json.body?.attempt_count??-1) }}"
+              },
+              {
+                "keyName": "lease_until",
+                "condition": "gt",
+                "keyValue": "={{ $now.toISO() }}"
               }
             ]
           },
@@ -1099,7 +2206,8 @@
             ]
           },
           "options": {}
-        }
+        },
+        "alwaysOutputData": true
       },
       {
         "id": "b767fe94-9591-4aa5-85a5-ce0953f313c6",
@@ -1114,7 +2222,7 @@
           "httpMethod": "POST",
           "path": "internal/ai-work/defer",
           "authentication": "headerAuth",
-          "responseMode": "lastNode",
+          "responseMode": "responseNode",
           "options": {
             "responseCode": {
               "values": {
@@ -1160,6 +2268,21 @@
                 "keyName": "status",
                 "condition": "eq",
                 "keyValue": "processing"
+              },
+              {
+                "keyName": "claimed_by",
+                "condition": "eq",
+                "keyValue": "={{ String($('Defer AI Work').first().json.body?.claimed_by || '__missing_claimed_by__') }}"
+              },
+              {
+                "keyName": "attempt_count",
+                "condition": "eq",
+                "keyValue": "={{ Number($('Defer AI Work').first().json.body?.attempt_count??-1) }}"
+              },
+              {
+                "keyName": "lease_until",
+                "condition": "gt",
+                "keyValue": "={{ $now.toISO() }}"
               }
             ]
           },
@@ -1167,7 +2290,7 @@
             "mappingMode": "defineBelow",
             "value": {
               "status": "pending",
-              "not_before": "={{ $('Defer AI Work').item.json.body.not_before }}",
+              "not_before": "={{ (() => { const s=$('Defer AI Work').first().json.body?.not_before;const d=DateTime.fromISO(String(s||''));if(!d.isValid)throw new Error('not_before must be a valid ISO 8601 datetime');return d.toISO(); })() }}",
               "result_ref": "={{ $('Defer AI Work').item.json.body.result_ref || '' }}",
               "result_summary": "={{ $('Defer AI Work').item.json.body.reason || '' }}",
               "claimed_by": "",
@@ -1241,7 +2364,8 @@
             ]
           },
           "options": {}
-        }
+        },
+        "alwaysOutputData": true
       },
       {
         "id": "30a5fefa-f278-4a7d-937a-1c64611eea4a",
@@ -1256,7 +2380,7 @@
           "httpMethod": "POST",
           "path": "internal/ai-work/fail",
           "authentication": "headerAuth",
-          "responseMode": "lastNode",
+          "responseMode": "responseNode",
           "options": {
             "responseCode": {
               "values": {
@@ -1302,6 +2426,21 @@
                 "keyName": "status",
                 "condition": "eq",
                 "keyValue": "processing"
+              },
+              {
+                "keyName": "claimed_by",
+                "condition": "eq",
+                "keyValue": "={{ String($('Fail AI Work').first().json.body?.claimed_by || '__missing_claimed_by__') }}"
+              },
+              {
+                "keyName": "attempt_count",
+                "condition": "eq",
+                "keyValue": "={{ Number($('Fail AI Work').first().json.body?.attempt_count??-1) }}"
+              },
+              {
+                "keyName": "lease_until",
+                "condition": "gt",
+                "keyValue": "={{ $now.toISO() }}"
               }
             ]
           },
@@ -1373,7 +2512,8 @@
             ]
           },
           "options": {}
-        }
+        },
+        "alwaysOutputData": true
       },
       {
         "id": "4f67320c-e7f4-4288-9aea-fc9b9209eb7c",
@@ -1388,7 +2528,7 @@
           "httpMethod": "POST",
           "path": "internal/ai-work/block",
           "authentication": "headerAuth",
-          "responseMode": "lastNode",
+          "responseMode": "responseNode",
           "options": {
             "responseCode": {
               "values": {
@@ -1434,6 +2574,21 @@
                 "keyName": "status",
                 "condition": "eq",
                 "keyValue": "processing"
+              },
+              {
+                "keyName": "claimed_by",
+                "condition": "eq",
+                "keyValue": "={{ String($('Block AI Work').first().json.body?.claimed_by || '__missing_claimed_by__') }}"
+              },
+              {
+                "keyName": "attempt_count",
+                "condition": "eq",
+                "keyValue": "={{ Number($('Block AI Work').first().json.body?.attempt_count??-1) }}"
+              },
+              {
+                "keyName": "lease_until",
+                "condition": "gt",
+                "keyValue": "={{ $now.toISO() }}"
               }
             ]
           },
@@ -1505,37 +2660,769 @@
             ]
           },
           "options": {}
+        },
+        "alwaysOutputData": true
+      },
+      {
+        "id": "0669bc7b-6288-4035-a9a1-284a7be23419",
+        "name": "Read Claim Candidate",
+        "type": "n8n-nodes-base.dataTable",
+        "typeVersion": 1.1,
+        "position": [
+          448,
+          -256
+        ],
+        "parameters": {
+          "resource": "row",
+          "operation": "get",
+          "dataTableId": {
+            "__rl": true,
+            "mode": "name",
+            "value": "ai_work_queue"
+          },
+          "matchType": "allConditions",
+          "filters": {
+            "conditions": [
+              {
+                "keyName": "work_id",
+                "condition": "eq",
+                "keyValue": "={{ $('Claim AI Work').first().json.body.work_id }}"
+              },
+              {
+                "keyName": "status",
+                "condition": "eq",
+                "keyValue": "pending"
+              },
+              {
+                "keyName": "not_before",
+                "condition": "lte",
+                "keyValue": "={{ $now.toISO() }}"
+              }
+            ]
+          },
+          "returnAll": false,
+          "limit": 1
+        },
+        "alwaysOutputData": true
+      },
+      {
+        "id": "8a850092-a300-4b8e-8f64-1d9579a7e731",
+        "name": "Validate Claim Input",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.4,
+        "position": [
+          224,
+          -256
+        ],
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 2
+            },
+            "conditions": [
+              {
+                "leftValue": "={{ (()=>{const b=$json.body||{};return typeof b.work_id==='string'&&b.work_id.trim()&&typeof b.claimed_by==='string'&&b.claimed_by.trim()?'yes':'no';})() }}",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals"
+                },
+                "rightValue": "yes"
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {
+            "ignoreCase": false
+          }
+        }
+      },
+      {
+        "id": "7a654547-b48c-471b-92d7-18456b12433e",
+        "name": "Claim Candidate Eligible?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.4,
+        "position": [
+          672,
+          -256
+        ],
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 2
+            },
+            "conditions": [
+              {
+                "leftValue": "={{ (()=>{const r=$json||{};const b=$('Claim AI Work').first().json.body||{};const owners={'chatgpt-hourly':'hourly','chatgpt-weekly':'weekly','chatgpt-monthly':'monthly'};const wanted=owners[String(b.claimed_by||'')];const actual=String(r.worker||'hourly');const dead=r.kind==='job_watch'&&r.deadline&&new Date(r.deadline)<=new Date();return r.id&&r.status==='pending'&&wanted&&actual===wanted&&!dead?'yes':'no';})() }}",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals"
+                },
+                "rightValue": "yes"
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {
+            "ignoreCase": false
+          }
+        }
+      },
+      {
+        "id": "ed46ee1c-8429-4d27-ba3f-a6c7f7a6f71f",
+        "name": "Claim CAS Succeeded?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.4,
+        "position": [
+          1120,
+          -256
+        ],
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 2
+            },
+            "conditions": [
+              {
+                "leftValue": "={{ $json.id && $json.status==='processing' && $json.claimed_by=== $('Claim AI Work').first().json.body.claimed_by ? 'yes' : 'no' }}",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals"
+                },
+                "rightValue": "yes"
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {
+            "ignoreCase": false
+          }
+        }
+      },
+      {
+        "id": "b91bbed3-382b-43a2-91ec-8d140883cba9",
+        "name": "Respond Claim Input Error",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.5,
+        "position": [
+          448,
+          0
+        ],
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ {ok:false,error:'invalid_claim_input',message:'Claim requires non-empty work_id and claimed_by'} }}",
+          "options": {
+            "responseCode": 400
+          }
+        }
+      },
+      {
+        "id": "af5aa471-63cc-45ab-80df-4d6479ddc858",
+        "name": "Respond Claim Not Eligible",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.5,
+        "position": [
+          896,
+          0
+        ],
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ {ok:false,error:'not_eligible',work_id:$('Claim AI Work').first().json.body.work_id,message:'Work is missing, not pending, or not_before is in the future'} }}",
+          "options": {
+            "responseCode": 409
+          }
+        }
+      },
+      {
+        "id": "1ff8887d-3da6-41a4-822b-24c5d9f2d6fa",
+        "name": "Respond Claim Success",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.5,
+        "position": [
+          1344,
+          -256
+        ],
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ {ok:true,type:'claim',work_id:$json.work_id,status:$json.status,claimed_by:$json.claimed_by,claimed_at:$json.claimed_at,attempt_count:$json.attempt_count,lease_until:$json.lease_until} }}",
+          "options": {
+            "responseCode": 200
+          }
+        }
+      },
+      {
+        "id": "ce3c1989-7e47-4006-86e3-5018dc247dbb",
+        "name": "Respond Claim CAS Conflict",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.5,
+        "position": [
+          1344,
+          0
+        ],
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ {ok:false,error:'claim_cas_conflict',work_id:$('Claim AI Work').first().json.body.work_id,message:'Candidate was eligible but compare-and-set did not update exactly one row; re-read persisted state'} }}",
+          "options": {
+            "responseCode": 409
+          }
+        }
+      },
+      {
+        "id": "ed7a18d7-fb30-4423-b221-09e5c19e6ecc",
+        "name": "Expire Obsolete Job Watch Every 30m",
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.3,
+        "position": [
+          -560,
+          770
+        ],
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "minutes",
+                "minutesInterval": 30
+              }
+            ]
+          },
+          "misfirePolicy": "coalesce",
+          "misfireGraceSeconds": 3600
+        }
+      },
+      {
+        "id": "2c5d5083-6fc7-45ce-b6c0-821b5bc09935",
+        "name": "Get Expired Job Watch",
+        "type": "n8n-nodes-base.dataTable",
+        "typeVersion": 1.1,
+        "position": [
+          -290,
+          770
+        ],
+        "parameters": {
+          "resource": "row",
+          "operation": "get",
+          "dataTableId": {
+            "__rl": true,
+            "mode": "name",
+            "value": "ai_work_queue"
+          },
+          "matchType": "allConditions",
+          "filters": {
+            "conditions": [
+              {
+                "keyName": "kind",
+                "condition": "eq",
+                "keyValue": "job_watch"
+              },
+              {
+                "keyName": "worker",
+                "condition": "eq",
+                "keyValue": "hourly"
+              },
+              {
+                "keyName": "status",
+                "condition": "eq",
+                "keyValue": "pending"
+              },
+              {
+                "keyName": "deadline",
+                "condition": "lte",
+                "keyValue": "={{ $now.toISO() }}"
+              }
+            ]
+          },
+          "returnAll": true,
+          "orderBy": true,
+          "orderByColumn": "deadline",
+          "orderByDirection": "ASC"
+        }
+      },
+      {
+        "id": "71e0ae5b-71e1-427f-8178-bde4bb69af63",
+        "name": "Block Expired Job Watch",
+        "type": "n8n-nodes-base.dataTable",
+        "typeVersion": 1.1,
+        "position": [
+          -20,
+          770
+        ],
+        "parameters": {
+          "resource": "row",
+          "operation": "update",
+          "dataTableId": {
+            "__rl": true,
+            "mode": "name",
+            "value": "ai_work_queue"
+          },
+          "matchType": "allConditions",
+          "filters": {
+            "conditions": [
+              {
+                "keyName": "work_id",
+                "condition": "eq",
+                "keyValue": "={{ $('Get Expired Job Watch').item.json.work_id }}"
+              },
+              {
+                "keyName": "status",
+                "condition": "eq",
+                "keyValue": "pending"
+              },
+              {
+                "keyName": "kind",
+                "condition": "eq",
+                "keyValue": "job_watch"
+              },
+              {
+                "keyName": "worker",
+                "condition": "eq",
+                "keyValue": "hourly"
+              },
+              {
+                "keyName": "deadline",
+                "condition": "eq",
+                "keyValue": "={{ $('Get Expired Job Watch').item.json.deadline }}"
+              },
+              {
+                "keyName": "deadline",
+                "condition": "lte",
+                "keyValue": "={{ $now.toISO() }}"
+              }
+            ]
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "status": "blocked",
+              "last_error": "expired_job_watch_tick: deadline elapsed before verified execution; superseded, do not replay",
+              "result_summary": "Expired scheduled job-watch tick; not retroactively replayed",
+              "completed_at": "={{ $now.toISO() }}",
+              "claimed_by": "",
+              "claimed_at": null,
+              "lease_until": null
+            },
+            "schema": [
+              {
+                "id": "status",
+                "displayName": "status",
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "last_error",
+                "displayName": "last_error",
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "result_summary",
+                "displayName": "result_summary",
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "completed_at",
+                "displayName": "completed_at",
+                "type": "dateTime",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "claimed_by",
+                "displayName": "claimed_by",
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "claimed_at",
+                "displayName": "claimed_at",
+                "type": "dateTime",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "lease_until",
+                "displayName": "lease_until",
+                "type": "dateTime",
+                "canBeUsedToMatch": true
+              }
+            ]
+          },
+          "options": {}
+        }
+      },
+      {
+        "id": "8f014565-74c1-4f90-9516-b3f3b131fe50",
+        "name": "Record Job Watch Expiration",
+        "type": "n8n-nodes-base.dataTable",
+        "typeVersion": 1.1,
+        "position": [
+          260,
+          770
+        ],
+        "parameters": {
+          "resource": "row",
+          "operation": "upsert",
+          "dataTableId": {
+            "__rl": true,
+            "mode": "name",
+            "value": "work_events"
+          },
+          "matchType": "allConditions",
+          "filters": {
+            "conditions": [
+              {
+                "keyName": "event_id",
+                "condition": "eq",
+                "keyValue": "={{ 'ai_work.expired:' + $('Get Expired Job Watch').item.json.work_id }}"
+              }
+            ]
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "event_id": "={{ 'ai_work.expired:' + $('Get Expired Job Watch').item.json.work_id }}",
+              "occurred_at": "={{ $now.toISO() }}",
+              "source": "n8n:ai-work-runtime",
+              "project": "career",
+              "category": "ai_work.expired",
+              "title": "Job watch tick expired without completion",
+              "description": "={{ 'Expired before verified execution: ' + $('Get Expired Job Watch').item.json.work_id }}",
+              "status": "blocked",
+              "url": "",
+              "metadata_object": "={{ ({work_id:$('Get Expired Job Watch').item.json.work_id,source_event_id:$('Get Expired Job Watch').item.json.source_event_id,deadline:$('Get Expired Job Watch').item.json.deadline,reason:'deadline_elapsed; superseded; not_replayed'}).toJsonString() }}",
+              "correlation_id": "={{ $('Get Expired Job Watch').item.json.correlation_id }}"
+            },
+            "schema": [
+              {
+                "id": "event_id",
+                "displayName": "event_id",
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "occurred_at",
+                "displayName": "occurred_at",
+                "type": "dateTime",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "source",
+                "displayName": "source",
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "project",
+                "displayName": "project",
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "category",
+                "displayName": "category",
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "title",
+                "displayName": "title",
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "description",
+                "displayName": "description",
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "status",
+                "displayName": "status",
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "url",
+                "displayName": "url",
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "metadata_object",
+                "displayName": "metadata_object",
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "correlation_id",
+                "displayName": "correlation_id",
+                "type": "string",
+                "canBeUsedToMatch": true
+              }
+            ]
+          },
+          "options": {}
+        }
+      },
+      {
+        "id": "a28880f2-0b19-459a-8421-10f5b5ee0f25",
+        "name": "Read Defer Deadline",
+        "type": "n8n-nodes-base.dataTable",
+        "typeVersion": 1.1,
+        "position": [
+          -320,
+          350
+        ],
+        "parameters": {
+          "resource": "row",
+          "operation": "get",
+          "dataTableId": {
+            "__rl": true,
+            "mode": "name",
+            "value": "ai_work_queue"
+          },
+          "matchType": "allConditions",
+          "filters": {
+            "conditions": [
+              {
+                "keyName": "work_id",
+                "condition": "eq",
+                "keyValue": "={{ $('Defer AI Work').first().json.body.work_id }}"
+              },
+              {
+                "keyName": "status",
+                "condition": "eq",
+                "keyValue": "processing"
+              },
+              {
+                "keyName": "claimed_by",
+                "condition": "eq",
+                "keyValue": "={{ $('Defer AI Work').first().json.body.claimed_by }}"
+              }
+            ]
+          },
+          "returnAll": false,
+          "limit": 1
+        },
+        "alwaysOutputData": true
+      },
+      {
+        "id": "cece28ca-f32a-424d-a892-94803999152e",
+        "name": "Defer Fits Deadline?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.4,
+        "position": [
+          -90,
+          350
+        ],
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 2
+            },
+            "conditions": [
+              {
+                "leftValue": "={{ (()=>{const r=$json||{};const b=$('Defer AI Work').first().json.body||{};const dt=DateTime.fromISO(String(b.not_before||''));if(!r.id||!dt.isValid)return 'no';if(r.deadline&&dt.toMillis()>DateTime.fromISO(String(r.deadline)).toMillis())return 'no';return 'yes';})() }}",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals"
+                },
+                "rightValue": "yes"
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {
+            "ignoreCase": false
+          }
+        }
+      },
+      {
+        "id": "ad45e8aa-855e-4f21-9144-c8e331505769",
+        "name": "Completed Transition Applied?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.4,
+        "position": [
+          450,
+          330
+        ],
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 2
+            },
+            "conditions": [
+              {
+                "leftValue": "={{ $json.id && $json.status==='completed' ? 'yes' : 'no' }}",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals"
+                },
+                "rightValue": "yes"
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {
+            "ignoreCase": false
+          }
+        }
+      },
+      {
+        "id": "4e71796d-1040-47bb-b482-12c12de641c0",
+        "name": "Pending Transition Applied?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.4,
+        "position": [
+          450,
+          560
+        ],
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 2
+            },
+            "conditions": [
+              {
+                "leftValue": "={{ $json.id && $json.status==='pending' ? 'yes' : 'no' }}",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals"
+                },
+                "rightValue": "yes"
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {
+            "ignoreCase": false
+          }
+        }
+      },
+      {
+        "id": "497c43e2-2420-40eb-9c8c-80e3d26a1ffe",
+        "name": "Failed Transition Applied?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.4,
+        "position": [
+          450,
+          790
+        ],
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 2
+            },
+            "conditions": [
+              {
+                "leftValue": "={{ $json.id && $json.status==='failed' ? 'yes' : 'no' }}",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals"
+                },
+                "rightValue": "yes"
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {
+            "ignoreCase": false
+          }
+        }
+      },
+      {
+        "id": "d9073c1b-8836-43b5-bb1e-06c0f00339e2",
+        "name": "Blocked Transition Applied?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.4,
+        "position": [
+          450,
+          1020
+        ],
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 2
+            },
+            "conditions": [
+              {
+                "leftValue": "={{ $json.id && $json.status==='blocked' ? 'yes' : 'no' }}",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals"
+                },
+                "rightValue": "yes"
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {
+            "ignoreCase": false
+          }
+        }
+      },
+      {
+        "id": "ff44f834-8ca4-46e9-9b84-9ff20f022a00",
+        "name": "Respond Transition Applied",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.5,
+        "position": [
+          760,
+          460
+        ],
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ {ok:true,work_id:$json.work_id,status:$json.status,attempt_count:$json.attempt_count,completed_at:$json.completed_at,not_before:$json.not_before} }}",
+          "options": {
+            "responseCode": 200
+          }
+        }
+      },
+      {
+        "id": "e4bcc8ad-8699-4933-b42c-4049dfa9f2bd",
+        "name": "Respond Transition Rejected",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.5,
+        "position": [
+          760,
+          790
+        ],
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ {ok:false,error:'transition_not_applied',message:'Wrong owner or generation; expired lease; invalid deadline; or work is no longer processing. Read ai_work_queue before retry.'} }}",
+          "options": {
+            "responseCode": 409
+          }
         }
       }
     ],
     "connections": {
-      "Claim AI Work": {
-        "main": [
-          [
-            {
-              "node": "Apply Claim",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
       "Complete AI Work": {
         "main": [
           [
             {
               "node": "Apply Complete",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Defer AI Work": {
-        "main": [
-          [
-            {
-              "node": "Apply Defer",
               "type": "main",
               "index": 0
             }
@@ -1563,14 +3450,290 @@
             }
           ]
         ]
+      },
+      "Claim AI Work": {
+        "main": [
+          [
+            {
+              "node": "Validate Claim Input",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Validate Claim Input": {
+        "main": [
+          [
+            {
+              "node": "Read Claim Candidate",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Respond Claim Input Error",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Read Claim Candidate": {
+        "main": [
+          [
+            {
+              "node": "Claim Candidate Eligible?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Claim Candidate Eligible?": {
+        "main": [
+          [
+            {
+              "node": "Apply Claim",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Respond Claim Not Eligible",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Apply Claim": {
+        "main": [
+          [
+            {
+              "node": "Claim CAS Succeeded?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Claim CAS Succeeded?": {
+        "main": [
+          [
+            {
+              "node": "Respond Claim Success",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Respond Claim CAS Conflict",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Expire Obsolete Job Watch Every 30m": {
+        "main": [
+          [
+            {
+              "node": "Get Expired Job Watch",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get Expired Job Watch": {
+        "main": [
+          [
+            {
+              "node": "Block Expired Job Watch",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Block Expired Job Watch": {
+        "main": [
+          [
+            {
+              "node": "Record Job Watch Expiration",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Defer AI Work": {
+        "main": [
+          [
+            {
+              "node": "Read Defer Deadline",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Read Defer Deadline": {
+        "main": [
+          [
+            {
+              "node": "Defer Fits Deadline?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Defer Fits Deadline?": {
+        "main": [
+          [
+            {
+              "node": "Apply Defer",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Respond Transition Rejected",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Apply Complete": {
+        "main": [
+          [
+            {
+              "node": "Completed Transition Applied?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Completed Transition Applied?": {
+        "main": [
+          [
+            {
+              "node": "Respond Transition Applied",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Respond Transition Rejected",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Apply Defer": {
+        "main": [
+          [
+            {
+              "node": "Pending Transition Applied?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Pending Transition Applied?": {
+        "main": [
+          [
+            {
+              "node": "Respond Transition Applied",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Respond Transition Rejected",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Apply Fail": {
+        "main": [
+          [
+            {
+              "node": "Failed Transition Applied?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Failed Transition Applied?": {
+        "main": [
+          [
+            {
+              "node": "Respond Transition Applied",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Respond Transition Rejected",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Apply Block": {
+        "main": [
+          [
+            {
+              "node": "Blocked Transition Applied?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Blocked Transition Applied?": {
+        "main": [
+          [
+            {
+              "node": "Respond Transition Applied",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Respond Transition Rejected",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
       }
     },
     "nodeGroups": [],
     "authors": "Administrator NTLx (via MCP)",
-    "name": "Keep terminal states immutable",
-    "description": "Remove the unused reopen trigger. Blocked remains terminal; future recoveries use a new work_id with recovery_of lineage, while temporary conditions should use Defer.",
+    "name": "Return explicit transition success or conflict",
+    "description": "Complete/Defer/Fail/Block webhooks return 200 only when a persisted Data Table update occurred. Wrong owner, stale attempt/lease, invalid defer deadline, absent row return explicit 409; no false-positive 200 responses.",
     "autosaved": false,
-    "createdAt": "2026-10-28T01:53:06.138Z",
-    "updatedAt": "2026-10-28T01:53:06.138Z"
+    "createdAt": "2026-11-04T07:56:04.458Z",
+    "updatedAt": "2026-11-04T07:56:04.458Z"
   }
 }
