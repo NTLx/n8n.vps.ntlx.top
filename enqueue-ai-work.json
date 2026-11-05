@@ -2,11 +2,11 @@
   "id": "oe8KZW4nLbYUUDzA",
   "name": "Enqueue AI work",
   "active": true,
-  "activeVersionId": "0f9653ef-549b-4093-aefb-ebfbc5a07f13",
+  "activeVersionId": "c057e289-2605-4a46-8450-a94a4dadfc00",
   "createdAt": "2026-10-22T16:17:48.444Z",
-  "updatedAt": "2026-10-28T02:19:16.880Z",
+  "updatedAt": "2026-11-04T05:57:29.062Z",
   "isArchived": false,
-  "versionId": "0f9653ef-549b-4093-aefb-ebfbc5a07f13",
+  "versionId": "c057e289-2605-4a46-8450-a94a4dadfc00",
   "triggerCount": 1,
   "nodes": [
     {
@@ -272,7 +272,7 @@
               "id": "worker",
               "name": "worker",
               "type": "string",
-              "value": "={{ (() => { const v=String($json.body?.worker ?? $json.worker ?? '').trim(); if(!v) throw new Error('worker is required'); return v; })() }}"
+              "value": "={{ (() => { const v=String($json.body?.worker ?? $json.worker ?? 'hourly').trim() || 'hourly'; if(!['hourly','weekly','monthly'].includes(v)) throw new Error('worker must be hourly, weekly, or monthly'); return v; })() }}"
             },
             {
               "id": "kind",
@@ -517,7 +517,7 @@
     }
   ],
   "activeVersion": {
-    "versionId": "0f9653ef-549b-4093-aefb-ebfbc5a07f13",
+    "versionId": "c057e289-2605-4a46-8450-a94a4dadfc00",
     "workflowId": "oe8KZW4nLbYUUDzA",
     "nodes": [
       {
@@ -783,7 +783,7 @@
                 "id": "worker",
                 "name": "worker",
                 "type": "string",
-                "value": "={{ (() => { const v=String($json.body?.worker ?? $json.worker ?? '').trim(); if(!v) throw new Error('worker is required'); return v; })() }}"
+                "value": "={{ (() => { const v=String($json.body?.worker ?? $json.worker ?? 'hourly').trim() || 'hourly'; if(!['hourly','weekly','monthly'].includes(v)) throw new Error('worker must be hourly, weekly, or monthly'); return v; })() }}"
               },
               {
                 "id": "kind",
@@ -970,10 +970,10 @@
       }
     ],
     "authors": "Administrator NTLx (via MCP)",
-    "name": "Unify enqueue trigger normalization",
-    "description": "Route both internal sub-workflow and authenticated ChatGPT webhook inputs through one normalization node, then make queue/Event writes reference that normalized record. Fixes the webhook path so it no longer depends on the internal trigger context.",
+    "name": "Enforce canonical worker default",
+    "description": "Repair input normalization to default missing worker=hourly, consistent with queue contract, and reject unsupported worker values.",
     "autosaved": false,
-    "createdAt": "2026-10-28T02:19:16.884Z",
-    "updatedAt": "2026-10-28T02:19:16.884Z"
+    "createdAt": "2026-11-04T05:57:29.065Z",
+    "updatedAt": "2026-11-04T05:57:29.065Z"
   }
 }
