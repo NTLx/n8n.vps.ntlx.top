@@ -2,11 +2,11 @@
   "id": "zXbT3Tu742HrSlM6",
   "name": "Critical scheduled workflow deadman",
   "active": true,
-  "activeVersionId": "aed98a40-c4e4-4ac4-98af-0b400ee9b075",
+  "activeVersionId": "a2679666-3101-430b-974c-6b4d883d0ac1",
   "createdAt": "2026-10-22T16:27:29.521Z",
-  "updatedAt": "2026-10-22T16:27:37.237Z",
+  "updatedAt": "2026-11-05T08:40:00.582Z",
   "isArchived": false,
-  "versionId": "aed98a40-c4e4-4ac4-98af-0b400ee9b075",
+  "versionId": "a2679666-3101-430b-974c-6b4d883d0ac1",
   "triggerCount": 1,
   "nodes": [
     {
@@ -364,6 +364,422 @@
         }
       },
       "onError": "continueRegularOutput"
+    },
+    {
+      "id": "cbf5af74-5a6f-450b-9f1d-46bfeb003da2",
+      "name": "Find Previous Hourly Summary",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        270,
+        470
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "work_events"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "event_id",
+              "condition": "eq",
+              "keyValue": "={{ 'hourly.run:' + $now.setZone('Asia/Shanghai').minus({hours:1}).toFormat('yyyyLLddHH') }}"
+            }
+          ]
+        },
+        "returnAll": false,
+        "limit": 1
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "id": "744e79bd-087d-4b48-96c2-19207b0dc835",
+      "name": "Prior Hourly Summary Missing?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        520,
+        470
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ (()=>{const slot=$now.setZone('Asia/Shanghai').minus({hours:1}).toFormat('yyyyLLddHH');return slot >= '2026110515' && !$json.event_id ? 'missing':'ok';})() }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              },
+              "rightValue": "missing"
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {
+          "ignoreCase": false
+        }
+      }
+    },
+    {
+      "id": "7f84ade8-ce1c-41e7-ad9e-af9ed053ba42",
+      "name": "Find Existing Hourly Alert",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        770,
+        470
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "work_events"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "event_id",
+              "condition": "eq",
+              "keyValue": "={{ 'hourly.deadman.alert:' + $now.setZone('Asia/Shanghai').minus({hours:1}).toFormat('yyyyLLddHH') }}"
+            }
+          ]
+        },
+        "returnAll": false,
+        "limit": 1
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "id": "9765d28a-19e2-4bc5-a38e-3f282d623ae3",
+      "name": "No Existing Hourly Alert?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1020,
+        470
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.event_id ? 'known' : 'new' }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              },
+              "rightValue": "new"
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {
+          "ignoreCase": false
+        }
+      }
+    },
+    {
+      "id": "c74b2f3f-0b91-49ee-8842-132b5d9ba77c",
+      "name": "Prepare Hourly Missing Alert",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        1270,
+        470
+      ],
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "slot",
+              "name": "slot",
+              "type": "string",
+              "value": "={{ $now.setZone('Asia/Shanghai').minus({hours:1}).toFormat('yyyyLLddHH') }}"
+            },
+            {
+              "id": "event_id",
+              "name": "event_id",
+              "type": "string",
+              "value": "={{ 'hourly.deadman.alert:' + $now.setZone('Asia/Shanghai').minus({hours:1}).toFormat('yyyyLLddHH') }}"
+            },
+            {
+              "id": "channel",
+              "name": "channel",
+              "type": "string",
+              "value": "status"
+            },
+            {
+              "id": "markdown",
+              "name": "markdown",
+              "type": "string",
+              "value": "={{ '## Hourly 运行审计缺失\\n\\n北京时间 '+$now.setZone('Asia/Shanghai').minus({hours:1}).toFormat('yyyy-LL-dd HH:00')+' 的 `hourly.run.summary` Event 在后续一小时仍未找到。此告警表示运行审计证据缺失，**不等于断言 ChatGPT 没有运行**。请核对 Hourly 定时任务执行详情、Record work event 调用及 Event Ledger 持久化状态。\\n\\n`expected_event_id=hourly.run:'+$now.setZone('Asia/Shanghai').minus({hours:1}).toFormat('yyyyLLddHH')+'`' }}"
+            }
+          ]
+        },
+        "includeOtherFields": false,
+        "options": {}
+      }
+    },
+    {
+      "id": "dcc64f8f-3535-4bef-90b2-84207c1cc00b",
+      "name": "Deliver Hourly Missing Alert",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.4,
+      "position": [
+        1530,
+        470
+      ],
+      "parameters": {
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "Gu9lvE61vyyJf2xm"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "channel": "={{ $('Prepare Hourly Missing Alert').first().json.channel }}",
+            "markdown": "={{ $('Prepare Hourly Missing Alert').first().json.markdown }}"
+          },
+          "schema": [
+            {
+              "id": "channel",
+              "displayName": "channel",
+              "type": "string"
+            },
+            {
+              "id": "markdown",
+              "displayName": "markdown",
+              "type": "string"
+            }
+          ]
+        },
+        "mode": "each",
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      }
+    },
+    {
+      "id": "787a725b-b39c-40bf-be5c-4e73762c11b6",
+      "name": "Record Hourly Missing Alert",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        1790,
+        470
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "upsert",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "work_events"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "event_id",
+              "condition": "eq",
+              "keyValue": "={{ $('Prepare Hourly Missing Alert').first().json.event_id }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "event_id": "={{ $('Prepare Hourly Missing Alert').first().json.event_id }}",
+            "occurred_at": "={{ $now.toISO() }}",
+            "source": "n8n:hourly-deadman",
+            "project": "automation",
+            "category": "hourly.run.missed",
+            "title": "={{ 'Hourly audit missing: ' + $('Prepare Hourly Missing Alert').first().json.slot }}",
+            "description": "Expected Hourly run-summary Event not observed one hour after scheduled slot; verify automation and audit write. This does not prove the worker failed to execute.",
+            "status": "alerted",
+            "url": "",
+            "metadata_object": "={{ ({expected_slot:$('Prepare Hourly Missing Alert').first().json.slot,expected_event_id:'hourly.run:'+$('Prepare Hourly Missing Alert').first().json.slot,discord_message_id:String($json.id||''),discord_channel_id:String($json.channel_id||''),note:'missing_audit_not_proof_of_failed_worker'}).toJsonString() }}",
+            "correlation_id": "={{ 'hourly:'+$('Prepare Hourly Missing Alert').first().json.slot }}"
+          },
+          "schema": [
+            {
+              "id": "event_id",
+              "displayName": "event_id",
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "occurred_at",
+              "displayName": "occurred_at",
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "source",
+              "displayName": "source",
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "project",
+              "displayName": "project",
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "category",
+              "displayName": "category",
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "title",
+              "displayName": "title",
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "description",
+              "displayName": "description",
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "url",
+              "displayName": "url",
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "metadata_object",
+              "displayName": "metadata_object",
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "correlation_id",
+              "displayName": "correlation_id",
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "996a7b5c-0cbf-44dd-9406-358aa35c3e9e",
+      "name": "Record Hourly Audit Guard Heartbeat",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        2060,
+        530
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "upsert",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "automation_heartbeats"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "monitor_key",
+              "condition": "eq",
+              "keyValue": "chatgpt_hourly_audit_guard"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "monitor_key": "chatgpt_hourly_audit_guard",
+            "workflow_id": "zXbT3Tu742HrSlM6",
+            "workflow_name": "Hourly Run Ledger deadman guard",
+            "last_seen_at": "={{ $now.toISO() }}",
+            "next_expected_at": "={{ $now.plus({hours:1}).toISO() }}",
+            "grace_minutes": 15,
+            "priority": 1
+          },
+          "schema": [
+            {
+              "id": "monitor_key",
+              "displayName": "monitor_key",
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "workflow_id",
+              "displayName": "workflow_id",
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "workflow_name",
+              "displayName": "workflow_name",
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "last_seen_at",
+              "displayName": "last_seen_at",
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "next_expected_at",
+              "displayName": "next_expected_at",
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "grace_minutes",
+              "displayName": "grace_minutes",
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "priority",
+              "displayName": "priority",
+              "type": "number",
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "options": {}
+      }
     }
   ],
   "connections": {
@@ -372,6 +788,11 @@
         [
           {
             "node": "Get Monitored Heartbeats",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Find Previous Hourly Summary",
             "type": "main",
             "index": 0
           }
@@ -410,6 +831,97 @@
           }
         ]
       ]
+    },
+    "Find Previous Hourly Summary": {
+      "main": [
+        [
+          {
+            "node": "Prior Hourly Summary Missing?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prior Hourly Summary Missing?": {
+      "main": [
+        [
+          {
+            "node": "Find Existing Hourly Alert",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Record Hourly Audit Guard Heartbeat",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find Existing Hourly Alert": {
+      "main": [
+        [
+          {
+            "node": "No Existing Hourly Alert?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "No Existing Hourly Alert?": {
+      "main": [
+        [
+          {
+            "node": "Prepare Hourly Missing Alert",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Record Hourly Audit Guard Heartbeat",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Hourly Missing Alert": {
+      "main": [
+        [
+          {
+            "node": "Deliver Hourly Missing Alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Deliver Hourly Missing Alert": {
+      "main": [
+        [
+          {
+            "node": "Record Hourly Missing Alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Record Hourly Missing Alert": {
+      "main": [
+        [
+          {
+            "node": "Record Hourly Audit Guard Heartbeat",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "nodeGroups": [
@@ -423,6 +935,21 @@
         "4b5bbbc3-fd8f-4ad1-8730-5c8d0dca137e"
       ],
       "description": "Read monitored schedule heartbeats, keep only overdue entries, and enqueue one idempotent AI triage work item per missed expected run."
+    },
+    {
+      "id": "bba070f0-2f4e-493f-9724-9b5a05bad107",
+      "name": "Detect missing Hourly audit and write heartbeat",
+      "nodeIds": [
+        "cbf5af74-5a6f-450b-9f1d-46bfeb003da2",
+        "744e79bd-087d-4b48-96c2-19207b0dc835",
+        "7f84ade8-ce1c-41e7-ad9e-af9ed053ba42",
+        "9765d28a-19e2-4bc5-a38e-3f282d623ae3",
+        "c74b2f3f-0b91-49ee-8842-132b5d9ba77c",
+        "dcc64f8f-3535-4bef-90b2-84207c1cc00b",
+        "787a725b-b39c-40bf-be5c-4e73762c11b6",
+        "996a7b5c-0cbf-44dd-9406-358aa35c3e9e"
+      ],
+      "description": "One independent audit check per hour; deduplicate missing alerts and persist guard-run health."
     }
   ],
   "settings": {
@@ -453,22 +980,16 @@
   },
   "tags": [
     {
-      "id": "twNsKNALbdWLw0Ox",
-      "name": "automation",
-      "createdAt": "2026-10-22T08:25:54.546Z",
-      "updatedAt": "2026-10-22T08:25:54.546Z"
+      "id": "oohNAesAevHoxzJB",
+      "name": "deadman",
+      "createdAt": "2026-10-22T16:27:37.208Z",
+      "updatedAt": "2026-10-22T16:27:37.208Z"
     },
     {
       "id": "9jw9Bhya2Ylf8E4D",
       "name": "ai-work-producer",
       "createdAt": "2026-10-22T09:14:35.367Z",
       "updatedAt": "2026-10-22T09:14:35.367Z"
-    },
-    {
-      "id": "oohNAesAevHoxzJB",
-      "name": "deadman",
-      "createdAt": "2026-10-22T16:27:37.208Z",
-      "updatedAt": "2026-10-22T16:27:37.208Z"
     },
     {
       "id": "BlGRvaSWqnmTk53i",
@@ -481,6 +1002,12 @@
       "name": "monitoring",
       "createdAt": "2026-10-22T08:38:34.124Z",
       "updatedAt": "2026-10-22T08:38:34.124Z"
+    },
+    {
+      "id": "twNsKNALbdWLw0Ox",
+      "name": "automation",
+      "createdAt": "2026-10-22T08:25:54.546Z",
+      "updatedAt": "2026-10-22T08:25:54.546Z"
     }
   ],
   "shared": [
@@ -493,7 +1020,7 @@
     }
   ],
   "activeVersion": {
-    "versionId": "aed98a40-c4e4-4ac4-98af-0b400ee9b075",
+    "versionId": "a2679666-3101-430b-974c-6b4d883d0ac1",
     "workflowId": "zXbT3Tu742HrSlM6",
     "nodes": [
       {
@@ -851,6 +1378,422 @@
           }
         },
         "onError": "continueRegularOutput"
+      },
+      {
+        "id": "cbf5af74-5a6f-450b-9f1d-46bfeb003da2",
+        "name": "Find Previous Hourly Summary",
+        "type": "n8n-nodes-base.dataTable",
+        "typeVersion": 1.1,
+        "position": [
+          270,
+          470
+        ],
+        "parameters": {
+          "resource": "row",
+          "operation": "get",
+          "dataTableId": {
+            "__rl": true,
+            "mode": "name",
+            "value": "work_events"
+          },
+          "matchType": "allConditions",
+          "filters": {
+            "conditions": [
+              {
+                "keyName": "event_id",
+                "condition": "eq",
+                "keyValue": "={{ 'hourly.run:' + $now.setZone('Asia/Shanghai').minus({hours:1}).toFormat('yyyyLLddHH') }}"
+              }
+            ]
+          },
+          "returnAll": false,
+          "limit": 1
+        },
+        "alwaysOutputData": true
+      },
+      {
+        "id": "744e79bd-087d-4b48-96c2-19207b0dc835",
+        "name": "Prior Hourly Summary Missing?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.2,
+        "position": [
+          520,
+          470
+        ],
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 2
+            },
+            "conditions": [
+              {
+                "leftValue": "={{ (()=>{const slot=$now.setZone('Asia/Shanghai').minus({hours:1}).toFormat('yyyyLLddHH');return slot >= '2026110515' && !$json.event_id ? 'missing':'ok';})() }}",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals"
+                },
+                "rightValue": "missing"
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {
+            "ignoreCase": false
+          }
+        }
+      },
+      {
+        "id": "7f84ade8-ce1c-41e7-ad9e-af9ed053ba42",
+        "name": "Find Existing Hourly Alert",
+        "type": "n8n-nodes-base.dataTable",
+        "typeVersion": 1.1,
+        "position": [
+          770,
+          470
+        ],
+        "parameters": {
+          "resource": "row",
+          "operation": "get",
+          "dataTableId": {
+            "__rl": true,
+            "mode": "name",
+            "value": "work_events"
+          },
+          "matchType": "allConditions",
+          "filters": {
+            "conditions": [
+              {
+                "keyName": "event_id",
+                "condition": "eq",
+                "keyValue": "={{ 'hourly.deadman.alert:' + $now.setZone('Asia/Shanghai').minus({hours:1}).toFormat('yyyyLLddHH') }}"
+              }
+            ]
+          },
+          "returnAll": false,
+          "limit": 1
+        },
+        "alwaysOutputData": true
+      },
+      {
+        "id": "9765d28a-19e2-4bc5-a38e-3f282d623ae3",
+        "name": "No Existing Hourly Alert?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.2,
+        "position": [
+          1020,
+          470
+        ],
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 2
+            },
+            "conditions": [
+              {
+                "leftValue": "={{ $json.event_id ? 'known' : 'new' }}",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals"
+                },
+                "rightValue": "new"
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {
+            "ignoreCase": false
+          }
+        }
+      },
+      {
+        "id": "c74b2f3f-0b91-49ee-8842-132b5d9ba77c",
+        "name": "Prepare Hourly Missing Alert",
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.5,
+        "position": [
+          1270,
+          470
+        ],
+        "parameters": {
+          "mode": "manual",
+          "assignments": {
+            "assignments": [
+              {
+                "id": "slot",
+                "name": "slot",
+                "type": "string",
+                "value": "={{ $now.setZone('Asia/Shanghai').minus({hours:1}).toFormat('yyyyLLddHH') }}"
+              },
+              {
+                "id": "event_id",
+                "name": "event_id",
+                "type": "string",
+                "value": "={{ 'hourly.deadman.alert:' + $now.setZone('Asia/Shanghai').minus({hours:1}).toFormat('yyyyLLddHH') }}"
+              },
+              {
+                "id": "channel",
+                "name": "channel",
+                "type": "string",
+                "value": "status"
+              },
+              {
+                "id": "markdown",
+                "name": "markdown",
+                "type": "string",
+                "value": "={{ '## Hourly 运行审计缺失\\n\\n北京时间 '+$now.setZone('Asia/Shanghai').minus({hours:1}).toFormat('yyyy-LL-dd HH:00')+' 的 `hourly.run.summary` Event 在后续一小时仍未找到。此告警表示运行审计证据缺失，**不等于断言 ChatGPT 没有运行**。请核对 Hourly 定时任务执行详情、Record work event 调用及 Event Ledger 持久化状态。\\n\\n`expected_event_id=hourly.run:'+$now.setZone('Asia/Shanghai').minus({hours:1}).toFormat('yyyyLLddHH')+'`' }}"
+              }
+            ]
+          },
+          "includeOtherFields": false,
+          "options": {}
+        }
+      },
+      {
+        "id": "dcc64f8f-3535-4bef-90b2-84207c1cc00b",
+        "name": "Deliver Hourly Missing Alert",
+        "type": "n8n-nodes-base.executeWorkflow",
+        "typeVersion": 1.4,
+        "position": [
+          1530,
+          470
+        ],
+        "parameters": {
+          "source": "database",
+          "workflowId": {
+            "__rl": true,
+            "mode": "id",
+            "value": "Gu9lvE61vyyJf2xm"
+          },
+          "workflowInputs": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "channel": "={{ $('Prepare Hourly Missing Alert').first().json.channel }}",
+              "markdown": "={{ $('Prepare Hourly Missing Alert').first().json.markdown }}"
+            },
+            "schema": [
+              {
+                "id": "channel",
+                "displayName": "channel",
+                "type": "string"
+              },
+              {
+                "id": "markdown",
+                "displayName": "markdown",
+                "type": "string"
+              }
+            ]
+          },
+          "mode": "each",
+          "options": {
+            "waitForSubWorkflow": true
+          }
+        }
+      },
+      {
+        "id": "787a725b-b39c-40bf-be5c-4e73762c11b6",
+        "name": "Record Hourly Missing Alert",
+        "type": "n8n-nodes-base.dataTable",
+        "typeVersion": 1.1,
+        "position": [
+          1790,
+          470
+        ],
+        "parameters": {
+          "resource": "row",
+          "operation": "upsert",
+          "dataTableId": {
+            "__rl": true,
+            "mode": "name",
+            "value": "work_events"
+          },
+          "matchType": "allConditions",
+          "filters": {
+            "conditions": [
+              {
+                "keyName": "event_id",
+                "condition": "eq",
+                "keyValue": "={{ $('Prepare Hourly Missing Alert').first().json.event_id }}"
+              }
+            ]
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "event_id": "={{ $('Prepare Hourly Missing Alert').first().json.event_id }}",
+              "occurred_at": "={{ $now.toISO() }}",
+              "source": "n8n:hourly-deadman",
+              "project": "automation",
+              "category": "hourly.run.missed",
+              "title": "={{ 'Hourly audit missing: ' + $('Prepare Hourly Missing Alert').first().json.slot }}",
+              "description": "Expected Hourly run-summary Event not observed one hour after scheduled slot; verify automation and audit write. This does not prove the worker failed to execute.",
+              "status": "alerted",
+              "url": "",
+              "metadata_object": "={{ ({expected_slot:$('Prepare Hourly Missing Alert').first().json.slot,expected_event_id:'hourly.run:'+$('Prepare Hourly Missing Alert').first().json.slot,discord_message_id:String($json.id||''),discord_channel_id:String($json.channel_id||''),note:'missing_audit_not_proof_of_failed_worker'}).toJsonString() }}",
+              "correlation_id": "={{ 'hourly:'+$('Prepare Hourly Missing Alert').first().json.slot }}"
+            },
+            "schema": [
+              {
+                "id": "event_id",
+                "displayName": "event_id",
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "occurred_at",
+                "displayName": "occurred_at",
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "source",
+                "displayName": "source",
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "project",
+                "displayName": "project",
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "category",
+                "displayName": "category",
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "title",
+                "displayName": "title",
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "description",
+                "displayName": "description",
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "status",
+                "displayName": "status",
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "url",
+                "displayName": "url",
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "metadata_object",
+                "displayName": "metadata_object",
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "correlation_id",
+                "displayName": "correlation_id",
+                "type": "string",
+                "canBeUsedToMatch": true
+              }
+            ]
+          },
+          "options": {}
+        }
+      },
+      {
+        "id": "996a7b5c-0cbf-44dd-9406-358aa35c3e9e",
+        "name": "Record Hourly Audit Guard Heartbeat",
+        "type": "n8n-nodes-base.dataTable",
+        "typeVersion": 1.1,
+        "position": [
+          2060,
+          530
+        ],
+        "parameters": {
+          "resource": "row",
+          "operation": "upsert",
+          "dataTableId": {
+            "__rl": true,
+            "mode": "name",
+            "value": "automation_heartbeats"
+          },
+          "matchType": "allConditions",
+          "filters": {
+            "conditions": [
+              {
+                "keyName": "monitor_key",
+                "condition": "eq",
+                "keyValue": "chatgpt_hourly_audit_guard"
+              }
+            ]
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "monitor_key": "chatgpt_hourly_audit_guard",
+              "workflow_id": "zXbT3Tu742HrSlM6",
+              "workflow_name": "Hourly Run Ledger deadman guard",
+              "last_seen_at": "={{ $now.toISO() }}",
+              "next_expected_at": "={{ $now.plus({hours:1}).toISO() }}",
+              "grace_minutes": 15,
+              "priority": 1
+            },
+            "schema": [
+              {
+                "id": "monitor_key",
+                "displayName": "monitor_key",
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "workflow_id",
+                "displayName": "workflow_id",
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "workflow_name",
+                "displayName": "workflow_name",
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "last_seen_at",
+                "displayName": "last_seen_at",
+                "type": "dateTime",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "next_expected_at",
+                "displayName": "next_expected_at",
+                "type": "dateTime",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "grace_minutes",
+                "displayName": "grace_minutes",
+                "type": "number",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "priority",
+                "displayName": "priority",
+                "type": "number",
+                "canBeUsedToMatch": true
+              }
+            ]
+          },
+          "options": {}
+        }
       }
     ],
     "connections": {
@@ -859,6 +1802,11 @@
           [
             {
               "node": "Get Monitored Heartbeats",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Find Previous Hourly Summary",
               "type": "main",
               "index": 0
             }
@@ -897,6 +1845,97 @@
             }
           ]
         ]
+      },
+      "Find Previous Hourly Summary": {
+        "main": [
+          [
+            {
+              "node": "Prior Hourly Summary Missing?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prior Hourly Summary Missing?": {
+        "main": [
+          [
+            {
+              "node": "Find Existing Hourly Alert",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Record Hourly Audit Guard Heartbeat",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Find Existing Hourly Alert": {
+        "main": [
+          [
+            {
+              "node": "No Existing Hourly Alert?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "No Existing Hourly Alert?": {
+        "main": [
+          [
+            {
+              "node": "Prepare Hourly Missing Alert",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Record Hourly Audit Guard Heartbeat",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prepare Hourly Missing Alert": {
+        "main": [
+          [
+            {
+              "node": "Deliver Hourly Missing Alert",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Deliver Hourly Missing Alert": {
+        "main": [
+          [
+            {
+              "node": "Record Hourly Missing Alert",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Record Hourly Missing Alert": {
+        "main": [
+          [
+            {
+              "node": "Record Hourly Audit Guard Heartbeat",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
       }
     },
     "nodeGroups": [
@@ -910,13 +1949,28 @@
           "4b5bbbc3-fd8f-4ad1-8730-5c8d0dca137e"
         ],
         "description": "Read monitored schedule heartbeats, keep only overdue entries, and enqueue one idempotent AI triage work item per missed expected run."
+      },
+      {
+        "id": "bba070f0-2f4e-493f-9724-9b5a05bad107",
+        "name": "Detect missing Hourly audit and write heartbeat",
+        "nodeIds": [
+          "cbf5af74-5a6f-450b-9f1d-46bfeb003da2",
+          "744e79bd-087d-4b48-96c2-19207b0dc835",
+          "7f84ade8-ce1c-41e7-ad9e-af9ed053ba42",
+          "9765d28a-19e2-4bc5-a38e-3f282d623ae3",
+          "c74b2f3f-0b91-49ee-8842-132b5d9ba77c",
+          "dcc64f8f-3535-4bef-90b2-84207c1cc00b",
+          "787a725b-b39c-40bf-be5c-4e73762c11b6",
+          "996a7b5c-0cbf-44dd-9406-358aa35c3e9e"
+        ],
+        "description": "One independent audit check per hour; deduplicate missing alerts and persist guard-run health."
       }
     ],
     "authors": "Administrator NTLx (via MCP)",
-    "name": "Initial critical schedule deadman",
-    "description": "Monitors only explicitly registered fixed-cadence workflows via automation_heartbeats; overdue heartbeats are deduplicated into automation_deadman_triage without LLM logic.",
+    "name": "Group complete Hourly deadman check path",
+    "description": "Updated workflow",
     "autosaved": false,
-    "createdAt": "2026-10-22T16:27:29.521Z",
-    "updatedAt": "2026-10-22T16:27:29.521Z"
+    "createdAt": "2026-11-05T08:40:00.587Z",
+    "updatedAt": "2026-11-05T08:40:00.587Z"
   }
 }
