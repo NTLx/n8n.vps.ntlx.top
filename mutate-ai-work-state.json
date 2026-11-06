@@ -2,11 +2,11 @@
   "id": "WgqmfMMeWpddtv4l",
   "name": "Mutate AI work state",
   "active": true,
-  "activeVersionId": "1e29ab2d-17af-4e63-8d81-30b0dff7a99b",
+  "activeVersionId": "7fe95eaf-088a-4538-8204-29163a60b021",
   "createdAt": "2026-10-22T15:35:37.439Z",
-  "updatedAt": "2026-11-04T07:57:45.903Z",
+  "updatedAt": "2026-11-05T08:36:36.219Z",
   "isArchived": false,
-  "versionId": "1e29ab2d-17af-4e63-8d81-30b0dff7a99b",
+  "versionId": "7fe95eaf-088a-4538-8204-29163a60b021",
   "triggerCount": 6,
   "nodes": [
     {
@@ -1526,20 +1526,126 @@
           "responseCode": 409
         }
       }
+    },
+    {
+      "id": "534df5eb-026c-4091-84cd-901acd91bddc",
+      "name": "Career Watch Completion?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        220,
+        120
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ String($('Complete AI Work').first().json.body?.work_id||'').startsWith('job_watch:career_targets:') ? 'yes':'no' }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              },
+              "rightValue": "yes"
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {
+          "ignoreCase": false
+        }
+      }
+    },
+    {
+      "id": "8c5ee82d-7620-4ab9-b268-9eadc6bb5fa1",
+      "name": "Read Career Watch Result Evidence",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        430,
+        100
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "work_events"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "event_id",
+              "condition": "eq",
+              "keyValue": "={{ 'job_watch.checked:'+String($('Complete AI Work').first().json.body?.work_id||'') }}"
+            }
+          ]
+        },
+        "returnAll": false,
+        "limit": 1
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "id": "61042274-b4a9-491c-8fb5-cdf025f10064",
+      "name": "Verified Career Watch Result?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        660,
+        100
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ (() => { const b=$('Complete AI Work').first().json.body||{}; const w=String(b.work_id||''); const r=$json||{}; const eid='job_watch.checked:'+w; if(!w.startsWith('job_watch:career_targets:') || b.result_ref !== 'work_events:'+eid || r.event_id !== eid || r.category !== 'job_watch.checked' || r.project !== 'career' || r.source !== 'chatgpt:hourly' || !['completed','partial_coverage'].includes(String(r.status||''))) return 'no'; let m; try { m=JSON.parse(String(r.metadata_object||'{}')); } catch(e) { return 'no'; } return m.work_id===w && m.source_event_id==='job_watch.tick:'+w.split(':').pop() && Array.isArray(m.sources) && m.sources.length>0 && typeof m.checked_at==='string' && !Number.isNaN(Date.parse(m.checked_at)) ? 'yes':'no'; })() }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              },
+              "rightValue": "yes"
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {
+          "ignoreCase": false
+        }
+      }
+    },
+    {
+      "id": "fb3f4266-e0cf-4e16-906d-41a3c7f8dfd8",
+      "name": "Reject Missing Career Watch Result",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        900,
+        160
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ {ok:false,error:'job_watch_result_evidence_missing',work_id:String($('Complete AI Work').first().json.body?.work_id||''),expected_result_ref:'work_events:job_watch.checked:'+String($('Complete AI Work').first().json.body?.work_id||''),message:'Career watch Complete requires a persisted job_watch.checked Event whose metadata matches work_id/source_event_id and contains sources/checked_at. No queue state was changed.'} }}",
+        "options": {
+          "responseCode": 409
+        }
+      }
     }
   ],
   "connections": {
-    "Complete AI Work": {
-      "main": [
-        [
-          {
-            "node": "Apply Complete",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Fail AI Work": {
       "main": [
         [
@@ -1837,6 +1943,64 @@
           }
         ]
       ]
+    },
+    "Complete AI Work": {
+      "main": [
+        [
+          {
+            "node": "Career Watch Completion?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Career Watch Completion?": {
+      "main": [
+        [
+          {
+            "node": "Read Career Watch Result Evidence",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Apply Complete",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Career Watch Result Evidence": {
+      "main": [
+        [
+          {
+            "node": "Verified Career Watch Result?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verified Career Watch Result?": {
+      "main": [
+        [
+          {
+            "node": "Apply Complete",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Reject Missing Career Watch Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "nodeGroups": [],
@@ -1873,16 +2037,16 @@
       "updatedAt": "2026-10-22T08:25:54.546Z"
     },
     {
-      "id": "Yf0sE6r3CHF6WaAZ",
-      "name": "state-machine",
-      "createdAt": "2026-10-22T15:35:47.857Z",
-      "updatedAt": "2026-10-22T15:35:47.857Z"
-    },
-    {
       "id": "SvzA8xykOpMtvbwk",
       "name": "ai-work",
       "createdAt": "2026-10-22T09:12:58.488Z",
       "updatedAt": "2026-10-22T09:12:58.488Z"
+    },
+    {
+      "id": "Yf0sE6r3CHF6WaAZ",
+      "name": "state-machine",
+      "createdAt": "2026-10-22T15:35:47.857Z",
+      "updatedAt": "2026-10-22T15:35:47.857Z"
     }
   ],
   "shared": [
@@ -1895,7 +2059,7 @@
     }
   ],
   "activeVersion": {
-    "versionId": "1e29ab2d-17af-4e63-8d81-30b0dff7a99b",
+    "versionId": "7fe95eaf-088a-4538-8204-29163a60b021",
     "workflowId": "WgqmfMMeWpddtv4l",
     "nodes": [
       {
@@ -3415,20 +3579,126 @@
             "responseCode": 409
           }
         }
+      },
+      {
+        "id": "534df5eb-026c-4091-84cd-901acd91bddc",
+        "name": "Career Watch Completion?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.2,
+        "position": [
+          220,
+          120
+        ],
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 2
+            },
+            "conditions": [
+              {
+                "leftValue": "={{ String($('Complete AI Work').first().json.body?.work_id||'').startsWith('job_watch:career_targets:') ? 'yes':'no' }}",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals"
+                },
+                "rightValue": "yes"
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {
+            "ignoreCase": false
+          }
+        }
+      },
+      {
+        "id": "8c5ee82d-7620-4ab9-b268-9eadc6bb5fa1",
+        "name": "Read Career Watch Result Evidence",
+        "type": "n8n-nodes-base.dataTable",
+        "typeVersion": 1.1,
+        "position": [
+          430,
+          100
+        ],
+        "parameters": {
+          "resource": "row",
+          "operation": "get",
+          "dataTableId": {
+            "__rl": true,
+            "mode": "name",
+            "value": "work_events"
+          },
+          "matchType": "allConditions",
+          "filters": {
+            "conditions": [
+              {
+                "keyName": "event_id",
+                "condition": "eq",
+                "keyValue": "={{ 'job_watch.checked:'+String($('Complete AI Work').first().json.body?.work_id||'') }}"
+              }
+            ]
+          },
+          "returnAll": false,
+          "limit": 1
+        },
+        "alwaysOutputData": true
+      },
+      {
+        "id": "61042274-b4a9-491c-8fb5-cdf025f10064",
+        "name": "Verified Career Watch Result?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.2,
+        "position": [
+          660,
+          100
+        ],
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 2
+            },
+            "conditions": [
+              {
+                "leftValue": "={{ (() => { const b=$('Complete AI Work').first().json.body||{}; const w=String(b.work_id||''); const r=$json||{}; const eid='job_watch.checked:'+w; if(!w.startsWith('job_watch:career_targets:') || b.result_ref !== 'work_events:'+eid || r.event_id !== eid || r.category !== 'job_watch.checked' || r.project !== 'career' || r.source !== 'chatgpt:hourly' || !['completed','partial_coverage'].includes(String(r.status||''))) return 'no'; let m; try { m=JSON.parse(String(r.metadata_object||'{}')); } catch(e) { return 'no'; } return m.work_id===w && m.source_event_id==='job_watch.tick:'+w.split(':').pop() && Array.isArray(m.sources) && m.sources.length>0 && typeof m.checked_at==='string' && !Number.isNaN(Date.parse(m.checked_at)) ? 'yes':'no'; })() }}",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals"
+                },
+                "rightValue": "yes"
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {
+            "ignoreCase": false
+          }
+        }
+      },
+      {
+        "id": "fb3f4266-e0cf-4e16-906d-41a3c7f8dfd8",
+        "name": "Reject Missing Career Watch Result",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.5,
+        "position": [
+          900,
+          160
+        ],
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ {ok:false,error:'job_watch_result_evidence_missing',work_id:String($('Complete AI Work').first().json.body?.work_id||''),expected_result_ref:'work_events:job_watch.checked:'+String($('Complete AI Work').first().json.body?.work_id||''),message:'Career watch Complete requires a persisted job_watch.checked Event whose metadata matches work_id/source_event_id and contains sources/checked_at. No queue state was changed.'} }}",
+          "options": {
+            "responseCode": 409
+          }
+        }
       }
     ],
     "connections": {
-      "Complete AI Work": {
-        "main": [
-          [
-            {
-              "node": "Apply Complete",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
       "Fail AI Work": {
         "main": [
           [
@@ -3726,14 +3996,72 @@
             }
           ]
         ]
+      },
+      "Complete AI Work": {
+        "main": [
+          [
+            {
+              "node": "Career Watch Completion?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Career Watch Completion?": {
+        "main": [
+          [
+            {
+              "node": "Read Career Watch Result Evidence",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Apply Complete",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Read Career Watch Result Evidence": {
+        "main": [
+          [
+            {
+              "node": "Verified Career Watch Result?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Verified Career Watch Result?": {
+        "main": [
+          [
+            {
+              "node": "Apply Complete",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Reject Missing Career Watch Result",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
       }
     },
     "nodeGroups": [],
     "authors": "Administrator NTLx (via MCP)",
-    "name": "Return explicit transition success or conflict",
-    "description": "Complete/Defer/Fail/Block webhooks return 200 only when a persisted Data Table update occurred. Wrong owner, stale attempt/lease, invalid defer deadline, absent row return explicit 409; no false-positive 200 responses.",
+    "name": "Require durable career watch result before Complete",
+    "description": "Career-target job_watch Complete now requires an exact persisted job_watch.checked Event with matching work_id/source_event_id and evidence. Preserve existing Claim/CAS and all other Complete kinds.",
     "autosaved": false,
-    "createdAt": "2026-11-04T07:56:04.458Z",
-    "updatedAt": "2026-11-04T07:56:04.458Z"
+    "createdAt": "2026-11-05T08:31:36.243Z",
+    "updatedAt": "2026-11-05T08:31:36.243Z"
   }
 }
