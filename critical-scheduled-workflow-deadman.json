@@ -992,6 +992,12 @@
       "updatedAt": "2026-10-22T09:14:35.367Z"
     },
     {
+      "id": "twNsKNALbdWLw0Ox",
+      "name": "automation",
+      "createdAt": "2026-10-22T08:25:54.546Z",
+      "updatedAt": "2026-10-22T08:25:54.546Z"
+    },
+    {
       "id": "BlGRvaSWqnmTk53i",
       "name": "event-producer",
       "createdAt": "2026-10-22T09:14:35.370Z",
@@ -1002,12 +1008,6 @@
       "name": "monitoring",
       "createdAt": "2026-10-22T08:38:34.124Z",
       "updatedAt": "2026-10-22T08:38:34.124Z"
-    },
-    {
-      "id": "twNsKNALbdWLw0Ox",
-      "name": "automation",
-      "createdAt": "2026-10-22T08:25:54.546Z",
-      "updatedAt": "2026-10-22T08:25:54.546Z"
     }
   ],
   "shared": [
