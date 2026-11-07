@@ -2,11 +2,11 @@
   "id": "WgqmfMMeWpddtv4l",
   "name": "Mutate AI work state",
   "active": true,
-  "activeVersionId": "7fe95eaf-088a-4538-8204-29163a60b021",
+  "activeVersionId": "471029ad-035a-499a-b2e3-d34d2b18b27d",
   "createdAt": "2026-10-22T15:35:37.439Z",
-  "updatedAt": "2026-11-05T08:36:36.219Z",
+  "updatedAt": "2026-11-06T03:10:15.369Z",
   "isArchived": false,
-  "versionId": "7fe95eaf-088a-4538-8204-29163a60b021",
+  "versionId": "471029ad-035a-499a-b2e3-d34d2b18b27d",
   "triggerCount": 6,
   "nodes": [
     {
@@ -62,7 +62,7 @@
             {
               "keyName": "work_id",
               "condition": "eq",
-              "keyValue": "={{ $('Claim AI Work').item.json.body.work_id }}"
+              "keyValue": "={{ $('Claim AI Work').first().json.body.work_id }}"
             },
             {
               "keyName": "status",
@@ -205,7 +205,7 @@
             {
               "keyName": "work_id",
               "condition": "eq",
-              "keyValue": "={{ $('Complete AI Work').item.json.body.work_id }}"
+              "keyValue": "={{ $('Complete AI Work').first().json.body.work_id }}"
             },
             {
               "keyName": "status",
@@ -233,8 +233,8 @@
           "mappingMode": "defineBelow",
           "value": {
             "status": "completed",
-            "result_ref": "={{ $('Complete AI Work').item.json.body.result_ref || '' }}",
-            "result_summary": "={{ $('Complete AI Work').item.json.body.result_summary || '' }}",
+            "result_ref": "={{ $('Complete AI Work').first().json.body.result_ref || '' }}",
+            "result_summary": "={{ $('Complete AI Work').first().json.body.result_summary || '' }}",
             "completed_at": "={{ $now.toISO() }}",
             "claimed_by": "",
             "claimed_at": null,
@@ -869,7 +869,7 @@
           },
           "conditions": [
             {
-              "leftValue": "={{ (()=>{const r=$json||{};const b=$('Claim AI Work').first().json.body||{};const owners={'chatgpt-hourly':'hourly','chatgpt-weekly':'weekly','chatgpt-monthly':'monthly'};const wanted=owners[String(b.claimed_by||'')];const actual=String(r.worker||'hourly');const dead=r.kind==='job_watch'&&r.deadline&&new Date(r.deadline)<=new Date();return r.id&&r.status==='pending'&&wanted&&actual===wanted&&!dead?'yes':'no';})() }}",
+              "leftValue": "={{ (()=>{const r=$('Read Claim Candidate').first().json||{};const b=$('Claim AI Work').first().json.body||{};const owners={'chatgpt-hourly':'hourly','chatgpt-weekly':'weekly','chatgpt-monthly':'monthly'};const wanted=owners[String(b.claimed_by||'')];const actual=String(r.worker||'hourly');const dead=r.kind==='job_watch'&&r.deadline&&new Date(r.deadline)<=new Date();return r.id&&r.status==='pending'&&wanted&&actual===wanted&&!dead?'yes':'no';})() }}",
               "operator": {
                 "type": "string",
                 "operation": "equals"
@@ -1643,6 +1643,318 @@
           "responseCode": 409
         }
       }
+    },
+    {
+      "id": "9e40adbe-e6f4-4e1d-9b73-750c6058b4f2",
+      "name": "Read Completion Work",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        210,
+        1080
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "ai_work_queue"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "work_id",
+              "condition": "eq",
+              "keyValue": "={{ $('Complete AI Work').first().json.body.work_id }}"
+            }
+          ]
+        },
+        "returnAll": false,
+        "limit": 1
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "id": "1fb6c85a-2351-4bd6-b87a-a27fed5ef05e",
+      "name": "Wiki Compile Completion?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.4,
+      "position": [
+        430,
+        1080
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.kind==='wiki_compile' || String($('Complete AI Work').first().json.body?.work_id||'').startsWith('wiki_compile:') ? 'yes':'no' }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              },
+              "rightValue": "yes"
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {
+          "ignoreCase": false
+        }
+      }
+    },
+    {
+      "id": "83c09a71-13d4-40a9-bbc4-9bc07807a8bd",
+      "name": "Read Wiki Completion Manifest",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        660,
+        980
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "work_events"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "event_id",
+              "condition": "eq",
+              "keyValue": "={{ String($('Read Completion Work').first().json.source_event_id || '__missing_manifest__') }}"
+            }
+          ]
+        },
+        "returnAll": false,
+        "limit": 1
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "id": "99b9d1d3-09e8-47e9-98e0-7475d503d4ac",
+      "name": "Read Wiki Integration Evidence",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        880,
+        980
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "work_events"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "correlation_id",
+              "condition": "eq",
+              "keyValue": "={{ String($('Read Completion Work').first().json.correlation_id || '__missing_correlation__') }}"
+            }
+          ]
+        },
+        "returnAll": true
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "id": "79676032-146c-41c0-a74f-2e933975d758",
+      "name": "Verify Wiki Completion Evidence",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1110,
+        980
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "function assessWikiCompletion(body,work,manifest,events){\n const id=String(body?.work_id||\"\");\n const fail=reason=>({ok:false,stage:\"wiki_complete_gate\",work_id:id,reason});\n if(!work||!work.id||work.work_id!==id||work.kind!==\"wiki_compile\"||work.status!==\"processing\"||work.worker!==\"hourly\")return fail(\"work_not_processing_wiki_compile\");\n if(!String(work.source_event_id||\"\").startsWith(\"knowledge.promotion.manifest:\"))return fail(\"source_manifest_ref_invalid\");\n if(!manifest||manifest.event_id!==work.source_event_id||manifest.category!==\"knowledge.promotion.manifest\"||manifest.status!==\"approved\"||manifest.project!==\"agentic-work-atlas\"||manifest.correlation_id!==work.correlation_id)return fail(\"promotion_manifest_missing_or_mismatched\");\n let mf;try{mf=JSON.parse(String(manifest.metadata_object||\"\"))}catch{return fail(\"promotion_manifest_json_invalid\")}\n if(mf.decision!==\"promote\"||mf.execution_policy!==\"chatgpt_direct_only\"||!String(mf.canonical_key||\"\").trim()||!String(mf.promotion_id||\"\").trim()||!String(mf.accepted_scope||\"\").trim()||!mf.success_criteria)return fail(\"promotion_manifest_contract_invalid\");\n const ref=String(body.result_ref||\"\");\n const matches=[];\n for(const e of events){\n  if(!e?.event_id||e.correlation_id!==work.correlation_id||e.project!==\"agentic-work-atlas\")continue;\n  const legacy=e.category===\"knowledge.integration.completed\"&&e.status===\"completed\"&&e.event_id.startsWith(\"knowledge.integration.completed:\");\n  const current=e.category===\"knowledge.integration.result\"&&[\"compiled\",\"completed\",\"no_delta\",\"duplicate\"].includes(e.status)&&e.event_id.startsWith(\"knowledge.integration:\");\n  if(!legacy&&!current)continue;\n  let m;try{m=JSON.parse(String(e.metadata_object||\"\"))}catch{continue}\n  if(m.work_id!==id||m.source_event_id!==work.source_event_id||m.canonical_key!==mf.canonical_key||m.promotion_id!==mf.promotion_id)continue;\n  const outcome=String(m.result||\"\");\n  if(outcome===\"compiled\"){\n   if(!/^git:[0-9a-f]{40}$/i.test(ref)||String(m.commit||\"\").toLowerCase()!==ref.slice(4).toLowerCase()||m.push_verified!==true||Number(m.lint_blocking??m.wiki_lint_blocking)!==0)continue;\n   if(!Array.isArray(m.wiki_paths)||!m.wiki_paths.length||!m.wiki_paths.every(p=>typeof p===\"string\"&&p.startsWith(\"wiki/\")&&p.endsWith(\".md\")))continue;\n   if(!(legacy||e.status===\"compiled\"))continue;\n  }else if(outcome===\"no_delta\"||outcome===\"duplicate\"){\n   if(!current||e.status!==outcome||ref!==`work_events:${e.event_id}`||m.no_repository_write!==true||!String(m.decision_basis||\"\").trim())continue;\n   if(!Array.isArray(m.checked_wiki_paths)||m.checked_wiki_paths.length<1||!m.checked_wiki_paths.every(p=>typeof p===\"string\"&&p.startsWith(\"wiki/\")&&p.endsWith(\".md\")))continue;\n   if(m.commit||m.push_verified===true)continue;\n  }else continue;\n  matches.push({event_id:e.event_id,result:outcome,commit:outcome===\"compiled\"?ref.slice(4):\"\"});\n }\n if(matches.length!==1)return fail(matches.length?\"ambiguous_integration_events\":\"matching_integration_evidence_missing\");\n return {ok:true,stage:\"wiki_complete_gate\",work_id:id,result:matches[0].result,commit:matches[0].commit,integration_event_id:matches[0].event_id};\n}\nconst body=$('Complete AI Work').first().json.body;\nconst work=$('Read Completion Work').first().json;\nconst manifest=$('Read Wiki Completion Manifest').first().json;\nconst events=$input.all().map(i=>i.json);\nreturn [{json:assessWikiCompletion(body,work,manifest,events)}];"
+      }
+    },
+    {
+      "id": "8c4daccc-f029-4156-95ca-624961b16d58",
+      "name": "Wiki Completion Evidence Valid?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.4,
+      "position": [
+        1340,
+        980
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.ok===true ? 'yes':'no' }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              },
+              "rightValue": "yes"
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {
+          "ignoreCase": false
+        }
+      }
+    },
+    {
+      "id": "266f1b12-d8ac-45ef-8a21-2596a0d107e7",
+      "name": "Reject Wiki Completion Without Evidence",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1580,
+        1120
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ {error:'wiki_completion_evidence_missing',message:'Cannot complete wiki_compile without an approved matching promotion manifest and verified integration evidence; queue row unchanged',work_id:$json.work_id,reason:$json.reason||'missing_evidence'} }}",
+        "options": {
+          "responseCode": 409
+        }
+      }
+    },
+    {
+      "id": "6f9b5f8b-e369-46f0-a660-df83df35d7a0",
+      "name": "Wiki Compile Claim?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.4,
+      "position": [
+        980,
+        470
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.kind==='wiki_compile' && $json.status==='pending' ? 'yes':'no' }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              },
+              "rightValue": "yes"
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {
+          "ignoreCase": false
+        }
+      }
+    },
+    {
+      "id": "e2337755-6acf-41da-bc7b-5c009b2f9b46",
+      "name": "Read Claim Wiki Manifest",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        1190,
+        385
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "work_events"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "event_id",
+              "condition": "eq",
+              "keyValue": "={{ String($('Read Claim Candidate').first().json.source_event_id || '__missing_manifest__') }}"
+            }
+          ]
+        },
+        "returnAll": false,
+        "limit": 1
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "id": "583db2ca-f366-416f-8735-3d44539ce744",
+      "name": "Wiki Claim Manifest Valid?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.4,
+      "position": [
+        1410,
+        385
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ (()=>{const w=$('Read Claim Candidate').first().json||{};const e=$json||{};let m;try{m=JSON.parse(String(e.metadata_object||'{}'))}catch{return 'no';}const good=w.kind==='wiki_compile'&&w.worker==='hourly'&&w.status==='pending'&&String(w.source_event_id||'').startsWith('knowledge.promotion.manifest:')&&e.event_id===w.source_event_id&&e.category==='knowledge.promotion.manifest'&&e.status==='approved'&&e.project==='agentic-work-atlas'&&e.correlation_id===w.correlation_id&&m.decision==='promote'&&m.execution_policy==='chatgpt_direct_only'&&String(m.canonical_key||'').trim().length>0&&String(m.promotion_id||'').trim().length>0&&String(m.accepted_scope||'').trim().length>0&&Boolean(m.success_criteria);return good?'yes':'no';})() }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              },
+              "rightValue": "yes"
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {
+          "ignoreCase": false
+        }
+      }
+    },
+    {
+      "id": "38464e81-8712-49b7-869c-bdaa6157fbc8",
+      "name": "Reject Wiki Claim Without Manifest",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1630,
+        520
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ {error:'wiki_promotion_manifest_missing',message:'wiki_compile cannot be claimed without a valid approved promotion manifest; queue remains pending',work_id:$('Claim AI Work').first().json.body.work_id,source_event_id:$('Read Claim Candidate').first().json.source_event_id||''} }}",
+        "options": {
+          "responseCode": 409
+        }
+      }
     }
   ],
   "connections": {
@@ -1691,17 +2003,6 @@
         [
           {
             "node": "Respond Claim Input Error",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Read Claim Candidate": {
-      "main": [
-        [
-          {
-            "node": "Claim Candidate Eligible?",
             "type": "main",
             "index": 0
           }
@@ -1966,7 +2267,7 @@
         ],
         [
           {
-            "node": "Apply Complete",
+            "node": "Read Completion Work",
             "type": "main",
             "index": 0
           }
@@ -1996,6 +2297,144 @@
         [
           {
             "node": "Reject Missing Career Watch Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Completion Work": {
+      "main": [
+        [
+          {
+            "node": "Wiki Compile Completion?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wiki Compile Completion?": {
+      "main": [
+        [
+          {
+            "node": "Read Wiki Completion Manifest",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Apply Complete",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Wiki Completion Manifest": {
+      "main": [
+        [
+          {
+            "node": "Read Wiki Integration Evidence",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Wiki Integration Evidence": {
+      "main": [
+        [
+          {
+            "node": "Verify Wiki Completion Evidence",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verify Wiki Completion Evidence": {
+      "main": [
+        [
+          {
+            "node": "Wiki Completion Evidence Valid?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wiki Completion Evidence Valid?": {
+      "main": [
+        [
+          {
+            "node": "Apply Complete",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Reject Wiki Completion Without Evidence",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Claim Candidate": {
+      "main": [
+        [
+          {
+            "node": "Wiki Compile Claim?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wiki Compile Claim?": {
+      "main": [
+        [
+          {
+            "node": "Read Claim Wiki Manifest",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Claim Candidate Eligible?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Claim Wiki Manifest": {
+      "main": [
+        [
+          {
+            "node": "Wiki Claim Manifest Valid?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wiki Claim Manifest Valid?": {
+      "main": [
+        [
+          {
+            "node": "Claim Candidate Eligible?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Reject Wiki Claim Without Manifest",
             "type": "main",
             "index": 0
           }
@@ -2031,10 +2470,10 @@
   },
   "tags": [
     {
-      "id": "twNsKNALbdWLw0Ox",
-      "name": "automation",
-      "createdAt": "2026-10-22T08:25:54.546Z",
-      "updatedAt": "2026-10-22T08:25:54.546Z"
+      "id": "Yf0sE6r3CHF6WaAZ",
+      "name": "state-machine",
+      "createdAt": "2026-10-22T15:35:47.857Z",
+      "updatedAt": "2026-10-22T15:35:47.857Z"
     },
     {
       "id": "SvzA8xykOpMtvbwk",
@@ -2043,10 +2482,10 @@
       "updatedAt": "2026-10-22T09:12:58.488Z"
     },
     {
-      "id": "Yf0sE6r3CHF6WaAZ",
-      "name": "state-machine",
-      "createdAt": "2026-10-22T15:35:47.857Z",
-      "updatedAt": "2026-10-22T15:35:47.857Z"
+      "id": "twNsKNALbdWLw0Ox",
+      "name": "automation",
+      "createdAt": "2026-10-22T08:25:54.546Z",
+      "updatedAt": "2026-10-22T08:25:54.546Z"
     }
   ],
   "shared": [
@@ -2059,7 +2498,7 @@
     }
   ],
   "activeVersion": {
-    "versionId": "7fe95eaf-088a-4538-8204-29163a60b021",
+    "versionId": "471029ad-035a-499a-b2e3-d34d2b18b27d",
     "workflowId": "WgqmfMMeWpddtv4l",
     "nodes": [
       {
@@ -2115,7 +2554,7 @@
               {
                 "keyName": "work_id",
                 "condition": "eq",
-                "keyValue": "={{ $('Claim AI Work').item.json.body.work_id }}"
+                "keyValue": "={{ $('Claim AI Work').first().json.body.work_id }}"
               },
               {
                 "keyName": "status",
@@ -2258,7 +2697,7 @@
               {
                 "keyName": "work_id",
                 "condition": "eq",
-                "keyValue": "={{ $('Complete AI Work').item.json.body.work_id }}"
+                "keyValue": "={{ $('Complete AI Work').first().json.body.work_id }}"
               },
               {
                 "keyName": "status",
@@ -2286,8 +2725,8 @@
             "mappingMode": "defineBelow",
             "value": {
               "status": "completed",
-              "result_ref": "={{ $('Complete AI Work').item.json.body.result_ref || '' }}",
-              "result_summary": "={{ $('Complete AI Work').item.json.body.result_summary || '' }}",
+              "result_ref": "={{ $('Complete AI Work').first().json.body.result_ref || '' }}",
+              "result_summary": "={{ $('Complete AI Work').first().json.body.result_summary || '' }}",
               "completed_at": "={{ $now.toISO() }}",
               "claimed_by": "",
               "claimed_at": null,
@@ -2922,7 +3361,7 @@
             },
             "conditions": [
               {
-                "leftValue": "={{ (()=>{const r=$json||{};const b=$('Claim AI Work').first().json.body||{};const owners={'chatgpt-hourly':'hourly','chatgpt-weekly':'weekly','chatgpt-monthly':'monthly'};const wanted=owners[String(b.claimed_by||'')];const actual=String(r.worker||'hourly');const dead=r.kind==='job_watch'&&r.deadline&&new Date(r.deadline)<=new Date();return r.id&&r.status==='pending'&&wanted&&actual===wanted&&!dead?'yes':'no';})() }}",
+                "leftValue": "={{ (()=>{const r=$('Read Claim Candidate').first().json||{};const b=$('Claim AI Work').first().json.body||{};const owners={'chatgpt-hourly':'hourly','chatgpt-weekly':'weekly','chatgpt-monthly':'monthly'};const wanted=owners[String(b.claimed_by||'')];const actual=String(r.worker||'hourly');const dead=r.kind==='job_watch'&&r.deadline&&new Date(r.deadline)<=new Date();return r.id&&r.status==='pending'&&wanted&&actual===wanted&&!dead?'yes':'no';})() }}",
                 "operator": {
                   "type": "string",
                   "operation": "equals"
@@ -3696,6 +4135,318 @@
             "responseCode": 409
           }
         }
+      },
+      {
+        "id": "9e40adbe-e6f4-4e1d-9b73-750c6058b4f2",
+        "name": "Read Completion Work",
+        "type": "n8n-nodes-base.dataTable",
+        "typeVersion": 1.1,
+        "position": [
+          210,
+          1080
+        ],
+        "parameters": {
+          "resource": "row",
+          "operation": "get",
+          "dataTableId": {
+            "__rl": true,
+            "mode": "name",
+            "value": "ai_work_queue"
+          },
+          "matchType": "allConditions",
+          "filters": {
+            "conditions": [
+              {
+                "keyName": "work_id",
+                "condition": "eq",
+                "keyValue": "={{ $('Complete AI Work').first().json.body.work_id }}"
+              }
+            ]
+          },
+          "returnAll": false,
+          "limit": 1
+        },
+        "alwaysOutputData": true
+      },
+      {
+        "id": "1fb6c85a-2351-4bd6-b87a-a27fed5ef05e",
+        "name": "Wiki Compile Completion?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.4,
+        "position": [
+          430,
+          1080
+        ],
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 2
+            },
+            "conditions": [
+              {
+                "leftValue": "={{ $json.kind==='wiki_compile' || String($('Complete AI Work').first().json.body?.work_id||'').startsWith('wiki_compile:') ? 'yes':'no' }}",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals"
+                },
+                "rightValue": "yes"
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {
+            "ignoreCase": false
+          }
+        }
+      },
+      {
+        "id": "83c09a71-13d4-40a9-bbc4-9bc07807a8bd",
+        "name": "Read Wiki Completion Manifest",
+        "type": "n8n-nodes-base.dataTable",
+        "typeVersion": 1.1,
+        "position": [
+          660,
+          980
+        ],
+        "parameters": {
+          "resource": "row",
+          "operation": "get",
+          "dataTableId": {
+            "__rl": true,
+            "mode": "name",
+            "value": "work_events"
+          },
+          "matchType": "allConditions",
+          "filters": {
+            "conditions": [
+              {
+                "keyName": "event_id",
+                "condition": "eq",
+                "keyValue": "={{ String($('Read Completion Work').first().json.source_event_id || '__missing_manifest__') }}"
+              }
+            ]
+          },
+          "returnAll": false,
+          "limit": 1
+        },
+        "alwaysOutputData": true
+      },
+      {
+        "id": "99b9d1d3-09e8-47e9-98e0-7475d503d4ac",
+        "name": "Read Wiki Integration Evidence",
+        "type": "n8n-nodes-base.dataTable",
+        "typeVersion": 1.1,
+        "position": [
+          880,
+          980
+        ],
+        "parameters": {
+          "resource": "row",
+          "operation": "get",
+          "dataTableId": {
+            "__rl": true,
+            "mode": "name",
+            "value": "work_events"
+          },
+          "matchType": "allConditions",
+          "filters": {
+            "conditions": [
+              {
+                "keyName": "correlation_id",
+                "condition": "eq",
+                "keyValue": "={{ String($('Read Completion Work').first().json.correlation_id || '__missing_correlation__') }}"
+              }
+            ]
+          },
+          "returnAll": true
+        },
+        "alwaysOutputData": true
+      },
+      {
+        "id": "79676032-146c-41c0-a74f-2e933975d758",
+        "name": "Verify Wiki Completion Evidence",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1110,
+          980
+        ],
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "language": "javaScript",
+          "jsCode": "function assessWikiCompletion(body,work,manifest,events){\n const id=String(body?.work_id||\"\");\n const fail=reason=>({ok:false,stage:\"wiki_complete_gate\",work_id:id,reason});\n if(!work||!work.id||work.work_id!==id||work.kind!==\"wiki_compile\"||work.status!==\"processing\"||work.worker!==\"hourly\")return fail(\"work_not_processing_wiki_compile\");\n if(!String(work.source_event_id||\"\").startsWith(\"knowledge.promotion.manifest:\"))return fail(\"source_manifest_ref_invalid\");\n if(!manifest||manifest.event_id!==work.source_event_id||manifest.category!==\"knowledge.promotion.manifest\"||manifest.status!==\"approved\"||manifest.project!==\"agentic-work-atlas\"||manifest.correlation_id!==work.correlation_id)return fail(\"promotion_manifest_missing_or_mismatched\");\n let mf;try{mf=JSON.parse(String(manifest.metadata_object||\"\"))}catch{return fail(\"promotion_manifest_json_invalid\")}\n if(mf.decision!==\"promote\"||mf.execution_policy!==\"chatgpt_direct_only\"||!String(mf.canonical_key||\"\").trim()||!String(mf.promotion_id||\"\").trim()||!String(mf.accepted_scope||\"\").trim()||!mf.success_criteria)return fail(\"promotion_manifest_contract_invalid\");\n const ref=String(body.result_ref||\"\");\n const matches=[];\n for(const e of events){\n  if(!e?.event_id||e.correlation_id!==work.correlation_id||e.project!==\"agentic-work-atlas\")continue;\n  const legacy=e.category===\"knowledge.integration.completed\"&&e.status===\"completed\"&&e.event_id.startsWith(\"knowledge.integration.completed:\");\n  const current=e.category===\"knowledge.integration.result\"&&[\"compiled\",\"completed\",\"no_delta\",\"duplicate\"].includes(e.status)&&e.event_id.startsWith(\"knowledge.integration:\");\n  if(!legacy&&!current)continue;\n  let m;try{m=JSON.parse(String(e.metadata_object||\"\"))}catch{continue}\n  if(m.work_id!==id||m.source_event_id!==work.source_event_id||m.canonical_key!==mf.canonical_key||m.promotion_id!==mf.promotion_id)continue;\n  const outcome=String(m.result||\"\");\n  if(outcome===\"compiled\"){\n   if(!/^git:[0-9a-f]{40}$/i.test(ref)||String(m.commit||\"\").toLowerCase()!==ref.slice(4).toLowerCase()||m.push_verified!==true||Number(m.lint_blocking??m.wiki_lint_blocking)!==0)continue;\n   if(!Array.isArray(m.wiki_paths)||!m.wiki_paths.length||!m.wiki_paths.every(p=>typeof p===\"string\"&&p.startsWith(\"wiki/\")&&p.endsWith(\".md\")))continue;\n   if(!(legacy||e.status===\"compiled\"))continue;\n  }else if(outcome===\"no_delta\"||outcome===\"duplicate\"){\n   if(!current||e.status!==outcome||ref!==`work_events:${e.event_id}`||m.no_repository_write!==true||!String(m.decision_basis||\"\").trim())continue;\n   if(!Array.isArray(m.checked_wiki_paths)||m.checked_wiki_paths.length<1||!m.checked_wiki_paths.every(p=>typeof p===\"string\"&&p.startsWith(\"wiki/\")&&p.endsWith(\".md\")))continue;\n   if(m.commit||m.push_verified===true)continue;\n  }else continue;\n  matches.push({event_id:e.event_id,result:outcome,commit:outcome===\"compiled\"?ref.slice(4):\"\"});\n }\n if(matches.length!==1)return fail(matches.length?\"ambiguous_integration_events\":\"matching_integration_evidence_missing\");\n return {ok:true,stage:\"wiki_complete_gate\",work_id:id,result:matches[0].result,commit:matches[0].commit,integration_event_id:matches[0].event_id};\n}\nconst body=$('Complete AI Work').first().json.body;\nconst work=$('Read Completion Work').first().json;\nconst manifest=$('Read Wiki Completion Manifest').first().json;\nconst events=$input.all().map(i=>i.json);\nreturn [{json:assessWikiCompletion(body,work,manifest,events)}];"
+        }
+      },
+      {
+        "id": "8c4daccc-f029-4156-95ca-624961b16d58",
+        "name": "Wiki Completion Evidence Valid?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.4,
+        "position": [
+          1340,
+          980
+        ],
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 2
+            },
+            "conditions": [
+              {
+                "leftValue": "={{ $json.ok===true ? 'yes':'no' }}",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals"
+                },
+                "rightValue": "yes"
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {
+            "ignoreCase": false
+          }
+        }
+      },
+      {
+        "id": "266f1b12-d8ac-45ef-8a21-2596a0d107e7",
+        "name": "Reject Wiki Completion Without Evidence",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.5,
+        "position": [
+          1580,
+          1120
+        ],
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ {error:'wiki_completion_evidence_missing',message:'Cannot complete wiki_compile without an approved matching promotion manifest and verified integration evidence; queue row unchanged',work_id:$json.work_id,reason:$json.reason||'missing_evidence'} }}",
+          "options": {
+            "responseCode": 409
+          }
+        }
+      },
+      {
+        "id": "6f9b5f8b-e369-46f0-a660-df83df35d7a0",
+        "name": "Wiki Compile Claim?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.4,
+        "position": [
+          980,
+          470
+        ],
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 2
+            },
+            "conditions": [
+              {
+                "leftValue": "={{ $json.kind==='wiki_compile' && $json.status==='pending' ? 'yes':'no' }}",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals"
+                },
+                "rightValue": "yes"
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {
+            "ignoreCase": false
+          }
+        }
+      },
+      {
+        "id": "e2337755-6acf-41da-bc7b-5c009b2f9b46",
+        "name": "Read Claim Wiki Manifest",
+        "type": "n8n-nodes-base.dataTable",
+        "typeVersion": 1.1,
+        "position": [
+          1190,
+          385
+        ],
+        "parameters": {
+          "resource": "row",
+          "operation": "get",
+          "dataTableId": {
+            "__rl": true,
+            "mode": "name",
+            "value": "work_events"
+          },
+          "matchType": "allConditions",
+          "filters": {
+            "conditions": [
+              {
+                "keyName": "event_id",
+                "condition": "eq",
+                "keyValue": "={{ String($('Read Claim Candidate').first().json.source_event_id || '__missing_manifest__') }}"
+              }
+            ]
+          },
+          "returnAll": false,
+          "limit": 1
+        },
+        "alwaysOutputData": true
+      },
+      {
+        "id": "583db2ca-f366-416f-8735-3d44539ce744",
+        "name": "Wiki Claim Manifest Valid?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.4,
+        "position": [
+          1410,
+          385
+        ],
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 2
+            },
+            "conditions": [
+              {
+                "leftValue": "={{ (()=>{const w=$('Read Claim Candidate').first().json||{};const e=$json||{};let m;try{m=JSON.parse(String(e.metadata_object||'{}'))}catch{return 'no';}const good=w.kind==='wiki_compile'&&w.worker==='hourly'&&w.status==='pending'&&String(w.source_event_id||'').startsWith('knowledge.promotion.manifest:')&&e.event_id===w.source_event_id&&e.category==='knowledge.promotion.manifest'&&e.status==='approved'&&e.project==='agentic-work-atlas'&&e.correlation_id===w.correlation_id&&m.decision==='promote'&&m.execution_policy==='chatgpt_direct_only'&&String(m.canonical_key||'').trim().length>0&&String(m.promotion_id||'').trim().length>0&&String(m.accepted_scope||'').trim().length>0&&Boolean(m.success_criteria);return good?'yes':'no';})() }}",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals"
+                },
+                "rightValue": "yes"
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {
+            "ignoreCase": false
+          }
+        }
+      },
+      {
+        "id": "38464e81-8712-49b7-869c-bdaa6157fbc8",
+        "name": "Reject Wiki Claim Without Manifest",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.5,
+        "position": [
+          1630,
+          520
+        ],
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ {error:'wiki_promotion_manifest_missing',message:'wiki_compile cannot be claimed without a valid approved promotion manifest; queue remains pending',work_id:$('Claim AI Work').first().json.body.work_id,source_event_id:$('Read Claim Candidate').first().json.source_event_id||''} }}",
+          "options": {
+            "responseCode": 409
+          }
+        }
       }
     ],
     "connections": {
@@ -3744,17 +4495,6 @@
           [
             {
               "node": "Respond Claim Input Error",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Read Claim Candidate": {
-        "main": [
-          [
-            {
-              "node": "Claim Candidate Eligible?",
               "type": "main",
               "index": 0
             }
@@ -4019,7 +4759,7 @@
           ],
           [
             {
-              "node": "Apply Complete",
+              "node": "Read Completion Work",
               "type": "main",
               "index": 0
             }
@@ -4054,14 +4794,152 @@
             }
           ]
         ]
+      },
+      "Read Completion Work": {
+        "main": [
+          [
+            {
+              "node": "Wiki Compile Completion?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Wiki Compile Completion?": {
+        "main": [
+          [
+            {
+              "node": "Read Wiki Completion Manifest",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Apply Complete",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Read Wiki Completion Manifest": {
+        "main": [
+          [
+            {
+              "node": "Read Wiki Integration Evidence",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Read Wiki Integration Evidence": {
+        "main": [
+          [
+            {
+              "node": "Verify Wiki Completion Evidence",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Verify Wiki Completion Evidence": {
+        "main": [
+          [
+            {
+              "node": "Wiki Completion Evidence Valid?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Wiki Completion Evidence Valid?": {
+        "main": [
+          [
+            {
+              "node": "Apply Complete",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Reject Wiki Completion Without Evidence",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Read Claim Candidate": {
+        "main": [
+          [
+            {
+              "node": "Wiki Compile Claim?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Wiki Compile Claim?": {
+        "main": [
+          [
+            {
+              "node": "Read Claim Wiki Manifest",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Claim Candidate Eligible?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Read Claim Wiki Manifest": {
+        "main": [
+          [
+            {
+              "node": "Wiki Claim Manifest Valid?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Wiki Claim Manifest Valid?": {
+        "main": [
+          [
+            {
+              "node": "Claim Candidate Eligible?",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Reject Wiki Claim Without Manifest",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
       }
     },
     "nodeGroups": [],
     "authors": "Administrator NTLx (via MCP)",
-    "name": "Require durable career watch result before Complete",
-    "description": "Career-target job_watch Complete now requires an exact persisted job_watch.checked Event with matching work_id/source_event_id and evidence. Preserve existing Claim/CAS and all other Complete kinds.",
+    "name": "Handle no-change Wiki completion without fake Git commits",
+    "description": "Extend Wiki Complete result evidence gate: compiled requires matching pushed commit; no_delta/duplicate require a durable result Event, checked wiki paths, explicit no-write assertion and exact work_events result_ref.",
     "autosaved": false,
-    "createdAt": "2026-11-05T08:31:36.243Z",
-    "updatedAt": "2026-11-05T08:31:36.243Z"
+    "createdAt": "2026-11-06T03:09:11.476Z",
+    "updatedAt": "2026-11-06T03:09:11.476Z"
   }
 }
