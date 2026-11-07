@@ -2,11 +2,11 @@
   "id": "bSFpuTgbGCGVJTku",
   "name": "Complete RSS intelligence digest",
   "active": true,
-  "activeVersionId": "11893f2d-a945-4226-9ff4-c6d69f637639",
+  "activeVersionId": "469de385-cd88-473a-ae2c-f14474088027",
   "createdAt": "2026-10-22T16:43:08.721Z",
-  "updatedAt": "2026-11-04T08:01:56.422Z",
+  "updatedAt": "2026-11-06T02:57:53.548Z",
   "isArchived": false,
-  "versionId": "11893f2d-a945-4226-9ff4-c6d69f637639",
+  "versionId": "469de385-cd88-473a-ae2c-f14474088027",
   "triggerCount": 1,
   "nodes": [
     {
@@ -94,7 +94,7 @@
             {
               "keyName": "digest_id",
               "condition": "eq",
-              "keyValue": "={{ $('Complete RSS Digest').item.json.body.digest_id }}"
+              "keyValue": "={{ $('Complete RSS Digest').first().json.body.digest_id }}"
             }
           ]
         },
@@ -102,7 +102,7 @@
           "mappingMode": "defineBelow",
           "value": {
             "status": "processed",
-            "digest_id": "={{ $('Complete RSS Digest').item.json.body.digest_id }}",
+            "digest_id": "={{ $('Complete RSS Digest').first().json.body.digest_id }}",
             "processed_at": "={{ $now.toISO() }}"
           },
           "schema": [
@@ -162,24 +162,24 @@
             {
               "keyName": "event_id",
               "condition": "eq",
-              "keyValue": "={{ 'rss.digest.completed:' + $('Complete RSS Digest').item.json.body.digest_id }}"
+              "keyValue": "={{ 'rss.digest.completed:' + $('Complete RSS Digest').first().json.body.digest_id }}"
             }
           ]
         },
         "columns": {
           "mappingMode": "defineBelow",
           "value": {
-            "event_id": "={{ 'rss.digest.completed:' + $('Complete RSS Digest').item.json.body.digest_id }}",
+            "event_id": "={{ 'rss.digest.completed:' + $('Complete RSS Digest').first().json.body.digest_id }}",
             "occurred_at": "={{ $now.toISO() }}",
             "source": "chatgpt:rss-intelligence",
             "project": "tech-intelligence",
             "category": "rss.digest.completed",
-            "title": "={{ $('Complete RSS Digest').item.json.body.title || ('RSS Intelligence — ' + $('Complete RSS Digest').item.json.body.digest_id) }}",
-            "description": "={{ $('Complete RSS Digest').item.json.body.summary || 'Daily RSS intelligence digest completed.' }}",
+            "title": "={{ $('Complete RSS Digest').first().json.body.title || ('RSS Intelligence — ' + $('Complete RSS Digest').first().json.body.digest_id) }}",
+            "description": "={{ $('Complete RSS Digest').first().json.body.summary || 'Daily RSS intelligence digest completed.' }}",
             "status": "completed",
-            "url": "={{ $('Complete RSS Digest').item.json.body.report_ref || '' }}",
+            "url": "={{ $('Complete RSS Digest').first().json.body.report_ref || '' }}",
             "metadata_object": "={{ ({architecture_version:3,digest_id:$('Complete RSS Digest').first().json.body.digest_id,item_count:Number($('Complete RSS Digest').first().json.body.item_count||0),ingestion_table:'rss_intelligence_items',canonical_candidate_event_ids:$('Complete RSS Digest').first().json.body.canonical_candidate_event_ids||[],canonical_candidate_count:Number($('Complete RSS Digest').first().json.body.canonical_candidate_count||0),candidate_carrier:'work_events:intelligence.candidate.canonicalized',discord_delivery:{receipt_event_id:'daily.discord.delivered:'+String($('Complete RSS Digest').first().json.body.digest_id).replace('rss-digest:','')+':A',messages:$('Complete RSS Digest').first().json.body.discord_messages}}).toJsonString() }}",
-            "correlation_id": "={{ $('Complete RSS Digest').item.json.body.digest_id }}"
+            "correlation_id": "={{ $('Complete RSS Digest').first().json.body.digest_id }}"
           },
           "schema": [
             {
@@ -527,7 +527,7 @@
       "parameters": {
         "mode": "runOnceForAllItems",
         "language": "javaScript",
-        "jsCode": "const b=$('Complete RSS Digest').first().json.body;const e=$('Verify Expected RSS Rows').first().json;const rows=$input.all().map(x=>x.json).filter(r=>Number.isInteger(Number(r.id))&&r.status==='processed'&&r.digest_id===b.digest_id&&!!r.processed_at);const unique=new Set(rows.map(r=>Number(r.id)));const ok=e.ok===true&&rows.length===e.expected_count&&unique.size===e.expected_count;return [{json:{ok,stage:'after_update',digest_id:b.digest_id,expected_count:e.expected_count,actual_count:rows.length,processed_count:rows.length}}];"
+        "jsCode": "const b=$('Complete RSS Digest').first().json.body;\nconst pre=$('Verify Expected RSS Rows').first().json;\nconst e=$('Verify Per-Item Evidence Receipts').first().json;\nconst originals=$('Get Digest Processing Rows').all().map(x=>x.json).filter(r=>Number.isInteger(Number(r.id))&&r.status==='processing'&&r.digest_id===b.digest_id);\nconst updates=$input.all().map(x=>x.json).filter(r=>Number.isInteger(Number(r.id))&&r.status==='processed'&&r.digest_id===b.digest_id&&!!r.processed_at);\nconst originalIds=new Set(originals.map(r=>Number(r.id)));\nconst updatedIds=new Set(updates.map(r=>Number(r.id)));\nconst ok=pre.ok===true&&e.ok===true&&originals.length===pre.expected_count&&updates.length===pre.expected_count&&originalIds.size===pre.expected_count&&updatedIds.size===pre.expected_count&&[...originalIds].every(id=>updatedIds.has(id));\nreturn [{json:{ok,stage:'after_update',digest_id:b.digest_id,expected_count:pre.expected_count,actual_count:updates.length,processed_count:updates.length}}];"
       }
     },
     {
@@ -542,6 +542,108 @@
       "parameters": {
         "respondWith": "json",
         "responseBody": "={{ {error:'rss_count_mismatch',message:'RSS digest item_count does not match persisted processing rows or updated row count; inspect current digest state before retrying',stage:$json.stage,digest_id:$json.digest_id,expected_count:$json.expected_count,actual_count:$json.actual_count} }}",
+        "options": {
+          "responseCode": 409
+        }
+      }
+    },
+    {
+      "id": "4bfd31cd-e1d8-46f5-a9d3-1ecc77d9d14e",
+      "name": "Get Digest Evidence Receipts",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        1530,
+        100
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "work_events"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "category",
+              "condition": "eq",
+              "keyValue": "rss.article.evidence_checked"
+            },
+            {
+              "keyName": "correlation_id",
+              "condition": "eq",
+              "keyValue": "={{ $('Complete RSS Digest').first().json.body.digest_id }}"
+            }
+          ]
+        },
+        "returnAll": true
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "id": "c59fc289-2b69-49ff-a24b-6e685ed4b1de",
+      "name": "Verify Per-Item Evidence Receipts",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1750,
+        100
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "function assessDigestEvidence(body,processing,receipts,pre) {\n const digest=String(body?.digest_id||\"\");\n const expected=Number(body?.item_count);\n const rows=processing.filter(r=>r&&typeof r===\"object\"&&Object.keys(r).length>0);\n const ev=receipts.filter(r=>r&&typeof r===\"object\"&&Object.keys(r).length>0);\n const fail=(reason,invalid=[])=>({ok:false,stage:\"evidence_receipt\",digest_id:digest,expected_count:expected,processing_count:rows.length,receipt_count:ev.length,reason,invalid_items:invalid.slice(0,5)});\n if(!pre||pre.ok!==true||pre.digest_id!==digest||pre.expected_count!==expected)return fail(\"precount_not_verified\");\n if(!Number.isInteger(expected)||expected<1||rows.length!==expected)return fail(\"processing_count_mismatch\");\n const byKey=new Map(),ids=new Set();\n for(const r of rows) {\n   if(r.status!==\"processing\"||r.digest_id!==digest||typeof r.item_key!==\"string\"||!r.item_key.trim()||typeof r.url!==\"string\"||!r.url.trim()||!Number.isInteger(Number(r.id))||ids.has(Number(r.id))||byKey.has(r.item_key)) return fail(\"processing_identity_invalid\",[String(r.item_key||r.id)]);\n   ids.add(Number(r.id));byKey.set(r.item_key,r);\n }\n const byEvent=new Map();\n for(const e of ev){\n   const key=String(e.event_id||\"\");\n   if(!key||byEvent.has(key))return fail(\"duplicate_or_missing_receipt_id\",[key]);\n   byEvent.set(key,e);\n }\n const invalid=[];\n for(const [key,row] of byKey){\n   const eventId=`rss.article.evidence_checked:${digest}:${key}`;\n   const e=byEvent.get(eventId);\n   if(!e){invalid.push({item_key:key,issue:\"missing_receipt\"});continue}\n   if(e.category!==\"rss.article.evidence_checked\"||e.project!==\"tech-intelligence\"||e.status!==\"completed\"||e.correlation_id!==digest||e.url!==row.url||!Number.isFinite(Date.parse(String(e.occurred_at||\"\")))){invalid.push({item_key:key,issue:\"event_lineage_invalid\"});continue}\n   let m;\n   try{m=JSON.parse(String(e.metadata_object||\"\"));}catch{invalid.push({item_key:key,issue:\"invalid_metadata_json\"});continue}\n   if(!m||typeof m!==\"object\"||Array.isArray(m)||m.digest_id!==digest||m.item_key!==key||m.source_url!==row.url||!Number.isFinite(Date.parse(String(m.checked_at||\"\")))||!String(m.evidence_summary||\"\").trim()){\n     invalid.push({item_key:key,issue:\"receipt_fields_invalid\"});continue\n   }\n   const d=m.disposition,s=m.source_read_status;\n   if(d===\"source_gap\"){invalid.push({item_key:key,issue:\"source_gap_unresolved\"});continue}\n   if(d===\"verified\"&&(s!==\"verified\"||!String(m.source_locator||\"\").trim())){invalid.push({item_key:key,issue:\"verified_evidence_missing_locator\"});continue}\n   if(d===\"excluded\"&&(![\"verified\",\"partial\",\"blocked\",\"not_applicable\"].includes(s)||!String(m.reason||\"\").trim())){invalid.push({item_key:key,issue:\"excluded_missing_reason\"});continue}\n   if(![\"verified\",\"excluded\"].includes(d)){invalid.push({item_key:key,issue:\"invalid_disposition\"});continue}\n }\n const allowed=new Set(Array.from(byKey.keys(),key=>`rss.article.evidence_checked:${digest}:${key}`));\n for(const key of byEvent.keys())if(!allowed.has(key))invalid.push({item_key:key,issue:\"foreign_receipt\"});\n if(invalid.length>0)return fail(\"incomplete_or_invalid_evidence\",invalid);\n if(byEvent.size!==expected)return fail(\"receipt_count_mismatch\");\n return {ok:true,stage:\"evidence_receipt\",digest_id:digest,expected_count:expected,processing_count:rows.length,receipt_count:ev.length,verified_count:ev.filter(e=>{try{return JSON.parse(String(e.metadata_object)).disposition===\"verified\"}catch{return false}}).length,excluded_count:ev.filter(e=>{try{return JSON.parse(String(e.metadata_object)).disposition===\"excluded\"}catch{return false}}).length};\n}\nconst b=$('Complete RSS Digest').first().json.body;\nconst pre=$('Verify Expected RSS Rows').first().json;\nconst rows=$('Get Digest Processing Rows').all().map(x=>x.json);\nconst evidence=$input.all().map(x=>x.json);\nreturn [{json:assessDigestEvidence(b,rows,evidence,pre)}];"
+      }
+    },
+    {
+      "id": "d024c069-d353-4719-ba73-4930ea9e9867",
+      "name": "All RSS Evidence Verified?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.4,
+      "position": [
+        1975,
+        100
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.ok===true ? 'yes' : 'no' }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              },
+              "rightValue": "yes"
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {
+          "ignoreCase": false
+        }
+      }
+    },
+    {
+      "id": "831c819e-0d0d-47ae-8965-24b204e1df39",
+      "name": "Respond RSS Evidence Conflict",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        2200,
+        235
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ {error:'rss_evidence_incomplete',message:'At least one processing item lacks a valid terminal evidence receipt; no RSS rows were updated',stage:$json.stage,digest_id:$json.digest_id,expected_count:$json.expected_count,receipt_count:$json.receipt_count,reason:$json.reason,invalid_items:$json.invalid_items||[]} }}",
         "options": {
           "responseCode": 409
         }
@@ -662,7 +764,7 @@
       "main": [
         [
           {
-            "node": "Mark RSS Items Processed",
+            "node": "Get Digest Evidence Receipts",
             "type": "main",
             "index": 0
           }
@@ -692,6 +794,46 @@
         [
           {
             "node": "Rows Actually Completed?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Digest Evidence Receipts": {
+      "main": [
+        [
+          {
+            "node": "Verify Per-Item Evidence Receipts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verify Per-Item Evidence Receipts": {
+      "main": [
+        [
+          {
+            "node": "All RSS Evidence Verified?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "All RSS Evidence Verified?": {
+      "main": [
+        [
+          {
+            "node": "Mark RSS Items Processed",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond RSS Evidence Conflict",
             "type": "main",
             "index": 0
           }
@@ -792,7 +934,7 @@
     }
   ],
   "activeVersion": {
-    "versionId": "11893f2d-a945-4226-9ff4-c6d69f637639",
+    "versionId": "469de385-cd88-473a-ae2c-f14474088027",
     "workflowId": "bSFpuTgbGCGVJTku",
     "nodes": [
       {
@@ -880,7 +1022,7 @@
               {
                 "keyName": "digest_id",
                 "condition": "eq",
-                "keyValue": "={{ $('Complete RSS Digest').item.json.body.digest_id }}"
+                "keyValue": "={{ $('Complete RSS Digest').first().json.body.digest_id }}"
               }
             ]
           },
@@ -888,7 +1030,7 @@
             "mappingMode": "defineBelow",
             "value": {
               "status": "processed",
-              "digest_id": "={{ $('Complete RSS Digest').item.json.body.digest_id }}",
+              "digest_id": "={{ $('Complete RSS Digest').first().json.body.digest_id }}",
               "processed_at": "={{ $now.toISO() }}"
             },
             "schema": [
@@ -948,24 +1090,24 @@
               {
                 "keyName": "event_id",
                 "condition": "eq",
-                "keyValue": "={{ 'rss.digest.completed:' + $('Complete RSS Digest').item.json.body.digest_id }}"
+                "keyValue": "={{ 'rss.digest.completed:' + $('Complete RSS Digest').first().json.body.digest_id }}"
               }
             ]
           },
           "columns": {
             "mappingMode": "defineBelow",
             "value": {
-              "event_id": "={{ 'rss.digest.completed:' + $('Complete RSS Digest').item.json.body.digest_id }}",
+              "event_id": "={{ 'rss.digest.completed:' + $('Complete RSS Digest').first().json.body.digest_id }}",
               "occurred_at": "={{ $now.toISO() }}",
               "source": "chatgpt:rss-intelligence",
               "project": "tech-intelligence",
               "category": "rss.digest.completed",
-              "title": "={{ $('Complete RSS Digest').item.json.body.title || ('RSS Intelligence — ' + $('Complete RSS Digest').item.json.body.digest_id) }}",
-              "description": "={{ $('Complete RSS Digest').item.json.body.summary || 'Daily RSS intelligence digest completed.' }}",
+              "title": "={{ $('Complete RSS Digest').first().json.body.title || ('RSS Intelligence — ' + $('Complete RSS Digest').first().json.body.digest_id) }}",
+              "description": "={{ $('Complete RSS Digest').first().json.body.summary || 'Daily RSS intelligence digest completed.' }}",
               "status": "completed",
-              "url": "={{ $('Complete RSS Digest').item.json.body.report_ref || '' }}",
+              "url": "={{ $('Complete RSS Digest').first().json.body.report_ref || '' }}",
               "metadata_object": "={{ ({architecture_version:3,digest_id:$('Complete RSS Digest').first().json.body.digest_id,item_count:Number($('Complete RSS Digest').first().json.body.item_count||0),ingestion_table:'rss_intelligence_items',canonical_candidate_event_ids:$('Complete RSS Digest').first().json.body.canonical_candidate_event_ids||[],canonical_candidate_count:Number($('Complete RSS Digest').first().json.body.canonical_candidate_count||0),candidate_carrier:'work_events:intelligence.candidate.canonicalized',discord_delivery:{receipt_event_id:'daily.discord.delivered:'+String($('Complete RSS Digest').first().json.body.digest_id).replace('rss-digest:','')+':A',messages:$('Complete RSS Digest').first().json.body.discord_messages}}).toJsonString() }}",
-              "correlation_id": "={{ $('Complete RSS Digest').item.json.body.digest_id }}"
+              "correlation_id": "={{ $('Complete RSS Digest').first().json.body.digest_id }}"
             },
             "schema": [
               {
@@ -1313,7 +1455,7 @@
         "parameters": {
           "mode": "runOnceForAllItems",
           "language": "javaScript",
-          "jsCode": "const b=$('Complete RSS Digest').first().json.body;const e=$('Verify Expected RSS Rows').first().json;const rows=$input.all().map(x=>x.json).filter(r=>Number.isInteger(Number(r.id))&&r.status==='processed'&&r.digest_id===b.digest_id&&!!r.processed_at);const unique=new Set(rows.map(r=>Number(r.id)));const ok=e.ok===true&&rows.length===e.expected_count&&unique.size===e.expected_count;return [{json:{ok,stage:'after_update',digest_id:b.digest_id,expected_count:e.expected_count,actual_count:rows.length,processed_count:rows.length}}];"
+          "jsCode": "const b=$('Complete RSS Digest').first().json.body;\nconst pre=$('Verify Expected RSS Rows').first().json;\nconst e=$('Verify Per-Item Evidence Receipts').first().json;\nconst originals=$('Get Digest Processing Rows').all().map(x=>x.json).filter(r=>Number.isInteger(Number(r.id))&&r.status==='processing'&&r.digest_id===b.digest_id);\nconst updates=$input.all().map(x=>x.json).filter(r=>Number.isInteger(Number(r.id))&&r.status==='processed'&&r.digest_id===b.digest_id&&!!r.processed_at);\nconst originalIds=new Set(originals.map(r=>Number(r.id)));\nconst updatedIds=new Set(updates.map(r=>Number(r.id)));\nconst ok=pre.ok===true&&e.ok===true&&originals.length===pre.expected_count&&updates.length===pre.expected_count&&originalIds.size===pre.expected_count&&updatedIds.size===pre.expected_count&&[...originalIds].every(id=>updatedIds.has(id));\nreturn [{json:{ok,stage:'after_update',digest_id:b.digest_id,expected_count:pre.expected_count,actual_count:updates.length,processed_count:updates.length}}];"
         }
       },
       {
@@ -1328,6 +1470,108 @@
         "parameters": {
           "respondWith": "json",
           "responseBody": "={{ {error:'rss_count_mismatch',message:'RSS digest item_count does not match persisted processing rows or updated row count; inspect current digest state before retrying',stage:$json.stage,digest_id:$json.digest_id,expected_count:$json.expected_count,actual_count:$json.actual_count} }}",
+          "options": {
+            "responseCode": 409
+          }
+        }
+      },
+      {
+        "id": "4bfd31cd-e1d8-46f5-a9d3-1ecc77d9d14e",
+        "name": "Get Digest Evidence Receipts",
+        "type": "n8n-nodes-base.dataTable",
+        "typeVersion": 1.1,
+        "position": [
+          1530,
+          100
+        ],
+        "parameters": {
+          "resource": "row",
+          "operation": "get",
+          "dataTableId": {
+            "__rl": true,
+            "mode": "name",
+            "value": "work_events"
+          },
+          "matchType": "allConditions",
+          "filters": {
+            "conditions": [
+              {
+                "keyName": "category",
+                "condition": "eq",
+                "keyValue": "rss.article.evidence_checked"
+              },
+              {
+                "keyName": "correlation_id",
+                "condition": "eq",
+                "keyValue": "={{ $('Complete RSS Digest').first().json.body.digest_id }}"
+              }
+            ]
+          },
+          "returnAll": true
+        },
+        "alwaysOutputData": true
+      },
+      {
+        "id": "c59fc289-2b69-49ff-a24b-6e685ed4b1de",
+        "name": "Verify Per-Item Evidence Receipts",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1750,
+          100
+        ],
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "language": "javaScript",
+          "jsCode": "function assessDigestEvidence(body,processing,receipts,pre) {\n const digest=String(body?.digest_id||\"\");\n const expected=Number(body?.item_count);\n const rows=processing.filter(r=>r&&typeof r===\"object\"&&Object.keys(r).length>0);\n const ev=receipts.filter(r=>r&&typeof r===\"object\"&&Object.keys(r).length>0);\n const fail=(reason,invalid=[])=>({ok:false,stage:\"evidence_receipt\",digest_id:digest,expected_count:expected,processing_count:rows.length,receipt_count:ev.length,reason,invalid_items:invalid.slice(0,5)});\n if(!pre||pre.ok!==true||pre.digest_id!==digest||pre.expected_count!==expected)return fail(\"precount_not_verified\");\n if(!Number.isInteger(expected)||expected<1||rows.length!==expected)return fail(\"processing_count_mismatch\");\n const byKey=new Map(),ids=new Set();\n for(const r of rows) {\n   if(r.status!==\"processing\"||r.digest_id!==digest||typeof r.item_key!==\"string\"||!r.item_key.trim()||typeof r.url!==\"string\"||!r.url.trim()||!Number.isInteger(Number(r.id))||ids.has(Number(r.id))||byKey.has(r.item_key)) return fail(\"processing_identity_invalid\",[String(r.item_key||r.id)]);\n   ids.add(Number(r.id));byKey.set(r.item_key,r);\n }\n const byEvent=new Map();\n for(const e of ev){\n   const key=String(e.event_id||\"\");\n   if(!key||byEvent.has(key))return fail(\"duplicate_or_missing_receipt_id\",[key]);\n   byEvent.set(key,e);\n }\n const invalid=[];\n for(const [key,row] of byKey){\n   const eventId=`rss.article.evidence_checked:${digest}:${key}`;\n   const e=byEvent.get(eventId);\n   if(!e){invalid.push({item_key:key,issue:\"missing_receipt\"});continue}\n   if(e.category!==\"rss.article.evidence_checked\"||e.project!==\"tech-intelligence\"||e.status!==\"completed\"||e.correlation_id!==digest||e.url!==row.url||!Number.isFinite(Date.parse(String(e.occurred_at||\"\")))){invalid.push({item_key:key,issue:\"event_lineage_invalid\"});continue}\n   let m;\n   try{m=JSON.parse(String(e.metadata_object||\"\"));}catch{invalid.push({item_key:key,issue:\"invalid_metadata_json\"});continue}\n   if(!m||typeof m!==\"object\"||Array.isArray(m)||m.digest_id!==digest||m.item_key!==key||m.source_url!==row.url||!Number.isFinite(Date.parse(String(m.checked_at||\"\")))||!String(m.evidence_summary||\"\").trim()){\n     invalid.push({item_key:key,issue:\"receipt_fields_invalid\"});continue\n   }\n   const d=m.disposition,s=m.source_read_status;\n   if(d===\"source_gap\"){invalid.push({item_key:key,issue:\"source_gap_unresolved\"});continue}\n   if(d===\"verified\"&&(s!==\"verified\"||!String(m.source_locator||\"\").trim())){invalid.push({item_key:key,issue:\"verified_evidence_missing_locator\"});continue}\n   if(d===\"excluded\"&&(![\"verified\",\"partial\",\"blocked\",\"not_applicable\"].includes(s)||!String(m.reason||\"\").trim())){invalid.push({item_key:key,issue:\"excluded_missing_reason\"});continue}\n   if(![\"verified\",\"excluded\"].includes(d)){invalid.push({item_key:key,issue:\"invalid_disposition\"});continue}\n }\n const allowed=new Set(Array.from(byKey.keys(),key=>`rss.article.evidence_checked:${digest}:${key}`));\n for(const key of byEvent.keys())if(!allowed.has(key))invalid.push({item_key:key,issue:\"foreign_receipt\"});\n if(invalid.length>0)return fail(\"incomplete_or_invalid_evidence\",invalid);\n if(byEvent.size!==expected)return fail(\"receipt_count_mismatch\");\n return {ok:true,stage:\"evidence_receipt\",digest_id:digest,expected_count:expected,processing_count:rows.length,receipt_count:ev.length,verified_count:ev.filter(e=>{try{return JSON.parse(String(e.metadata_object)).disposition===\"verified\"}catch{return false}}).length,excluded_count:ev.filter(e=>{try{return JSON.parse(String(e.metadata_object)).disposition===\"excluded\"}catch{return false}}).length};\n}\nconst b=$('Complete RSS Digest').first().json.body;\nconst pre=$('Verify Expected RSS Rows').first().json;\nconst rows=$('Get Digest Processing Rows').all().map(x=>x.json);\nconst evidence=$input.all().map(x=>x.json);\nreturn [{json:assessDigestEvidence(b,rows,evidence,pre)}];"
+        }
+      },
+      {
+        "id": "d024c069-d353-4719-ba73-4930ea9e9867",
+        "name": "All RSS Evidence Verified?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.4,
+        "position": [
+          1975,
+          100
+        ],
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 2
+            },
+            "conditions": [
+              {
+                "leftValue": "={{ $json.ok===true ? 'yes' : 'no' }}",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals"
+                },
+                "rightValue": "yes"
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {
+            "ignoreCase": false
+          }
+        }
+      },
+      {
+        "id": "831c819e-0d0d-47ae-8965-24b204e1df39",
+        "name": "Respond RSS Evidence Conflict",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.5,
+        "position": [
+          2200,
+          235
+        ],
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ {error:'rss_evidence_incomplete',message:'At least one processing item lacks a valid terminal evidence receipt; no RSS rows were updated',stage:$json.stage,digest_id:$json.digest_id,expected_count:$json.expected_count,receipt_count:$json.receipt_count,reason:$json.reason,invalid_items:$json.invalid_items||[]} }}",
           "options": {
             "responseCode": 409
           }
@@ -1448,7 +1692,7 @@
         "main": [
           [
             {
-              "node": "Mark RSS Items Processed",
+              "node": "Get Digest Evidence Receipts",
               "type": "main",
               "index": 0
             }
@@ -1478,6 +1722,46 @@
           [
             {
               "node": "Rows Actually Completed?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get Digest Evidence Receipts": {
+        "main": [
+          [
+            {
+              "node": "Verify Per-Item Evidence Receipts",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Verify Per-Item Evidence Receipts": {
+        "main": [
+          [
+            {
+              "node": "All RSS Evidence Verified?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "All RSS Evidence Verified?": {
+        "main": [
+          [
+            {
+              "node": "Mark RSS Items Processed",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Respond RSS Evidence Conflict",
               "type": "main",
               "index": 0
             }
@@ -1526,10 +1810,10 @@
       }
     ],
     "authors": "Administrator NTLx (via MCP)",
-    "name": "Group delivery verification nodes",
-    "description": "Restore valid visually connected receipt verification group after original larger group was rejected. No business logic changes.",
+    "name": "Require per-item RSS evidence before digest completion",
+    "description": "Fail-closed read-only join of processing RSS items and durable terminal evidence receipts before any status mutation; preserve original digest ownership, verify exact updated row IDs, fix aggregated-trigger references.",
     "autosaved": false,
-    "createdAt": "2026-11-04T07:07:03.483Z",
-    "updatedAt": "2026-11-04T07:07:03.483Z"
+    "createdAt": "2026-11-06T02:28:33.510Z",
+    "updatedAt": "2026-11-06T02:28:33.510Z"
   }
 }
